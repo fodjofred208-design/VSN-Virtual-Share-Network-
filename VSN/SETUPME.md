@@ -118,7 +118,9 @@ git --version
 > The VSN Agent generates the WireGuard Curve25519 keys itself
 > (`agent/src/tunnel/wireguard-keys.ts`), so you don't manually create keys — but
 > the OS WireGuard tools must be installed for the tunnel to actually come up.
-> See `docs/architecture/tunnel.md` for the key details.
+> See `docs/architecture/tunnel.md` for the key details, and
+> **`docs/development/install-wireguard.md`** for the exact install commands per
+> OS and what to choose.
 
 ---
 

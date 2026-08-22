@@ -145,6 +145,16 @@ platform's WireGuard CLI to bring the tunnel up.
 | `agent/src/tunnel/tunnel-client.ts` | Wraps keygen + CLI; injects keys into config |
 | `agent/src/tunnel/tunnel-manager.ts` | Platform-agnostic orchestration + live status |
 | `agent/src/core/platform-adapter.ts` | Per-OS interface/engine/NIC/requirements |
+| `agent/src/network/nat-manager.ts` | Donor NAT (iptables MASQUERADE) |
+| `agent/src/network/routing-manager.ts` | Receptor default route + donor LAN isolation firewall |
+| `agent/src/network/interface-manager.ts` | Create/delete TUN (Linux `ip tuntap`) |
+| `src/services/session.service.ts` | Allocates per-session preshared key + peer config |
+| `src/app/api/sessions/[id]/tunnel-config` | Serves each side's WG config (never private keys) |
+
+### Install WireGuard on your host
+
+See **`docs/development/install-wireguard.md`** for the exact per-OS install
+commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
 ### Tooling used (per OS)
 
