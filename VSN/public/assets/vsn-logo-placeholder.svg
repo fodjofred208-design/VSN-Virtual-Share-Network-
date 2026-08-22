@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" width="480" height="200">
+  <!-- VSN Logo Placeholder - Replace with your actual vsn-logo.png -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff2635;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ffe000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#25e64a;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <text x="240" y="110" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="90" font-weight="900" fill="url(#grad)" filter="url(#glow)">VSN</text>
+  <text x="240" y="155" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="400" fill="#94A3B8" letter-spacing="8">VIRTUAL SHARE NETWORK</text>
+</svg>

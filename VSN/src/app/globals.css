@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── VSN Design Tokens (Professional Global Networking Identity) ─── */
+
+:root {
+  /* Status Colors (VSN Identity) */
+  --vsn-red: #ff2635;
+  --vsn-yellow: #D4AF37; /* Gold/Yellow */
+  --vsn-green: #25e64a;
+  
+  /* Light Theme (Dedicated Premium Design) */
+  --vsn-bg: #F5F7FA;
+  --vsn-surface: #FFFFFF;
+  --vsn-surface-secondary: #EEF1F5;
+  --vsn-text-primary: #111827;
+  --vsn-text-secondary: #5B6472;
+  --vsn-border: #D8DEE7;
+  --vsn-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --vsn-accent: #D4AF37;
+  --vsn-glow: rgba(212, 175, 55, 0.15);
+  
+  /* Globe Colors - Light */
+  --globe-ocean: #E0E7FF;
+  --globe-land: #FFFFFF;
+  --globe-border: #CBD5E1;
+
+  --vsn-bg-card: var(--vsn-surface);
+  --vsn-text: var(--vsn-text-primary);
+  --vsn-text-muted: var(--vsn-text-secondary);
+}
+
+.dark {
+  /* Dark Theme (Primary Identity: Deep Charcoal/Black) */
+  --vsn-bg: #020202;
+  --vsn-surface: #0A0A0A;
+  --vsn-surface-secondary: #121212;
+  --vsn-text-primary: #FFFFFF;
+  --vsn-text-secondary: #94A3B8;
+  --vsn-border: #1E293B;
+  --vsn-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  --vsn-accent: #D4AF37;
+  --vsn-glow: rgba(212, 175, 55, 0.3);
+
+  /* Globe Colors - Dark */
+  --globe-ocean: #050505;
+  --globe-land: #1E293B;
+  --globe-border: #334155;
+
+  --vsn-bg-card: var(--vsn-surface);
+  --vsn-text: var(--vsn-text-primary);
+  --vsn-text-muted: var(--vsn-text-secondary);
+}
+
+/* ─── Base Styles ─────────────────────────────────────────────────── */
+
+body {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.vsn-glass-bubble {
+  pointer-events: none;
+  filter: blur(40px);
+  z-index: -1;
+  transition: all 0.4s ease;
+}
+
+.dark .vsn-glass-bubble {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+}
+
+.light .vsn-glass-bubble {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+}
+
+.vsn-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  background: rgba(var(--vsn-surface), 0.8);
+  border-bottom: 1px solid var(--vsn-border);
+}
+
+/* ─── Soft UI & Animations ────────────────────────────────────────── */
+
+.vsn-glass {
+  backdrop-filter: blur(16px);
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid var(--vsn-border);
+}
+
+.vsn-drawer {
+  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vsn-card-hover {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vsn-card-hover:hover {
+  transform: translateY(-8px);
+  border-color: var(--vsn-gold);
+  box-shadow: 0 0 20px var(--vsn-glow);
+}
+
+/* ─── Soft Application Window Effect ────────────────────────────── */
+
+.vsn-app-window {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--vsn-border);
+  background: var(--vsn-bg);
+}
+
+/* ─── Advanced Hover Effects ────────────────────────────────────── */
+
+.vsn-panel {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid var(--vsn-border);
+}
+
+.vsn-panel:hover {
+  border-color: var(--vsn-gold);
+  box-shadow: 0 0 15px var(--vsn-glow);
+}
+
+.vsn-small-panel {
+  transition: all 0.3s ease;
+}
+
+.vsn-small-panel:hover {
+  transform: translateY(-8px);
+}
+
+/* ─── Base Styles ─────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--vsn-bg);
+  color: var(--vsn-text);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* ─── VSN Status Animations ───────────────────────────────────────── */
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+@keyframes pulse-yellow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+}
+
+@keyframes glow-green {
+  0%, 100% { text-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
+  50% { text-shadow: 0 0 20px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.3); }
+}
+
+@keyframes glow-yellow {
+  0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.6); }
+  50% { text-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.3); }
+}
+
+.vsn-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
+.vsn-pulse-red { animation: pulse-red 2s ease-in-out infinite; }
+.vsn-pulse-yellow { animation: pulse-yellow 1.5s ease-in-out infinite; }
+.vsn-glow-green { animation: glow-green 2s ease-in-out infinite; }
+.vsn-glow-yellow { animation: glow-yellow 1.5s ease-in-out infinite; }
+
+/* ─── Splash Screen Animations ────────────────────────────────────── */
+
+@keyframes letter-assemble {
+  0% { opacity: 0; transform: translateY(-40px) scale(0.3) rotateX(90deg); filter: blur(8px); }
+  60% { opacity: 1; transform: translateY(5px) scale(1.05) rotateX(-5deg); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); }
+}
+
+@keyframes network-line {
+  0% { stroke-dashoffset: 200; opacity: 0; }
+  30% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.3; }
+}
+
+@keyframes node-glow {
+  0%, 100% { r: 3; opacity: 0.5; }
+  50% { r: 5; opacity: 1; }
+}
+
+@keyframes signal-wave {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes particle-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
+}
+
+@keyframes subtitle-reveal {
+  0% { opacity: 0; letter-spacing: 0.5em; }
+  100% { opacity: 1; letter-spacing: 0.25em; }
+}
+
+@keyframes fade-to-app {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.vsn-letter-assemble {
+  animation: letter-assemble 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+.vsn-subtitle-reveal {
+  animation: subtitle-reveal 1s ease-out forwards;
+  opacity: 0;
+}
+
+.vsn-signal-wave {
+  animation: signal-wave 2s ease-out infinite;
+}
+
+.vsn-fade-out {
+  animation: fade-to-app 0.6s ease-in forwards;
+}
+
+/* ─── Card & Component Styles ─────────────────────────────────────── */
+
+.vsn-card {
+  background-color: var(--vsn-bg-card);
+  border: 1px solid var(--vsn-border);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.vsn-card:hover {
+  border-color: var(--vsn-accent);
+  box-shadow: 0 0 0 1px var(--vsn-accent), 0 4px 12px var(--vsn-glow);
+}
+
+.vsn-sidebar {
+  background-color: var(--vsn-bg-sidebar);
+  border-right: 1px solid var(--vsn-border);
+}
+
+.vsn-btn-primary {
+  background-color: var(--vsn-accent);
+  color: white;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.vsn-btn-primary:hover {
+  background-color: var(--vsn-accent-hover);
+  box-shadow: 0 0 16px var(--vsn-glow);
+}
+
+.vsn-btn-outline {
+  border: 1px solid var(--vsn-border);
+  color: var(--vsn-text);
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.vsn-btn-outline:hover {
+  border-color: var(--vsn-accent);
+  color: var(--vsn-accent);
+}
+
+/* ─── Page Transitions ─────────────────────────────────────────────── */
+
+.vsn-page-enter {
+  animation: vsn-page-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes vsn-page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--vsn-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--vsn-text-muted); }
+
+/* ─── Network Topology SVG for Splash ─────────────────────────────── */
+
+.vsn-network-line {
+  stroke-dasharray: 200;
+  animation: network-line 3s ease-in-out infinite;
+}
