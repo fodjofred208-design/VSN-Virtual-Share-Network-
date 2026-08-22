@@ -1,7 +1,17 @@
 // VSN Agent — Virtual network interface manager (data plane)
 // Creates/removes the TUN adapter used by the tunnel. OS-specific adapters live
-// in agent/platforms (Wintun on Windows, utun on macOS, tun/tap on Linux,
-// VpnService on Android, NEPacketTunnelProvider on iOS).
+// per platform (Wintun on Windows, utun on macOS, tun/tap on Linux, VpnService
+// on Android, NEPacketTunnelProvider on iOS). On Linux it uses `ip tuntap`.
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+const isLinux = process.platform === "linux";
+
+function sandboxed(): boolean {
+  return process.env.VSN_SANDBOX === "1" || process.env.CI === "true";
+}
+
 export interface InterfaceAdapter {
   create(name: string): Promise<void>;
   delete(name: string): Promise<void>;
@@ -16,14 +26,25 @@ export class InterfaceManager {
   }
 
   async up(name: string): Promise<void> {
-    for (const a of this.adapters) {
-      if (!a.isPresent(name)) await a.create(name);
+    if (!isLinux || sandboxed()) {
+      console.log(`[iface] would create TUN ${name} (${process.platform})`);
+      return;
+    }
+    try {
+      await execFileAsync("ip", ["tuntap", "add", "dev", name, "mode", "tun"]);
+      await execFileAsync("ip", ["link", "set", "dev", name, "up"]);
+      console.log(`[iface] created TUN ${name}`);
+    } catch (e) {
+      console.warn(`[iface] create failed (need root?): ${(e as Error).message}`);
     }
   }
 
   async down(name: string): Promise<void> {
-    for (const a of this.adapters) {
-      if (a.isPresent(name)) await a.delete(name);
+    if (!isLinux || sandboxed()) return;
+    try {
+      await execFileAsync("ip", ["link", "del", "dev", name]);
+    } catch {
+      // ignore
     }
   }
 }

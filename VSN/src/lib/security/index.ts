@@ -28,3 +28,8 @@ export function sha256(input: string): string {
 export function randomToken(bytes = 32): string {
   return randomBytes(bytes).toString("base64url");
 }
+
+/** WireGuard-style 32-byte preshared key (base64) for a session. */
+export function generatePresharedKey(): string {
+  return randomBytes(32).toString("base64");
+}
