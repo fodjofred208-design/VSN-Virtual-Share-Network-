@@ -1,17 +1,29 @@
 // VSN — Virtual Share Network: Master Layout
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import InteractiveGlobe from "@/components/earth-globe";
-import { Bell, Shield, Info, AlertTriangle, X, Menu, Zap } from "lucide-react";
+import ConnectionBackground from "@/components/connection-background";
+import { Bell, Shield, Activity, X, Menu, Check, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { subscribeNotifications, markRead, markAllRead, type VsnNotification } from "@/lib/notification-store";
+import { acceptSession, rejectSession } from "@/lib/api/sessions";
+import { pushNotification } from "@/lib/notification-store";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [notifications, setNotifications] = useState<VsnNotification[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const unsub = subscribeNotifications(setNotifications);
+    return unsub;
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -23,30 +35,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showNotifications]);
 
+  const unread = notifications.filter((n) => !n.read).length;
+
+  const handleOpen = (n: VsnNotification) => {
+    markRead(n.id);
+    if (n.route) {
+      setShowNotifications(false);
+      router.push(n.route);
+    }
+  };
+
+  const handleAction = useCallback(async (n: VsnNotification, type: "accept" | "reject") => {
+    if (!n.action) return;
+    setBusyId(n.id);
+    try {
+      if (type === "accept") await acceptSession(n.action.sessionId);
+      else await rejectSession(n.action.sessionId);
+      pushNotification({
+        kind: "system",
+        title: type === "accept" ? "Receptor accepted" : "Request rejected",
+        body: `Session ${n.action.donorId ?? n.action.sessionId} ${type === "accept" ? "approved" : "denied"}.`,
+        route: "/receptor",
+      });
+      markRead(n.id);
+    } finally {
+      setBusyId(null);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen p-4 flex items-center justify-center bg-[var(--vsn-bg)] overflow-hidden transition-colors duration-500">
-      
-      {/* 🫧 Exactly Three Background Glass Bubbles */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <motion.div 
-          animate={{ y: [-40, 40, -40] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full vsn-glass shadow-2xl opacity-5"
-          style={{ background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent)' }}
-        />
-        <motion.div 
-          animate={{ x: [-60, 60, -60], y: [-60, 60, -60] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 right-1/4 w-[300px] h-[300px] rounded-full vsn-glass shadow-2xl opacity-[0.03]"
-          style={{ background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent)' }}
-        />
-        <motion.div 
-          animate={{ x: [-100, 100, -100] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] rounded-full vsn-glass shadow-2xl opacity-5"
-          style={{ background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), transparent)' }}
-        />
-      </div>
+      {/* Dynamic connection-state background: 2 (red) / 4 (yellow) / 5 (green) circles */}
+      <ConnectionBackground />
 
       <div className="vsn-app-window w-full h-[95vh] max-w-[1600px] flex flex-col relative bg-[var(--vsn-surface)]/80 backdrop-blur-3xl shadow-[var(--vsn-shadow)] border-[var(--vsn-border)] z-10 transition-all duration-500">
         
@@ -86,29 +106,52 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <footer className="px-10 py-3 border-t border-[var(--vsn-border)] flex justify-between items-center bg-black/10 backdrop-blur-md">
            <span className="text-[8px] font-bold opacity-30 tracking-widest uppercase">v0.1.0-alpha · Desktop Suite</span>
-           <span className="text-[9px] font-black tracking-[0.3em] text-[var(--vsn-accent)]">MADE BY FRED</span>
+           <span className="text-[9px] font-black tracking-[0.25em] text-[var(--vsn-accent)]">MADE BY FODJO FODJO FRED</span>
         </footer>
 
-        {/* Notification Hub */}
+        {/* Notification Hub — bottom right */}
         <div className="absolute bottom-6 right-8 z-[100]" ref={notificationRef}>
-           <button onClick={() => { setShowNotifications(!showNotifications); setUnreadCount(0); }} className="w-12 h-12 rounded-xl flex items-center justify-center vsn-glass hover:border-[var(--vsn-accent)] transition-all relative shadow-2xl">
+           <button onClick={() => { setShowNotifications(!showNotifications); markAllRead(); }} className="w-12 h-12 rounded-xl flex items-center justify-center vsn-glass hover:border-[var(--vsn-accent)] transition-all relative shadow-2xl">
              <Bell className="text-[var(--vsn-accent)]" size={20} />
-             {unreadCount > 0 && (
+             {unread > 0 && (
                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--vsn-red)] rounded-full text-[8px] flex items-center justify-center text-white font-black">
-                 {unreadCount}
+                 {unread}
                </motion.span>
              )}
            </button>
 
            <AnimatePresence>
              {showNotifications && (
-               <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="absolute bottom-16 right-0 w-72 bg-[#080808]/95 backdrop-blur-xl border border-gold/20 rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,1)]">
-                 <h3 className="text-[10px] font-black uppercase tracking-widest text-gold mb-4">Security Feed</h3>
-                 <div className="space-y-2">
-                    <div className="p-3 rounded-lg bg-white/5 border border-white/5 text-[10px]">
-                       <div className="font-bold text-green-500">Handshake Verified</div>
-                       <p className="opacity-40 mt-0.5">Japan node responding at 42ms.</p>
-                    </div>
+               <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="absolute bottom-16 right-0 w-80 bg-[#080808]/95 backdrop-blur-xl border border-gold/20 rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,1)]">
+                 <div className="flex items-center justify-between mb-3">
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-gold">System Feed</h3>
+                   <span className="text-[9px] opacity-40">{unread} unread</span>
+                 </div>
+                 <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-hide">
+                   {notifications.length === 0 && <p className="text-[10px] opacity-40">No notifications.</p>}
+                   {notifications.map((n) => (
+                     <div key={n.id} className="p-3 rounded-lg bg-white/5 border border-white/5 text-[10px] flex gap-2 items-start">
+                       <div className="mt-0.5 flex-shrink-0" style={{ color: n.kind === "security" ? "var(--vsn-red)" : n.kind === "request" ? "var(--vsn-yellow)" : "var(--vsn-green)" }}>
+                         {n.kind === "security" ? <Shield size={12} /> : n.kind === "request" ? <Activity size={12} /> : <Check size={12} />}
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <div className="font-bold" style={{ color: "var(--vsn-text)" }}>{n.title}</div>
+                         <p className="opacity-50 mt-0.5">{n.body}</p>
+                         <div className="flex items-center gap-2 mt-1">
+                           <span className="opacity-30">{n.time}</span>
+                           {n.action && (
+                             <span className="ml-auto flex gap-1">
+                               <button disabled={busyId === n.id} onClick={() => handleAction(n, "accept")} className="px-2 py-0.5 rounded bg-green-500/20 text-green-500 font-bold hover:bg-green-500/40 disabled:opacity-40">Accept</button>
+                               <button disabled={busyId === n.id} onClick={() => handleAction(n, "reject")} className="px-2 py-0.5 rounded bg-red-500/20 text-red-500 font-bold hover:bg-red-500/40 disabled:opacity-40">Reject</button>
+                             </span>
+                           )}
+                         </div>
+                       </div>
+                       <button onClick={(e) => { e.stopPropagation(); handleOpen(n); }} className="flex-shrink-0 opacity-40 hover:opacity-100">
+                         <X size={12} />
+                       </button>
+                     </div>
+                   ))}
                  </div>
                </motion.div>
              )}

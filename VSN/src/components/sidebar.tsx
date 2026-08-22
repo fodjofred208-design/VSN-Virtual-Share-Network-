@@ -1,10 +1,11 @@
 // VSN — Virtual Share Network: Responsive Hamburger Sidebar
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/theme-provider";
+import { subscribeConnection, type ConnectionState } from "@/lib/connection-store";
 import { 
   Home, Globe, Share2, Download, Users, Shield, 
   BarChart3, Settings, Moon, Sun, X, Zap 
@@ -24,7 +25,16 @@ const navItems = [
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const [conn, setConn] = useState<ConnectionState | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const unsub = subscribeConnection(setConn);
+    return unsub;
+  }, []);
+
+  const toneColor =
+    conn?.tone === "connected" ? "var(--vsn-green)" : conn?.tone === "connecting" ? "var(--vsn-yellow)" : "var(--vsn-red)";
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -102,9 +112,10 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
               <div className="p-4 bg-gold/5 rounded-xl border border-gold/10">
                  <p className="text-[10px] font-black text-gold uppercase mb-1">VSN Engine Status</p>
                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-white opacity-60">KERNEL-L7 ACTIVE</span>
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: toneColor }} />
+                    <span className="text-[10px] text-white opacity-60" style={{ color: toneColor }}>{conn?.label ?? "Not Connected"}</span>
                  </div>
+                 <p className="text-[8px] text-white/30 mt-2 tracking-widest">Made by Fodjo Fodjo Fred</p>
               </div>
             </div>
           </motion.aside>

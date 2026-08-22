@@ -49,12 +49,22 @@ class MainActivity : AppCompatActivity() {
         if (webView.canGoBack()) webView.goBack() else super.onBackPressed()
     }
 
-    /** Called by the Web app to start the tunnel. Exposed via JsInterface in a full build. */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // VPN consent result → start the tunnel service.
+        if (requestCode == REQUEST_VPN && resultCode == RESULT_OK) {
+            val config = pendingConfig ?: getString(R.string.control_url)
+            startService(Intent(this, VsnVpnService::class.java).putExtra(VsnVpnService.EXTRA_CONFIG, config))
+        }
+    }
+
+    /** Called by the Web app (JS bridge) to request the tunnel. Requests OS VPN consent. */
     fun startTunnel(config: String) {
-        val intent = VsnVpnService.prepare(this, config)
-        if (intent != null) {
-            // Request VpnService consent, then start the tunnel.
-            startActivityForResult(intent, REQUEST_VPN)
+        pendingConfig = config
+        val prepareIntent = VpnService.prepare(this)
+        if (prepareIntent != null) {
+            // Native "VPN consent" prompt — this is the OS deep-link / system dialog.
+            startActivityForResult(prepareIntent, REQUEST_VPN)
         } else {
             startService(Intent(this, VsnVpnService::class.java).putExtra(VsnVpnService.EXTRA_CONFIG, config))
         }
@@ -62,5 +72,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_VPN = 1001
+        private var pendingConfig: String? = null
     }
 }

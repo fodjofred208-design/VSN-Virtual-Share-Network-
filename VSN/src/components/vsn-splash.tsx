@@ -88,6 +88,9 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
             <p className="text-sm uppercase tracking-[1em] text-white opacity-40 font-black">
               VIRTUAL SHARE NETWORK
             </p>
+            <p className="mt-3 text-[10px] uppercase tracking-[0.4em] text-white/30 font-bold">
+              Made By Fodjo Fodjo Fred
+            </p>
 
             <div className="mt-16 flex items-center justify-center gap-12">
                <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-red)] shadow-[0_0_10px_var(--vsn-red)] animate-pulse" />

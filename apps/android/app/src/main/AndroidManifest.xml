@@ -25,6 +25,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- VSN deep link: vsn://connect?session=... → opens tunnel consent -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vsn" android:host="connect" />
+            </intent-filter>
         </activity>
 
         <!-- VSN tunnel (data plane) — runs wireguard-go via VpnService -->

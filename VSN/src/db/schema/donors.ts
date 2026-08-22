@@ -22,6 +22,10 @@ export const donorProfiles = sqliteTable(
     maxSessionDurationMinutes: integer("max_session_duration_minutes").notNull().default(120),
     dataQuotaMb: integer("data_quota_mb").default(1024),
     totalBandwidthLimitKbps: integer("total_bandwidth_limit_kbps").default(30720),
+    maxSessionDataMb: integer("max_session_data_mb").default(512),
+    scheduleActive: integer("schedule_active", { mode: "boolean" }).default(false),
+    scheduleStartMin: integer("schedule_start_min").default(0), // minutes from midnight
+    scheduleEndMin: integer("schedule_end_min").default(1440),
     rating: integer("rating").default(0),
     ratingCount: integer("rating_count").default(0),
     endpointIp: text("endpoint_ip", { length: 45 }),

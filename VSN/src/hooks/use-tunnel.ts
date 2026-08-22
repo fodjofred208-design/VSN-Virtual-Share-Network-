@@ -1,12 +1,15 @@
 // VSN — Hook to drive a real session + tunnel from the UI.
 // Flow: request session → (donor accepts) → get tunnel config → (relay if needed)
 // → agent brings up WireGuard. Returns connection state + logs for the UI.
+// Also publishes to the global connection store (background + notifications).
 "use client";
 
 import { useState, useCallback } from "react";
 import { requestSession, acceptSession, terminateSession } from "@/lib/api/sessions";
 import { getTunnelConfig, allocateRelay } from "@/lib/api/tunnel";
 import type { SessionState } from "@/lib/types";
+import { setConnectionState, toneFor, labelFor } from "@/lib/connection-store";
+import { pushNotification } from "@/lib/notification-store";
 
 export interface ConnectionLog {
   id: number;
@@ -17,10 +20,16 @@ export interface ConnectionLog {
 
 export function useTunnel() {
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [state, setState] = useState<SessionState>("idle");
+  const [state, setStateRaw] = useState<SessionState>("idle");
   const [logs, setLogs] = useState<ConnectionLog[]>([]);
   const [tunnelInfo, setTunnelInfo] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Update both local state and the global connection store.
+  const applyState = useCallback((s: SessionState, extra?: Partial<Parameters<typeof setConnectionState>[0]>) => {
+    setStateRaw(s);
+    setConnectionState({ state: s, tone: toneFor(s), label: labelFor(s), role: extra?.role ?? (s === "connected" ? "receptor" : null), ...extra });
+  }, []);
 
   const log = useCallback((msg: string, type: ConnectionLog["type"] = "info") => {
     setLogs((prev) => [...prev, { id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg, type }]);
@@ -37,15 +46,25 @@ export function useTunnel() {
           receptorUserId: input.receptorUserId,
         });
         setSessionId(res.sessionId);
-        setState(res.state);
+        applyState(res.state);
         log(`Session requested (${res.donorId})`, "info");
 
-        // Donor side auto-accepts in this demo; a real donor accepts via UI/signaling.
+        // For a RECEPTOR, the donor must accept (manual accept/deny in the
+        // notification hub / donor page). We don't auto-accept for receptors.
         if (input.role === "donor") {
           await acceptSession(res.sessionId);
-          setState("approved");
+          applyState("approved");
           log("Session approved by donor", "success");
+        } else {
+          pushNotification({
+            kind: "request",
+            title: "Connection request sent",
+            body: `Waiting for ${res.donorId} (${res.sessionId.slice(0, 8)}…)`,
+            route: "/receptor",
+          });
         }
+
+        applyState(res.state, { sessionId: res.sessionId, donorId: res.donorId });
 
         // Fetch the WireGuard config for THIS endpoint.
         const cfg = await getTunnelConfig(res.sessionId, input.role);
@@ -60,27 +79,28 @@ export function useTunnel() {
         }
 
         setTunnelInfo({ config: cfg, relay: relayInfo });
-        setState("connected");
+        applyState("connected");
         log("Tunnel established — traffic flowing", "success");
+        pushNotification({ kind: "system", title: "Tunnel established", body: "Encrypted connection active.", route: "/connection" });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Connection failed";
         setError(msg);
         log(msg, "warn");
-        setState("error");
+        applyState("error");
       }
     },
-    [log]
+    [log, applyState]
   );
 
   const disconnect = useCallback(async () => {
     if (sessionId) await terminateSession(sessionId, "user_disconnect").catch(() => null);
     setSessionId(null);
-    setState("idle");
+    applyState("idle");
     setTunnelInfo(null);
     log("Disconnected", "info");
-  }, [sessionId, log]);
+  }, [sessionId, applyState, log]);
 
-  return { sessionId, state, logs, tunnelInfo, error, connect, disconnect, log };
+  return { sessionId, state, logs, tunnelInfo, error, connect, disconnect, log, applyState };
 }
 
 export interface RelayInfo {

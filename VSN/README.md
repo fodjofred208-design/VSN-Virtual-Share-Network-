@@ -425,17 +425,18 @@ plane / NAT traversal path.
 ## 🚀 Future Improvements & Feature Roadmap
 
 ### Near-term (control plane polish)
-- [ ] **Real user auth** — replace the demo user + HMAC token with proper
-  sign-up/login, OAuth, and JWT (short-lived + refresh).
-- [ ] **Role-based access control** — enforce donor vs receptor permissions
-  server-side.
-- [ ] **Wire remaining UI pages** — `donor`, `dashboard` (`connection`),
-  `my-donors` already done, and `settings` to the real API (currently partial).
-- [ ] **Live stats** — poll `/api/statistics` + session status on an interval so
-  the dashboard reflects real sessions.
+- [x] **Real JWT auth** — HS256 JWT sign/verify (`src/lib/auth/jwt.ts`) + `/api/auth/login`;
+  `signToken` replaced by JWT. Root routes require `guard(req, { auth: true })`.
+- [x] **Rate limiting** — in-memory token bucket per IP on API routes (`src/lib/security/rate-limit.ts`).
+- [x] **Donor limits & schedule** — per-session data limit (`max_session_data_mb`),
+  duration limit, and a sharing schedule (`schedule_active/start/end`) enforced in
+  `session.service` (rejects sessions outside the window).
+- [x] **Manual donor accept/deny** — notification hub Accept/Reject calls
+  `acceptSession`/`rejectSession`; `useTunnel` no longer auto-accepts for receptors.
+- [ ] **Role-based access control** — enforce donor vs receptor permissions server-side.
+- [ ] **Live stats** — poll `/api/statistics` + session status on an interval.
 - [ ] **Audit/security event recording** — call `logAudit` / `logSecurityEvent`
   from services on meaningful actions.
-- [ ] **Rate limiting** on API routes (brute-force / DoS protection).
 
 ### Data plane / agent (the real networking work)
 - [x] **WireGuard keys + CLI** — real Curve25519 keygen + `wg-quick up/down`.
@@ -449,11 +450,15 @@ plane / NAT traversal path.
 - [ ] **Bandwidth quotas** — per-receptor limits and session caps.
 
 ### Experience / UX
+- [x] **Persistent onboarding** — splash → terms → permissions first run only.
+- [x] **Notification hub** — bottom-right, system/security/connection-request
+  items, click-to-navigate, accept/reject receptor requests.
+- [x] **Animated state background** — 2 (red) / 3–4 (yellow) / 5 (green) circles
+  reflecting live connection state; theme-adaptive; reduced-motion aware.
+- [x] **Multi-language / i18n** — 10 languages (en/fr/es/pt/de/it/zh/ja/ko/ru),
+  selector in Settings, instant switch.
+- [x] **Branding** — "Made By Fodjo Fodjo Fred" in splash, sidebar, footer, About.
 - [ ] **More countries on the globe** + timezone search.
-- [ ] **Persistent onboarding** — skip splash→terms→permissions after first run
-  (already wired via localStorage).
-- [ ] **Real-time notifications** from signaling events.
-- [ ] **Multi-language / i18n**.
 - [ ] **Accessibility pass** (contrast, keyboard nav).
 
 ### Quality

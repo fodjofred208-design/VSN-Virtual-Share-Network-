@@ -9,6 +9,12 @@
   --vsn-red: #ff2635;
   --vsn-yellow: #D4AF37; /* Gold/Yellow */
   --vsn-green: #25e64a;
+
+  /* Connection circle colors — LIGHT theme (deeper, more readable) */
+  --conn-red: #D92D3A;
+  --conn-yellow: #D99A00;
+  --conn-green: #159957;
+  --circle-glow: rgba(89, 118, 155, 0.10);
   
   /* Light Theme (Dedicated Premium Design) */
   --vsn-bg: #F5F7FA;
@@ -42,6 +48,12 @@
   --vsn-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   --vsn-accent: #D4AF37;
   --vsn-glow: rgba(212, 175, 55, 0.3);
+
+  /* Connection circle colors — DARK theme (luminous) */
+  --conn-red: #FF4D5A;
+  --conn-yellow: #FFC857;
+  --conn-green: #35D07F;
+  --circle-glow: rgba(53, 208, 127, 0.12);
 
   /* Globe Colors - Dark */
   --globe-ocean: #050505;
@@ -81,6 +93,44 @@ body {
   backdrop-filter: blur(12px);
   background: rgba(var(--vsn-surface), 0.8);
   border-bottom: 1px solid var(--vsn-border);
+}
+
+/* ─── Connection-state background circles ─────────────────────────── */
+
+.vsn-circle {
+  pointer-events: none;
+  transition: background-color 0.6s ease, box-shadow 0.6s ease;
+  border-radius: 9999px;
+}
+.vsn-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.18), transparent 60%);
+}
+.vsn-circle-red { background: radial-gradient(circle at 35% 35%, rgba(255,77,90,0.0), var(--conn-red)); box-shadow: 0 0 40px 6px var(--conn-red), inset 0 0 30px rgba(0,0,0,0.3); }
+.vsn-circle-yellow { background: radial-gradient(circle at 35% 35%, rgba(255,200,87,0.0), var(--conn-yellow)); box-shadow: 0 0 46px 8px var(--conn-yellow), inset 0 0 30px rgba(0,0,0,0.3); }
+.vsn-circle-green { background: radial-gradient(circle at 35% 35%, rgba(53,208,127,0.0), var(--conn-green)); box-shadow: 0 0 54px 10px var(--conn-green), inset 0 0 30px rgba(0,0,0,0.25); }
+
+@keyframes vsn-float {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(0,-18px,0) scale(1.04); }
+}
+.vsn-float { animation: vsn-float 14s ease-in-out infinite; }
+
+@keyframes vsn-orbit {
+  0% { transform: translate3d(0,0,0) rotate(0deg); }
+  100% { transform: translate3d(0,0,0) rotate(360deg); }
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsn-circle, .vsn-float {
+    animation: none !important;
+    transition: opacity 0.4s ease !important;
+  }
 }
 
 /* ─── Soft UI & Animations ────────────────────────────────────────── */

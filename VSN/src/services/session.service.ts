@@ -28,6 +28,14 @@ export class InvalidStateTransitionError extends Error {
   }
 }
 
+/** Enforce a donor's sharing schedule (minutes from midnight). */
+export function isWithinSchedule(startMin: number, endMin: number, now = new Date()): boolean {
+  const cur = now.getHours() * 60 + now.getMinutes();
+  if (startMin <= endMin) return cur >= startMin && cur <= endMin;
+  // Overnight window (e.g. 22:00 → 06:00).
+  return cur >= startMin || cur <= endMin;
+}
+
 export async function requestSession(input: {
   donorProfileId: string;
   receptorDeviceId: string;
@@ -36,6 +44,13 @@ export async function requestSession(input: {
   const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, input.donorProfileId)).limit(1);
   if (!donor.length) throw new SessionNotFoundError(input.donorProfileId);
   if (donor[0].status === "offline") throw new ValidationError("Donor is offline");
+
+  // Enforce the donor's sharing schedule (if configured).
+  if (donor[0].scheduleActive) {
+    if (!isWithinSchedule(donor[0].scheduleStartMin ?? 0, donor[0].scheduleEndMin ?? 1440)) {
+      throw new ValidationError("Donor is outside its sharing schedule");
+    }
+  }
 
   const sessionId = randomUUID();
   const now = new Date();

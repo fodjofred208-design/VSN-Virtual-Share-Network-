@@ -4,7 +4,7 @@ import { devices, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { hexNonce } from "@/lib/security";
-import { signToken } from "@/lib/auth";
+import { signJwt } from "@/lib/auth/jwt";
 import { CHALLENGE_TTL_SECONDS, TOKEN_TTL_SECONDS } from "@/lib/constants";
 import { ValidationError } from "@/lib/validation";
 
@@ -61,6 +61,7 @@ export async function verifyChallenge(input: { deviceId: string; signature: stri
   // the device's stored public key (Ed25519) for the signed challenge.
   if (input.signature.length === 0) throw new ValidationError("Signature verification failed");
 
-  const token = signToken(device[0].id, TOKEN_TTL_SECONDS);
+  // Issue a real JWT (HS256) instead of a raw HMAC token.
+  const token = signJwt({ sub: device[0].id, role: "receptor" }, TOKEN_TTL_SECONDS);
   return { verified: true, token, expiresIn: TOKEN_TTL_SECONDS };
 }
