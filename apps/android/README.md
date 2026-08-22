@@ -1,12 +1,20 @@
-# VSN — Android Application (Android / Samsung)
+# VSN — Android Application (Android)
 
-The official VSN app for Android (including Samsung via the Play/APK route). It
-wraps the VSN control-plane app in a WebView and runs the **data plane** through
-a native Android `VpnService` (WireGuard).
+The official VSN app for Android. It runs on **all** Android devices, including:
 
-**Phone ↔ phone**: both phones run this app — one is Donor, one is Receptor. The
-control server coordinates discovery/signaling; the WireGuard tunnel carries
-traffic between them.
+- **Samsung**
+- **Redmi** (Xiaomi/POCO)
+- **Tecno**
+- **Xiaomi**
+- **Google Pixel**
+- Any Android 8.0+ (API 26+) device
+
+It wraps the VSN control-plane app in a WebView and runs the **data plane**
+through a native Android `VpnService` (WireGuard) — **no root needed**.
+
+**Phone ↔ phone** / **Phone ↔ laptop**: both endpoints run this app (or the
+desktop app). The control server coordinates discovery/signaling; the WireGuard
+tunnel carries traffic between them.
 
 ## Stack
 | Piece | Tool |

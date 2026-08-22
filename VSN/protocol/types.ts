@@ -42,6 +42,8 @@ export type StatusColor = "red" | "yellow" | "green";
 export type DonorVisibility = "private" | "trusted" | "public";
 export type DonorStatus = "offline" | "online" | "available" | "sharing";
 export type ConnectionType = "direct" | "hole_punched" | "relay";
+/** Alias used by the NAT-traversal / ICE layer. */
+export type ConnType = ConnectionType;
 export type SecurityEventSeverity = "info" | "warning" | "critical";
 export type DeviceType = "android" | "windows" | "linux" | "macos";
 

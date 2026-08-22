@@ -113,6 +113,22 @@ Receptor → control server (request) → Donor (notify) → negotiate → tunne
 Then the Receptor and Donor carry the data-plane packets directly through the
 tunnel (with a relay fallback when NAT traversal fails).
 
+### NAT traversal (how two devices behind routers/ISPs reach each other)
+
+Donor & Receptor are usually behind **NAT/CGNAT** (private IPs like
+192.168.x.x, or the carrier's shared IP on mobile). They can't always reach
+each other directly, so VSN tries, in order:
+
+| Step | Method | What happens |
+|------|--------|--------------|
+| 1 | **Direct** | Both have public IPs → connect straight. |
+| 2 | **STUN / ICE** | Ask a STUN server for our public IP:port, exchange candidates over signaling, and **UDP hole-punch** so the two peers connect directly (without a relay). |
+| 3 | **Relay** | If hole-punch fails (CGNAT/symmetric NAT, common on mobile), fall back to an **encrypted relay** that forwards opaque WireGuard packets. The relay **cannot decrypt** anything — that's a crypto guarantee. |
+
+> This is implemented in `agent/src/tunnel/nat-traversal.ts` (STUN + hole punch)
+> and `agent/src/tunnel/relay-client.ts` (relay), coordinated over
+> `protocol/messages/traversal.ts`.
+
 ---
 
 ## 🔐 WireGuard Tunnel Tooling & Keys
@@ -171,13 +187,13 @@ commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
 ---
 
-## 📁 Complete Directory & File Guide
+## 📁 Complete Directory & File Guide (VS Code-style)
 
-> Below is the **exact** structure. Each line explains what that
-> folder/file does.
+> Below is the **entire** project as it appears in a file explorer. Each line
+> annotates what that folder/file does.
 
 ```
-VSN/
+VSN/                                    # → apps/desktop & apps/android sit beside this
 │
 ├── README.md                  # This file — full project documentation
 ├── SETUPME.md                 # Step-by-step setup, tools, dependencies
@@ -187,7 +203,7 @@ VSN/
 ├── package.json               # npm scripts + all runtime/dev dependencies
 ├── package-lock.json          # Locked dependency tree (npm)
 ├── drizzle.config.ts          # Drizzle ORM config (SQLite dev / Postgres prod)
-├── tsconfig.json              # TypeScript config + @/* path aliases
+├── tsconfig.json              # TypeScript config + @/* · protocol/* · agent/* aliases
 ├── next.config.ts             # Next.js config
 ├── eslint.config.mjs          # ESLint (Next core-web-vitals) config
 ├── postcss.config.mjs         # Tailwind via PostCSS
@@ -195,57 +211,65 @@ VSN/
 │
 ├── public/
 │   └── assets/
-│       ├── vsn-logo.svg       # VSN logo (SVG)
-│       └── vsn-logo-placeholder.svg
+│       ├── vsn-logo.svg              # VSN logo (SVG)
+│       └── vsn-logo-placeholder.svg  # placeholder
 │
-├── protocol/                  # Shared, framework-agnostic contracts
+├── protocol/                  # Shared, framework-agnostic contracts (no deps)
 │   ├── README.md
-│   ├── types.ts               # Roles, session state machine, entities, API envelope
+│   ├── types.ts               # Roles, session state machine, entities, ConnType
 │   └── messages/
 │       ├── authentication.ts  # register-device, challenge/verify
 │       ├── donor.ts           # register, heartbeat, approve
 │       ├── receptor.ts        # donor discovery
 │       ├── session.ts         # request/accept/reject/terminate/status
-│       └── signaling.ts       # WebSocket signaling messages
+│       ├── signaling.ts       # WebSocket signaling messages
+│       └── traversal.ts       # NAT-traversal candidates + results (ICE-style)
 │
 ├── server/                    # Standalone control-plane real-time server
 │   ├── index.ts               # WebSocket signaling server entrypoint
 │   ├── websocket/
 │   │   └── signaling-server.ts# WS server (broadcasts signaling, :3002)
 │   └── services/
-│       └── session-manager.ts # Session lifecycle + signaling announce/close
+│       ├── session-manager.ts # Session lifecycle + signaling announce/close
+│       └── relay-manager.ts   # Allocates encrypted relays for CGNAT sessions
 │
 ├── agent/                     # THE DATA PLANE (native, off-browser)
-│   ├── README.md
+│   ├── README.md              # Agent + WireGuard key model
 │   ├── package.json
 │   ├── src/
 │   │   ├── core/
-│   │   │   ├── agent.ts           # Lifecycle + CLI entrypoint
-│   │   │   ├── connection-manager.ts  # IPC endpoint + tunnel orchestration
-│   │   │   ├── donor-manager.ts   # Register + start/stop sharing
-│   │   │   └── receptor-manager.ts# Discover + connect/disconnect
+│   │   │   ├── agent.ts            # Lifecycle + CLI entrypoint
+│   │   │   ├── connection-manager.ts# IPC endpoint + tunnel orchestration + signaling
+│   │   │   ├── donor-manager.ts    # Register + share (NAT, isolation)
+│   │   │   ├── receptor-manager.ts # Discover + connect/disconnect
+│   │   │   └── platform-adapter.ts # Per-OS interface/engine/NIC/requirements
 │   │   ├── tunnel/
-│   │   │   ├── tunnel-manager.ts  # Platform-agnostic tunnel up/down
-│   │   │   ├── tunnel-client.ts   # WireGuard userspace wrapper
-│   │   │   └── tunnel-config.ts   # WG config generation + render
+│   │   │   ├── wireguard-keys.ts   # Curve25519 keygen, preshared keys, derivation
+│   │   │   ├── wireguard-cli.ts    # wg-quick up/down, wg show, ip fallback
+│   │   │   ├── tunnel-config.ts    # WG config types + wg-quick INI rendering
+│   │   │   ├── tunnel-client.ts    # Wraps keygen + CLI; injects keys
+│   │   │   ├── tunnel-manager.ts   # Platform-agnostic orchestration + status
+│   │   │   ├── nat-traversal.ts    # STUN/ICE + UDP hole punching (data plane)
+│   │   │   └── relay-client.ts     # Encrypted relay fallback (opaque packets)
 │   │   ├── network/
 │   │   │   ├── interface-manager.ts# Virtual NIC (TUN) management
-│   │   │   ├── routing-manager.ts # Receptor default route / donor masq
-│   │   │   ├── nat-manager.ts     # Donor-side NAT
-│   │   │   └── network-info.ts    # Device facts for discovery
+│   │   │   ├── routing-manager.ts  # Receptor default route + donor LAN isolation
+│   │   │   ├── nat-manager.ts      # Donor NAT (iptables MASQUERADE)
+│   │   │   └── network-info.ts     # Device facts for discovery
 │   │   ├── security/
-│   │   │   ├── encryption.ts      # Keypair generation
+│   │   │   ├── encryption.ts      # WireGuard key wrapper + fingerprint
 │   │   │   ├── credentials.ts     # Per-session secret store
 │   │   │   └── identity.ts        # Device identity (fingerprint/keypair)
 │   │   ├── api/
-│   │   │   └── control-client.ts  # Agent → control-server signaling client
+│   │   │   └── control-client.ts  # Real WS client: signal, traverse, drive tunnel
 │   │   └── ipc/
 │   │       └── ipc-server.ts      # Local API the UI calls (127.0.0.1 only)
 │   └── platforms/                 # Per-OS integration guides
 │       ├── windows/README.md
 │       ├── linux/README.md
 │       ├── macos/README.md
-│       └── android/README.md
+│       ├── android/README.md
+│       └── ios/README.md          # NEPacketTunnelProvider (scaffold)
 │
 ├── src/                         # Presentation + control plane
 │   ├── app/
@@ -276,7 +300,8 @@ VSN/
 │   │       │   └── [id]/{approve,status}/route.ts
 │   │       ├── sessions/
 │   │       │   ├── route.ts (list) · request/route.ts
-│   │       │   └── [id]/{accept,reject,terminate,status}/route.ts
+│   │       │   └── [id]/{accept,reject,terminate,status,tunnel-config}/route.ts
+│   │       ├── relay/allocate/route.ts # Allocate encrypted relay
 │   │       ├── signaling/route.ts     # Signaling reachability
 │   │       ├── statistics/route.ts    # Aggregated connection stats
 │   │       ├── security/events/route.ts
@@ -303,45 +328,97 @@ VSN/
 │   │   │   └── index.ts       # Schema barrel export
 │   │   └── migrations/        # Generated SQL migrations (drizzle-kit)
 │   ├── services/              # Business logic (control plane)
-│   │   ├── auth.service.ts · donor.service.ts · session.service.ts
-│   │   ├── receptor.service.ts · security.service.ts
-│   │   ├── statistics.service.ts · signaling.service.ts
+│   │   ├── auth · donor · session (key exchange + state machine)
+│   │   ├── receptor · security · statistics · signaling
 │   ├── lib/
-│   │   ├── api/               # Typed UI→API client
-│   │   │   ├── client.ts · route-helpers.ts
-│   │   │   ├── auth.ts · donors.ts · sessions.ts · stats.ts
+│   │   ├── api/               # Typed UI→API client (client, route-helpers, feature clients)
 │   │   ├── auth/              # Token sign/verify (HMAC)
-│   │   ├── security/          # Password hashing, nonce, hashing
+│   │   ├── security/          # Password hashing, preshared key, nonce, hashing
 │   │   ├── validation/        # Request validation helpers
-│   │   ├── signaling/         # WebSocket signaling client
+│   │   ├── signaling/         # WebSocket signaling client (UI side)
 │   │   ├── constants/         # Service/version/session-state constants
 │   │   ├── utils/             # formatters, id/pair-code generators
 │   │   ├── types/index.ts     # Re-exports protocol types + status helpers
 │   │   ├── mock-data.ts       # Dev-only fixtures (not used by prod pages)
 │   │   └── onboarding.ts      # Terms/permissions localStorage state
-│   ├── hooks/
-│   │   ├── use-api.ts         # Data fetching hook w/ loading+error
-│   │   └── use-identity.ts    # Current user id (demo/dev)
-│   └── ... (api, components, db)
+│   └── hooks/
+│       ├── use-api.ts         # Data fetching hook w/ loading+error
+│       └── use-identity.ts    # Current user id (demo/dev)
 │
 ├── docs/
 │   ├── architecture/
 │   │   ├── overview.md        # 3-layer architecture
 │   │   ├── control-plane.md   # Control plane details + request flow
 │   │   ├── data-plane.md      # Data plane (agent) details
-│   │   ├── tunnel.md          # WireGuard tooling breakdown
+│   │   ├── tunnel.md          # WireGuard tooling + keys
+│   │   ├── device-to-device.md# Cross-platform / peer-to-peer architecture
 │   │   ├── security.md        # Zero-trust security + threat model
 │   │   └── evolution-plan.md  # Deep-analysis + phased roadmap
 │   └── development/
 │       ├── setup.md           # Environment setup
+│       ├── install-wireguard.md # OS-by-OS WireGuard install + decision guide
 │       ├── contributing.md    # Layering rules / PR guidance
 │       └── troubleshooting.md # Common issues
 │
 └── tests/
     ├── protocol/state-machine.test.ts   # Session state machine
     ├── services/donor-utils.test.ts     # ID/pair-code/format helpers
-    ├── api/ · services/ · protocol/ · agent/   (extend here)
+    ├── agent/wireguard-keys.test.ts     # Curve25519 key correctness
+    └── agent/nat-traversal.test.ts      # NAT traversal planning
 ```
+
+```
+apps/                          # (siblings of VSN/ — the platform shells)
+├── desktop/                   # Electron app (Windows/macOS/Linux)
+│   ├── README.md
+│   ├── package.json           # electron + electron-builder
+│   └── src/{main,preload}.ts  # spawns VSN app + agent, opens native window
+├── android/                   # Native Android app (Samsung/Redmi/Tecno/Xiaomi/Pixel)
+│   ├── README.md
+│   ├── build.gradle.kts · settings.gradle.kts · gradle.properties
+│   └── app/src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/vsn/app/{MainActivity, VsnVpnService, VsnAgentService}.kt
+│       └── res/{layout, values}/
+└── ios/                       # iOS scaffold (Xcode)
+    ├── README.md
+    └── VsnPacketTunnelProvider.swift  # NEPacketTunnelProvider (data plane)
+```
+
+---
+
+## 🧠 Why We Use These Technologies
+
+Every technology was chosen for a specific reason, especially in the data
+plane / NAT traversal path.
+
+### Control plane & UI
+| Tech | Why |
+|------|-----|
+| **Next.js (App Router)** | One codebase for UI **and** API routes; server components; great DX. The control plane is just next.js API + a WS server. |
+| **TypeScript** | Type safety across UI, API, server, and agent; catches errors at compile time (we run `tsc --noEmit`). |
+| **Tailwind CSS** | Utility-first styling; fast, consistent, ships only used CSS. |
+| **Drizzle ORM** | Type-safe SQL; migrations; works with SQLite (dev) and Postgres (prod). |
+| **SQLite (dev)** | Internal, zero-setup, file-backed — runs anywhere without a DB server. Postgres is the prod path. |
+| **WebSocket (`ws`)** | Real-time signaling (donor_online, connection_request, tunnel_ready) with low latency. |
+
+### Data plane (the tunnel & traversal)
+| Tech | Why |
+|------|-----|
+| **WireGuard** | Modern, audited, Tiny (≈4k LOC), ChaCha20-Poly1305 + Noise, Curve25519 identity, low-latency, roaming. End-to-end — the server can't decrypt. |
+| **`wireguard-go` / `boringtun`** | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows). |
+| **`wg` / `wg-quick`** | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls. |
+| **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**. |
+| **STUN / (ICE) | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private. |
+| **Encrypted relay** | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
+| **iptables / nftables / pf / Windows Firewall** | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN. |
+| **Curve25519 (X25519)** | The identity key. We generate real keys in Node `crypto`; private keys never leave the device. |
+
+### Key design decisions
+- **The control server never carries traffic** — it only coordinates. This avoids a bottleneck and means the server can't snoop.
+- **Private keys never leave the device** — only public keys + a per-session preshared key (defense-in-depth) are exchanged.
+- **The browser never does privileged networking** — the native agent does, behind an IPC bridge.
+- **Relay is encrypted, not trusted** — forwarding opaque WireGuard packets means the relay is a performance fallback, not a security downgrade.
 
 ---
 
@@ -361,17 +438,15 @@ VSN/
 - [ ] **Rate limiting** on API routes (brute-force / DoS protection).
 
 ### Data plane / agent (the real networking work)
-- [ ] **WireGuard userspace runtime** — actually invoke `wireguard-go` /
-  `boringtun` from `agent/src/tunnel`.
-- [ ] **Per-OS TUN adapters** — full Wintun / utun / tun / VpnService /
-  NEPacketTunnelProvider implementations.
-- [ ] **NAT traversal** — integrate STUN/ICE hole punching + encrypted relay.
-- [ ] **Donor isolation firewall** — real iptables/nftables/pf/Windows rules.
-- [ ] **Routing & DNS** — receptor default-route to tunnel, DoH resolver,
-  kill-switch.
+- [x] **WireGuard keys + CLI** — real Curve25519 keygen + `wg-quick up/down`.
+- [x] **NAT traversal** — STUN/ICE; UDP hole punching + encrypted relay fallback.
+- [x] **Donor NAT + isolation firewall** — iptables MASQUERADE + LAN isolation.
+- [x] **Routing** — receptor default-route to tunnel.
+- [x] **Cross-platform shells** — desktop (Electron: Windows/macOS/Linux) +
+  Android (VpnService, Samsung/Redmi/Tecno/Xiaomi/Pixel) + iOS scaffold.
+- [ ] **TUN adapters (full per-OS)** — Wintun/pf/Windows Firewall adapter polish.
+- [ ] **Routing & DNS** — DoH resolver + kill-switch.
 - [ ] **Bandwidth quotas** — per-receptor limits and session caps.
-- [ ] **Desktop/mobile shell** — wrap the agent + UI in Electron/Tauri (desktop)
-  and a mobile app (Android/iOS) so it's a real installable app.
 
 ### Experience / UX
 - [ ] **More countries on the globe** + timezone search.
@@ -432,7 +507,9 @@ npm run build
 | `docs/architecture/tunnel.md` | WireGuard tooling |
 | `docs/architecture/security.md` | Security model |
 | `docs/architecture/evolution-plan.md` | Deep analysis + phased roadmap |
+| `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer |
 | `docs/development/setup.md` | Environment setup |
+| `docs/development/install-wireguard.md` | OS-by-OS WireGuard install + what to choose |
 | `docs/development/contributing.md` | Contribution rules |
 | `docs/development/troubleshooting.md` | Fixes for common issues |
 

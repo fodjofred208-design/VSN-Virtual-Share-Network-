@@ -27,7 +27,25 @@ export class AgentCore {
       address: adapter.address,
       interfaceName: adapter.interfaceName(opts.role),
     });
-    this.control = new ControlClient({ url: opts.controlUrl });
+    this.control = new ControlClient({
+      url: opts.controlUrl,
+      role: this.role,
+      getPublicKey: () => this.tunnel.getPublicKey(),
+      onTunnelReady: async (_sessionId, connType) => {
+        this.running = true;
+        await this.tunnel.up();
+        return Promise.resolve();
+      },
+      onTunnelClosed: async () => {
+        this.running = false;
+        await this.tunnel.down();
+        return Promise.resolve();
+      },
+    });
+  }
+
+  getPublicKey(): string {
+    return this.tunnel.getPublicKey();
   }
 
   async connectControl(): Promise<void> {

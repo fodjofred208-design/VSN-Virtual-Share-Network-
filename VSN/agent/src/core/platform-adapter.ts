@@ -53,11 +53,21 @@ const ANDROID: PlatformAdapter = {
   requirements: ["VSN Android app", "VpnService consent", "wireguard-android"],
 };
 
+const IOS: PlatformAdapter = {
+  platform: "ios",
+  interfaceName: (role) => (role === "donor" ? "vsn-donor0" : "vsn-receptor0"),
+  address: ["10.0.0.2/32"],
+  engine: "wireguard-go (userspace) via Network Extension",
+  nic: "NEPacketTunnelProvider",
+  requirements: ["Network Extension entitlement", "wireguard-go (iOS)", "VSN iOS app"],
+};
+
 const ADAPTERS: Record<string, PlatformAdapter> = {
   linux: LINUX,
   darwin: MACOS,
   win32: WINDOWS,
   android: ANDROID,
+  ios: IOS,
 };
 
 export function getPlatformAdapter(): PlatformAdapter {
