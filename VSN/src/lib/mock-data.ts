@@ -9,7 +9,7 @@ import type {
   ConnectionStats,
   Permission,
   SessionState,
-} from "./types";
+} from "@/lib/types";
 
 // ─── Real-time Data Accumulators (Initialized Empty) ──────────────────
 

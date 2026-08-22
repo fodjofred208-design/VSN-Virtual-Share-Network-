@@ -1,0 +1,7 @@
+# VSN local ignores (repo-root .gitignore also applies)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+vsn.db*
+agent/target/

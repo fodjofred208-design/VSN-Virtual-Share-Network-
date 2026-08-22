@@ -2,7 +2,11 @@
 
 "use client";
 
-import { mockStats, formatBytes, formatDuration } from "@/lib/mock-data";
+import { formatBytes, formatDuration } from "@/lib/utils";
+import type { ConnectionStats } from "@/lib/types";
+import { getStatistics } from "@/lib/api/stats";
+import { useCurrentUserId } from "@/hooks/use-identity";
+import { useApi } from "@/hooks/use-api";
 import {
   BarChart3,
   Clock,
@@ -14,7 +18,32 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+const emptyStats: ConnectionStats = {
+  totalSessions: 0,
+  activeSessions: 0,
+  totalBytesDown: 0,
+  totalBytesUp: 0,
+  avgLatencyMs: 0,
+  avgPacketLoss: 0,
+  avgJitter: 0,
+  totalDurationMinutes: 0,
+  sessionsByState: {
+    idle: 0,
+    requested: 0,
+    approved: 0,
+    negotiating: 0,
+    connecting: 0,
+    connected: 0,
+    reconnecting: 0,
+    terminated: 0,
+    error: 0,
+  },
+};
+
 export default function StatisticsPage() {
+  const userId = useCurrentUserId();
+  const { data, loading } = useApi(() => getStatistics(userId), [userId]);
+  const mockStats = data ?? emptyStats;
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>

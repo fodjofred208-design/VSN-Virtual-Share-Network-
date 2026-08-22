@@ -75,6 +75,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
+        {/* Rotating Earth — top-right of every app page; click a country to see its local time */}
         <div className="absolute top-2 right-4 w-[160px] h-[160px] z-[60] pointer-events-auto">
            <InteractiveGlobe />
         </div>

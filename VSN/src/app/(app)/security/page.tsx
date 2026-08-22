@@ -2,8 +2,11 @@
 
 "use client";
 
-import { mockSecurityEvents, mockAuditLog, timeAgo } from "@/lib/mock-data";
-import type { SecurityEventSeverity } from "@/lib/types";
+import { timeAgo } from "@/lib/utils";
+import type { SecurityEventSeverity, SecurityEvent, AuditEntry } from "@/lib/types";
+import { getSecurityEvents, getAuditLog } from "@/lib/api/stats";
+import { useCurrentUserId } from "@/hooks/use-identity";
+import { useApi } from "@/hooks/use-api";
 import {
   Shield,
   AlertTriangle,
@@ -24,6 +27,11 @@ const severityConfig: Record<SecurityEventSeverity, { icon: React.ReactNode; col
 };
 
 export default function SecurityPage() {
+  const userId = useCurrentUserId();
+  const { data: events } = useApi(() => getSecurityEvents(userId), [userId]);
+  const { data: audit } = useApi(() => getAuditLog(userId), [userId]);
+  const mockSecurityEvents: SecurityEvent[] = events ?? [];
+  const mockAuditLog: AuditEntry[] = audit ?? [];
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>

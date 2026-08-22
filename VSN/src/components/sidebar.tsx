@@ -12,8 +12,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
-  { icon: <Home size={20} />, label: "Connection", href: "/dashboard" }, // renamed
-  { icon: <Globe size={20} />, label: "Command Center", href: "/connection" }, // renamed
+  { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
+  { icon: <Globe size={20} />, label: "Command Center", href: "/connection" },
   { icon: <Share2 size={20} />, label: "Donor Mode", href: "/donor" },
   { icon: <Download size={20} />, label: "Receptor Mode", href: "/receptor" },
   { icon: <Shield size={20} />, label: "Security Hub", href: "/security" },

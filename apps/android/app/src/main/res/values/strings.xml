@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VSN</string>
+    <string name="control_url">https://vsn-control.example.com</string>
+    <string name="signaling_url">wss://vsn-control.example.com</string>
+</resources>

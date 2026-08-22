@@ -20,13 +20,13 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
       <style>{`
         .vsn-splash {
           position: fixed; inset: 0; z-index: 99999;
-          display: flex; items-center; justify-content: center;
+          display: flex; align-items: center; justify-content: center;
           background: #020202;
           transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .vsn-splash-container {
           position: relative;
-          display: flex; flex-direction: column; items-center; justify-content: center;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
           width: 100%; height: 100%;
         }
         .vsn-logo-box {

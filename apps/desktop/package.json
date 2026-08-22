@@ -1,0 +1,66 @@
+{
+  "name": "vsn-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VSN — Virtual Share Network desktop application (Windows, macOS, Linux)",
+  "main": "dist/main.js",
+  "author": "FRED",
+  "scripts": {
+    "build:app": "cd ../VSN && next build",
+    "start": "tsx src/main.ts",
+    "dev": "cross-env VSN_DEV=1 tsx src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "dist": "npm run build:app && tsc -p tsconfig.json && electron-builder",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.15",
+    "@types/ws": "^8.5.13",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.vsn.desktop",
+    "productName": "VSN",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../VSN/.next",
+        "to": "app/.next"
+      },
+      {
+        "from": "../VSN/public",
+        "to": "app/public"
+      }
+    ],
+    "asarUnpack": [
+      "app/**"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.utilities",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Network",
+      "icon": "assets/icon.png"
+    }
+  }
+}

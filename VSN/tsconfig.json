@@ -21,6 +21,15 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "protocol/*": [
+        "./protocol/*"
+      ],
+      "server/*": [
+        "./server/*"
+      ],
+      "agent/*": [
+        "./agent/*"
       ]
     },
     "plugins": [

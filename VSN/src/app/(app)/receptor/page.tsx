@@ -4,9 +4,13 @@
 
 import { useState } from "react";
 import StatusIndicator from "@/components/status-indicator";
-import { mockDonors, mockSessions, formatBandwidth, timeAgo } from "@/lib/mock-data";
-import type { DonorProfile, SessionState } from "@/lib/types";
+import { formatBandwidth, timeAgo, sessionDuration } from "@/lib/utils";
+import type { AvailableDonor, SessionState } from "@/lib/types";
 import { sessionStateToColor } from "@/lib/types";
+import { getAvailableDonors } from "@/lib/api/donors";
+import { requestSession, terminateSession } from "@/lib/api/sessions";
+import { useCurrentUserId } from "@/hooks/use-identity";
+import { useApi } from "@/hooks/use-api";
 import {
   Download,
   Wifi,
@@ -22,17 +26,32 @@ import {
 } from "lucide-react";
 
 export default function ReceptorPage() {
-  const [selectedDonor, setSelectedDonor] = useState<DonorProfile | null>(null);
+  const userId = useCurrentUserId();
+  const [selectedDonor, setSelectedDonor] = useState<AvailableDonor | null>(null);
   const [sessionState, setSessionState] = useState<SessionState>("idle");
+  const { data: donors, loading, error } = useApi(() => getAvailableDonors(userId), [userId]);
 
   const statusColor = sessionStateToColor(sessionState);
   const colorHex = statusColor === "green" ? "var(--vsn-green)" : statusColor === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
 
-  const requestConnection = (donor: DonorProfile) => {
+  const requestConnection = async (donor: AvailableDonor) => {
     setSelectedDonor(donor);
     setSessionState("requested");
+    try {
+      // Control plane records the request; the donor is notified over signaling.
+      await requestSession({
+        donorProfileId: donor.id,
+        receptorDeviceId: "device-" + userId,
+        receptorUserId: userId,
+      });
+    } catch (e) {
+      setSessionState("error");
+      console.error(e);
+    }
   };
 
+  // For the demo, the tunnel bring-up is simulated because the data plane
+  // (agent/WireGuard) runs off-browser. The control-plane API is real.
   const simulateConnect = () => {
     setSessionState("approved");
     setTimeout(() => setSessionState("negotiating"), 500);
@@ -107,13 +126,19 @@ export default function ReceptorPage() {
           <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Available Donors</h3>
           <div className="flex items-center gap-1 text-xs" style={{ color: "var(--vsn-text-muted)" }}>
             <Globe size={12} />
-            {mockDonors.filter((d) => d.status !== "offline").length} online
+            {(donors ?? []).filter((d) => d.status !== "offline").length} online
           </div>
         </div>
 
         <div className="space-y-2">
-          {mockDonors.length > 0 ? (
-            mockDonors.map((donor) => {
+          {loading && (
+            <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>
+          )}
+          {error && (
+            <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>{error}</div>
+          )}
+          {(donors ?? []).length > 0 ? (
+            (donors ?? []).map((donor) => {
               const isOnline = donor.status !== "offline";
               const dotColor = donor.status === "sharing" || donor.status === "online" ? "var(--vsn-green)" : donor.status === "available" ? "var(--vsn-yellow)" : "var(--vsn-red)";
               return (
@@ -172,7 +197,7 @@ export default function ReceptorPage() {
       <div className="vsn-card p-6">
         <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Trusted Donors</h3>
         <div className="space-y-2">
-          {mockDonors.filter((d) => d.visibility === "trusted").map((donor) => (
+          {(donors ?? []).filter((d) => d.visibility === "trusted").map((donor) => (
             <div key={donor.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
               <div className="flex items-center gap-2">
                 <span>{donor.countryFlag}</span>
@@ -189,7 +214,7 @@ export default function ReceptorPage() {
       <div className="vsn-card p-6">
         <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Previous Donors</h3>
         <div className="space-y-2">
-          {mockDonors.slice(0, 3).map((donor, i) => (
+          {(donors ?? []).slice(0, 3).map((donor, i) => (
             <div key={donor.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
               <div className="flex items-center gap-2">
                 <span>{donor.countryFlag}</span>
