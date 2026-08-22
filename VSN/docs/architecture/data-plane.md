@@ -16,6 +16,10 @@ Receptor app → OS → VSN Virtual NIC (TUN) → WireGuard tunnel → Donor →
 - **NAT** — donor-side masquerade with per-receptor isolation.
 - **Encryption** — ChaCha20-Poly1305 + Noise handshake (WireGuard).
 - **Security/isolation** — firewall so the receptor never reaches the donor's LAN.
+- **DNS** — `dns-manager.ts` routes DNS into the tunnel with optional DoH and a
+  kill-switch (block all traffic if the tunnel drops).
+- **NAT traversal** — `nat-traversal.ts` does STUN/ICE + UDP hole-punching, and
+  `relay-client.ts` falls back to an encrypted relay (opaque packets) for CGNAT.
 
 ## Donor vs Receptor flow
 

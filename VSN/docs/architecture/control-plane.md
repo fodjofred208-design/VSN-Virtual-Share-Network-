@@ -33,6 +33,21 @@ UI → src/lib/api/* (typed client) → src/app/api/*/route.ts → src/services/
 Route handlers are intentionally thin; all logic lives in services. This keeps
 the control plane maintainable and testable.
 
+## Session → tunnel → relay flow (driven from the UI)
+
+The **Command Center** page (`src/app/(app)/connection/page.tsx`) drives a real
+session through `src/hooks/use-tunnel.ts`, which calls the API client:
+
+1. `POST /api/sessions/request` → creates the session (state `requested`).
+2. (donor) `POST /api/sessions/{id}/accept` → `approved`.
+3. `GET /api/sessions/{id}/tunnel-config?role=donor|receptor` → the peer public
+   key, preshared key, addressing, and donor endpoint (never private keys).
+4. If there is no direct donor endpoint (CGNAT), `POST /api/relay/allocate`
+   returns an **encrypted relay** allocation.
+5. The agent brings the tunnel up; the UI shows live connection state + logs.
+
+The API client for this is `src/lib/api/tunnel.ts`.
+
 ## Real-time
 
 `server/websocket/signaling-server.ts` runs as its own process (`npm run

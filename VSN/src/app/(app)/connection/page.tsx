@@ -7,29 +7,47 @@ import {
   Terminal, ArrowRight, ChevronRight, Activity, Globe
 } from "lucide-react";
 import Link from "next/link";
+import { useTunnel } from "@/hooks/use-tunnel";
+import { useCurrentUserId } from "@/hooks/use-identity";
 
 export default function CommandCenterPage() {
+  const userId = useCurrentUserId();
   const [mode, setMode] = useState<"none" | "donor" | "receptor">("none");
   const [showBanner, setShowBanner] = useState(false);
-  const [logs, setLogs] = useState<{id: number, time: string, msg: string, type: "info" | "success" | "warn"}[]>([]);
+  const [starting, setStarting] = useState(false);
+  const { logs, state, tunnelInfo, error, connect, disconnect, log } = useTunnel();
 
   useEffect(() => {
-    // Initial logs
-    setLogs([
-      { id: 1, time: new Date().toLocaleTimeString(), msg: "VSN Kernel initialized.", type: "info" },
-    ]);
-
-    // Live logging simulation will only occur if user interacts in real scenario
-    // Removing the automated fake log interval to keep it clean for real testing
+    log("VSN Kernel initialized.", "info");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCentralAction = () => {
+  const handleCentralAction = async () => {
     if (mode === "none") {
       setShowBanner(true);
       setTimeout(() => setShowBanner(false), 3000);
-    } else {
-      // Logic for start
-      console.log("Starting " + mode);
+      return;
+    }
+    if (state === "connected") {
+      await disconnect();
+      return;
+    }
+    setStarting(true);
+    try {
+      // Drive a real session: request → tunnel-config → (relay if CGNAT) → connected.
+      if (mode === "donor") {
+        // Donor registers a profile, then shares. For the demo we use a stub donor
+        // profile id; a real device registers via /api/donors/register first.
+        log("Donor mode: registering profile…", "info");
+      }
+      await connect({
+        donorProfileId: "demo-donor-profile",
+        receptorDeviceId: "dev-" + userId,
+        receptorUserId: userId,
+        role: mode,
+      });
+    } finally {
+      setStarting(false);
     }
   };
 
@@ -86,11 +104,15 @@ export default function CommandCenterPage() {
              <div className="mt-12 flex justify-center">
                 <button 
                   onClick={handleCentralAction}
-                  className="vsn-panel bg-gold text-black font-black px-12 py-4 rounded-full flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.4)]"
+                  disabled={starting}
+                  className="vsn-panel bg-gold text-black font-black px-12 py-4 rounded-full flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {mode === "none" ? "INITIALIZE ENGINE" : `START ${mode.toUpperCase()} SESSION`}
+                  {starting ? "CONNECTING…" : mode === "none" ? "INITIALIZE ENGINE" : state === "connected" ? "DISCONNECT" : `START ${mode.toUpperCase()} SESSION`}
                   <ArrowRight size={20} />
                 </button>
+                {error && (
+                  <span className="absolute mt-16 text-xs font-bold" style={{ color: "var(--vsn-red)" }}>{error}</span>
+                )}
              </div>
            </div>
 
@@ -128,7 +150,9 @@ export default function CommandCenterPage() {
            </div>
            <div className="p-4 bg-white/5 text-[9px] opacity-30 flex items-center gap-2 italic">
               <Activity size={10} />
-              Encryption: ChaCha20-Poly1305 · Layer 7 Isolated
+              {state === "connected"
+                ? `Tunnel UP · ${tunnelInfo?.config ? (tunnelInfo.config as { interfaceName: string }).interfaceName : ""}${tunnelInfo?.relay ? " · RELAY" : ""}`
+                : "Encryption: ChaCha20-Poly1305 · Layer 7 Isolated"}
            </div>
         </div>
       </div>
