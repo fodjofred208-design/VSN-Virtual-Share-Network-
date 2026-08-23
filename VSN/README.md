@@ -30,7 +30,7 @@ just render a dashboard:
 | Layer | What it is | Responsibility |
 |-------|------------|----------------|
 | **Presentation** 🖥️ | Next.js UI (React/TypeScript/Tailwind) | Authentication, role selection, donor discovery, status, logs, settings |
-| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (prod) | Auth, registries, signaling, session management, monitoring |
+| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (planned) | Auth, registries, signaling, session management, monitoring |
 | **Data Plane** 🌐 | VSN Agent + WireGuard | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic |
 
 Key principle: **the control plane coordinates; the data plane carries**. The
@@ -202,7 +202,7 @@ VSN/                                    # → apps/desktop & apps/android sit be
 │
 ├── package.json               # npm scripts + all runtime/dev dependencies
 ├── package-lock.json          # Locked dependency tree (npm)
-├── drizzle.config.ts          # Drizzle ORM config (SQLite dev / Postgres prod)
+├── drizzle.config.ts          # Drizzle ORM config (SQLite; Postgres planned)
 ├── tsconfig.json              # TypeScript config + @/* · protocol/* · agent/* aliases
 ├── next.config.ts             # Next.js config
 ├── eslint.config.mjs          # ESLint (Next core-web-vitals) config
@@ -409,7 +409,7 @@ plane / NAT traversal path.
 | **`wireguard-go` / `boringtun`** | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows). |
 | **`wg` / `wg-quick`** | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls. |
 | **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**. |
-| **STUN / (ICE) | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private. |
+| **STUN / ICE** | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private. |
 | **Encrypted relay** | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
 | **iptables / nftables / pf / Windows Firewall** | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN. |
 | **Curve25519 (X25519)** | The identity key. We generate real keys in Node `crypto`; private keys never leave the device. |

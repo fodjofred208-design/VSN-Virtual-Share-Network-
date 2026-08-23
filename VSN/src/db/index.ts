@@ -1,7 +1,8 @@
 // VSN — Database connection
-// Internal (dev/local) backend is SQLite via better-sqlite3.
-// Production can switch to PostgreSQL by setting VSN_DB_DRIVER=postgres
-// and DATABASE_URL (see docs/architecture/data-plane.md and drizzle.config).
+// Internal (dev/local) backend is SQLite via better-sqlite3 + Drizzle.
+// A PostgreSQL driver is planned but not yet implemented (see
+// docs/architecture/evolution-plan.md and docs/development/setup.md —
+// "Production database"). drizzle.config.ts currently targets SQLite.
 import Database from "better-sqlite3";
 import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";

@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Sidebar from "@/components/sidebar";
 import InteractiveGlobe from "@/components/earth-globe";
 import ConnectionBackground from "@/components/connection-background";
@@ -74,7 +75,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-0 left-0 right-0 h-20 z-40 flex items-center justify-center pointer-events-none">
            <div className="flex flex-col items-center">
               <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
-                  <img src="/assets/vsn-logo.png" alt="VSN" className="h-8 w-auto" />
+                  <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />
                   <h1 className="text-2xl font-black tracking-tighter flex">
                     <span className="text-[var(--vsn-red)]">V</span>
                     <span className="text-[var(--vsn-yellow)] px-0.5">S</span>

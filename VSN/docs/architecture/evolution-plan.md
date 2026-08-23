@@ -1,6 +1,11 @@
 # VSN — Architecture Evolution Plan (Deep Analysis)
 
-> **Status:** Draft analysis + roadmap
+> **Status:** ✅ **Implemented.** Phases 0–5 were carried out in the follow-up
+> commits (real WireGuard data plane, signaling server, NAT traversal + relay,
+> UI wired to the control plane, i18n/JWT/notifications, native app scaffolds).
+> This document is kept as the historical analysis + roadmap that drove the
+> work; the "current repo" descriptions below refer to the repo state on the
+> date written.
 > **Scope:** Evolve the existing Next.js project into the target Control Plane + Data Plane + VSN Agent architecture, *without* throwing away the current work.
 > **Date:** 2026-08-22
 
@@ -106,9 +111,9 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 
 ### Phase 0 — Foundations (immediate, low-risk, no code behavior change)
 - [x] Add `.gitignore` (node_modules, .next, .env*, out, coverage, etc.)
-- [x] Add `.env.example` (DATABASE_URL, JWT secret, signaling URL, etc.)
-- [ ] Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`
-- [ ] Add `docs/development/{setup,contributing,troubleshooting}.md`
+- [x] Add `.env.example` (SQLite path, JWT secret, signaling URL, agent vars, etc.)
+- [x] Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`
+- [x] Add `docs/development/{setup,contributing,troubleshooting,install-wireguard,native-integration}.md`
 - [ ] Decide whether to keep the app at `VSN/` root or reorganize to `frontend/` (spec §12 suggests `frontend/`; recommend keeping `VSN/` and adding sibling `agent/`, `server/`, `protocol/`, `tests/`, `docs/` to avoid churn).
 
 ### Phase 1 — Wire the UI to the real API (closes the biggest gap)

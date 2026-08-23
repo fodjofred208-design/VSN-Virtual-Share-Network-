@@ -25,4 +25,11 @@
 ## Agent IPC not reachable
 
 - Run the agent: `VSN_AGENT_ROLE=receptor npm run agent`.
-- It binds to `127.0.0.1:4173`. The UI reads `AGENT_IPC_URL`.
+- It listens on `0.0.0.0:$AGENT_IPC_PORT` (default port `4173`) — see the
+  `[agent:<role>] IPC API listening…` log line for the actual port.
+- The IPC API is for **local/native clients** on the same machine (the
+  desktop/mobile apps and any local tooling). The browser UI talks to the
+  control-plane API routes instead; the agent syncs with the control plane
+  over the signaling WebSocket (`CONTROL_SERVER_URL` / `SIGNALING_URL`).
+- If network ops are blocked (container/CI), set `VSN_SANDBOX=1` so the
+  agent skips privileged interface/NAT work.

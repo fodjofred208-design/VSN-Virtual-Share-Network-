@@ -204,17 +204,26 @@ npm start      # production serve (after build)
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `DATABASE_URL` | — | PostgreSQL connection string (prod). Not needed for SQLite dev. |
 | `VSN_SQLITE_PATH` | `./vsn.db` | Path to the internal SQLite DB file. |
-| `VSN_DEMO_USER_ID` | `00000000-...0001` | Seeded demo user id. |
-| `VSN_DEMO_USER_EMAIL` | `demo@vsn.local` | Seeded demo user email. |
 | `AUTH_SECRET` | dev-only | HMAC secret for session tokens. **Change in prod.** |
 | `TOKEN_TTL_SECONDS` | `3600` | Session token lifetime. |
 | `CHALLENGE_TTL_SECONDS` | `300` | Challenge nonce lifetime. |
-| `SIGNALING_URL` | `ws://localhost:3002` | WebSocket server URL. |
-| `SIGNALING_PORT` | `3002` | Signaling server port. |
-| `NEXT_PUBLIC_API_URL` | `` | Base URL for the API client. |
-| `AGENT_IPC_URL` | `http://127.0.0.1:4173` | VSN Agent local API URL. |
+| `SIGNALING_PORT` | `3002` | Port of the standalone signaling server (`npm run signaling`). |
+| `SIGNALING_URL` | `ws://localhost:3002` | WebSocket URL used by the UI and the agent. |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Base URL for the browser API client (empty = same origin). |
+| `NEXT_PUBLIC_DEMO_USER_ID` | `00000000-...0001` | Demo user shown in the UI before login. |
+| `VSN_DEMO_USER_ID` | `00000000-...0001` | Seeded demo user id (`npm run db:init`). |
+| `VSN_DEMO_USER_EMAIL` | `demo@vsn.local` | Seeded demo user email. |
+| `VSN_AGENT_ROLE` | `donor` | Agent role: `donor` or `receptor`. |
+| `CONTROL_SERVER_URL` | `ws://localhost:3002` | Control/signaling WebSocket URL the agent connects to. |
+| `AGENT_IPC_PORT` | `4173` | Port of the agent's local IPC API (machine-local). |
+| `VSN_DONOR_OUT_IFACE` | `eth0` | Outbound interface the donor shares. |
+| `VSN_RECEPTOR_OUT_IFACE` | `eth0` | Outbound interface the receptor routes through. |
+| `VSN_PLATFORM` | — (auto) | Force agent platform detection (defaults to `os.platform()`). |
+| `VSN_RELAY_ENDPOINT` | `relay.vsn.example.com:5199` | Fallback relay endpoint for NAT traversal. |
+| `VSN_SANDBOX` | — | Set `1` to skip privileged network ops (CI / dev without root). |
+
+> Full annotated template: `.env.example` in `VSN/`.
 
 ---
 

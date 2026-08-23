@@ -9,7 +9,16 @@ import { OrbitControls, Sphere, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "@/components/theme-provider";
 
-const networkNodes = [
+interface NetworkNode {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  tz: string;
+  status: "active" | "connecting" | "offline";
+}
+
+const networkNodes: NetworkNode[] = [
   { id: "cm", name: "Cameroon", lat: 5.96, lng: 10.16, tz: "Africa/Douala", status: "active" },
   { id: "jp", name: "Japan", lat: 36.2, lng: 138.25, tz: "Asia/Tokyo", status: "active" },
   { id: "fr", name: "France", lat: 46.23, lng: 2.21, tz: "Europe/Paris", status: "active" },
@@ -52,7 +61,7 @@ function Earth({ isDark }: { isDark: boolean }) {
 
 export default function InteractiveGlobe() {
   const { theme } = useTheme();
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<NetworkNode | null>(null);
   const [time, setTime] = useState("");
 
   useEffect(() => {

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?: () => void, showSplash?: boolean }) {
   const [visible, setVisible] = useState(showSplash);
@@ -69,17 +70,17 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
                 width: 200 + i*60, height: 400 + i*40,
                 borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
                 left: '20%', animationDelay: `${i * 0.4}s`, '--dir': '-100px'
-              } as any} />
+              } as React.CSSProperties} />
               <div className="vsn-wave vsn-wave-right vsn-wave-anim" style={{
                 width: 200 + i*60, height: 400 + i*40,
                 borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
                 right: '20%', animationDelay: `${i * 0.4}s`, '--dir': '100px'
-              } as any} />
+              } as React.CSSProperties} />
             </React.Fragment>
           ))}
 
           <div className="vsn-logo-box text-center">
-            <img src="/assets/vsn-logo.png" alt="VSN" className="h-40 w-auto mb-8 mx-auto" />
+            <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-40 w-auto mb-8 mx-auto" />
             <h1 className="text-7xl font-black tracking-tighter text-white mb-2">
               <span className="text-[var(--vsn-red)]">V</span>
               <span className="text-[var(--vsn-yellow)]">S</span>

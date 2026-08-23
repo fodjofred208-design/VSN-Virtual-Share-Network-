@@ -5,7 +5,7 @@ VSN (Virtual Share Network) is a **cross-platform networking application** that 
 ## The three layers
 
 - **Presentation** — Next.js UI (React/TypeScript/Tailwind)
-- **Control Plane** — Next.js API + WebSocket signaling + SQLite (dev) / PostgreSQL (prod)
+- **Control Plane** — Next.js API + WebSocket signaling + SQLite (dev) / PostgreSQL (planned)
 - **Data Plane** — VSN Agent / WireGuard (virtual NIC, tunnel, routing, NAT)
 
 ## Where each part lives

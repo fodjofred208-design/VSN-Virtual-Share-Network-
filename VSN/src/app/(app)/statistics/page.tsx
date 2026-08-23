@@ -18,6 +18,16 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+/**
+ * Deterministic pseudo-random value in [0, 1) derived from (index, seed).
+ * Pure function of its inputs → safe during render, stable across re-renders
+ * and between server/client (no hydration mismatch in the placeholder chart).
+ */
+function placeholderBar(index: number, seed: number): number {
+  const x = Math.sin(index * 12.9898 + seed * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 const emptyStats: ConnectionStats = {
   totalSessions: 0,
   activeSessions: 0,
@@ -130,8 +140,8 @@ export default function StatisticsPage() {
         <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Bandwidth Usage (24h)</h3>
         <div className="h-40 flex items-end gap-1">
           {Array.from({ length: 24 }, (_, i) => {
-            const down = Math.random() * 80 + 10;
-            const up = Math.random() * 30 + 5;
+            const down = placeholderBar(i, 1) * 80 + 10;
+            const up = placeholderBar(i, 2) * 30 + 5;
             return (
               <div key={i} className="flex-1 flex flex-col gap-0.5">
                 <div className="rounded-t" style={{ height: `${up}%`, backgroundColor: "var(--vsn-accent)", opacity: 0.6 }} />

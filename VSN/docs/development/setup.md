@@ -52,8 +52,16 @@ npm test
 
 ## Production database
 
-Set `VSN_DB_DRIVER=postgres` and `DATABASE_URL`, update `drizzle.config.ts`
-dialect to `postgresql`, then `npm run db:generate && npm run db:push`.
+The current backend is **SQLite** (`better-sqlite3` + Drizzle, file at
+`VSN_SQLITE_PATH`, default `./vsn.db`) — see `src/db/index.ts` and
+`drizzle.config.ts`.
+
+PostgreSQL is a planned evolution (see
+`docs/architecture/evolution-plan.md`), not yet implemented: there is no
+`VSN_DB_DRIVER` switch in the code today. To move to Postgres you will need
+to add a `drizzle-orm/postgres-js` (or `pg`) driver in `src/db/index.ts`,
+change `drizzle.config.ts` `dialect` to `postgresql` with `DATABASE_URL`,
+then `npm run db:generate && npm run db:push`.
 
 > The data-plane tunnel/agent runs on each target OS (see `agent/README.md`).
 > The Next.js app is the control-plane UI and API.

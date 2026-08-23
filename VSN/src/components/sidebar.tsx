@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/theme-provider";
 import { subscribeConnection, type ConnectionState } from "@/lib/connection-store";
@@ -69,7 +70,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
           >
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center gap-2">
-                <img src="/assets/vsn-logo.png" className="h-8" alt="Logo" />
+                <Image src="/assets/vsn-logo.svg" width={480} height={200} className="h-8 w-auto" alt="Logo" />
                 <span className="text-xl font-black text-white">VSN</span>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
