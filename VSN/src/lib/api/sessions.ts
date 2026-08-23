@@ -1,6 +1,6 @@
 // VSN — Session API client
 import { apiClient } from "./client";
-import type { VSNSession, SessionState } from "@/lib/types";
+import type { VSNSession } from "@/lib/types";
 import type {
   RequestSessionRequest,
   RequestSessionResponse,

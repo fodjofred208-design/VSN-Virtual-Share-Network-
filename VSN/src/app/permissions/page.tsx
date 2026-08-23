@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { grantPermissions } from "@/lib/onboarding";
-import { Check, Shield, Network, Share2, Flame, Cog } from "lucide-react";
+import { Shield, Network, Share2, Flame, Cog } from "lucide-react";
 
 const permissions = [
   {

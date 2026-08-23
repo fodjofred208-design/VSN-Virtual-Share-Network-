@@ -2,7 +2,6 @@
 // Allocates an encrypted relay for sessions that can't connect directly
 // (CGNAT / symmetric NAT). The relay forwards opaque WireGuard packets only —
 // it cannot decrypt anything. This is coordination/metadata only.
-import { randomUUID } from "crypto";
 
 export interface RelayAllocation {
   relayId: string;

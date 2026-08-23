@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { ValidationError } from "@/lib/validation";
 import { rateLimit, clientIpFrom } from "@/lib/security/rate-limit";
-import { bearer, type JwtPayload } from "@/lib/auth/jwt";
+import { bearer } from "@/lib/auth/jwt";
 
 export function jsonOk<T>(data: T, status = 200) {
   return NextResponse.json(data, { status });

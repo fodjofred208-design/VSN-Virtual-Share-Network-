@@ -4,24 +4,21 @@
 
 import { useState } from "react";
 import StatusIndicator from "@/components/status-indicator";
-import { formatBandwidth, timeAgo, sessionDuration } from "@/lib/utils";
+import { formatBandwidth, timeAgo } from "@/lib/utils";
 import type { AvailableDonor, SessionState } from "@/lib/types";
 import { sessionStateToColor } from "@/lib/types";
 import { getAvailableDonors } from "@/lib/api/donors";
-import { requestSession, terminateSession } from "@/lib/api/sessions";
+import { requestSession } from "@/lib/api/sessions";
 import { useCurrentUserId } from "@/hooks/use-identity";
 import { useApi } from "@/hooks/use-api";
 import {
   Download,
-  Wifi,
   WifiOff,
   Clock,
   Star,
   Zap,
   Globe,
   Shield,
-  ChevronRight,
-  Link2,
   AlertTriangle,
 } from "lucide-react";
 

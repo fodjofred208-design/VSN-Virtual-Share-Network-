@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
   Key,
   Lock,
   Wifi,

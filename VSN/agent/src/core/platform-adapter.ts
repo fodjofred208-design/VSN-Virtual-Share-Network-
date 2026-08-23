@@ -3,7 +3,6 @@
 // platform-agnostic. Each platform provides:
 //   • interfaceName / address scheme for the virtual NIC
 //   • the tooling used to bring the WireGuard tunnel up/down
-import os from "node:os";
 
 export interface PlatformAdapter {
   platform: string;

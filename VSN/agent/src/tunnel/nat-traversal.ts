@@ -159,7 +159,7 @@ export class NatTraversal {
   }
 
   /** Pick the best connection type given the two candidates. */
-  static plan(hostLocal: Candidate, peer: Candidate): ConnType {
+  static plan(_hostLocal: Candidate, peer: Candidate): ConnType {
     // Both have server-reflexive (public) addresses → try direct/hole-punch.
     if (peer.type === "srflx" || peer.type === "host") return "hole_punched";
     return "relay";

@@ -8,7 +8,6 @@ import { getStatistics } from "@/lib/api/stats";
 import { useCurrentUserId } from "@/hooks/use-identity";
 import { useApi } from "@/hooks/use-api";
 import {
-  BarChart3,
   Clock,
   ArrowDownRight,
   ArrowUpRight,
@@ -52,7 +51,7 @@ const emptyStats: ConnectionStats = {
 
 export default function StatisticsPage() {
   const userId = useCurrentUserId();
-  const { data, loading } = useApi(() => getStatistics(userId), [userId]);
+  const { data } = useApi(() => getStatistics(userId), [userId]);
   const mockStats = data ?? emptyStats;
   return (
     <div className="max-w-4xl mx-auto space-y-6">

@@ -1,7 +1,6 @@
 // VSN — Security events feed (shared)
 "use client";
 
-import { timeAgo } from "@/lib/utils";
 import type { SecurityEvent, SecurityEventSeverity } from "@/lib/types";
 import { Info, AlertTriangle, AlertOctagon } from "lucide-react";
 

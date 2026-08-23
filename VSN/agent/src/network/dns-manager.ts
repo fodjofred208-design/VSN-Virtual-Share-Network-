@@ -35,7 +35,7 @@ export class DnsManager {
     }
     try {
       const servers = this.config.doh ? ["127.0.0.1"] : (this.config.dnsServers ?? ["1.1.1.1", "8.8.8.8"]);
-      for (const s of servers) {
+      for (const _s of servers) {
         await execFileAsync("resolvconf", ["-a", tunnelInterface, "-m", "0", "-x"]).catch(() => null);
       }
       console.log(

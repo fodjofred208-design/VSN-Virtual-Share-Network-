@@ -1,6 +1,6 @@
 // VSN — Donor API client
 import { apiClient } from "./client";
-import type { AvailableDonor, DonorProfile } from "@/lib/types";
+import type { AvailableDonor } from "@/lib/types";
 import type {
   RegisterDonorRequest,
   RegisterDonorResponse,

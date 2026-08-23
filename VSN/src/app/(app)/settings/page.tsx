@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { useI18n } from "@/components/i18n-provider";
-import { LANGUAGES, type Language } from "@/lib/i18n/locales";
+import { LANGUAGES } from "@/lib/i18n/locales";
 import {
   User,
   Moon,

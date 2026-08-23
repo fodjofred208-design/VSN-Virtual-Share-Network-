@@ -8,8 +8,6 @@ import {
   Users,
   Shield,
   HardDrive,
-  Clock,
-  ChevronRight,
   ArrowUpRight,
   ArrowDownRight,
   Ban,
@@ -22,7 +20,7 @@ export default function DonorPage() {
   const [publicKey, setPublicKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const [devices, setDevices] = useState<any[]>([]);
+  const [devices] = useState<any[]>([]);
 
   const [selectedDevice, setSelectedDevice] = useState<(typeof devices)[0] | null>(null);
 

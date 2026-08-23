@@ -7,11 +7,11 @@ import type { AvailableDonor } from "@/lib/types";
 import { getMyDonors } from "@/lib/api/donors";
 import { useCurrentUserId } from "@/hooks/use-identity";
 import { useApi } from "@/hooks/use-api";
-import { Users, Star, Shield, Globe, Clock, Plus } from "lucide-react";
+import { Users, Star, Shield, Globe, Plus } from "lucide-react";
 
 export default function MyDonorsPage() {
   const userId = useCurrentUserId();
-  const { data, loading } = useApi(() => getMyDonors(userId), [userId]);
+  const { data } = useApi(() => getMyDonors(userId), [userId]);
   const mockDonors: AvailableDonor[] = data ?? [];
   return (
     <div className="max-w-4xl mx-auto space-y-6">

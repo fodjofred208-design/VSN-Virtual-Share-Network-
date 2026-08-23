@@ -7,7 +7,7 @@ import Image from "next/image";
 import Sidebar from "@/components/sidebar";
 import InteractiveGlobe from "@/components/earth-globe";
 import ConnectionBackground from "@/components/connection-background";
-import { Bell, Shield, Activity, X, Menu, Check, XCircle } from "lucide-react";
+import { Bell, Shield, Activity, X, Menu, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   subscribeNotifications,

@@ -31,7 +31,7 @@ export class AgentCore {
       url: opts.controlUrl,
       role: this.role,
       getPublicKey: () => this.tunnel.getPublicKey(),
-      onTunnelReady: async (_sessionId, connType) => {
+      onTunnelReady: async (_sessionId, _connType) => {
         this.running = true;
         await this.tunnel.up();
         return Promise.resolve();

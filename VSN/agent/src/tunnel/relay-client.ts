@@ -25,11 +25,11 @@ export interface RelayClientOptions {
 export class RelayClient {
   private socket: Socket | null = null;
   private tcp: TcpSocket | null = null;
-  private readonly controlUrl?: string;
   private readonly preferTcp: boolean;
 
   constructor(opts: RelayClientOptions = {}) {
-    this.controlUrl = opts.controlUrl;
+    // opts.controlUrl is accepted for forward-compatibility (the allocation
+    // request will be sent there in the real deployment).
     this.preferTcp = opts.preferTcp ?? false;
   }
 

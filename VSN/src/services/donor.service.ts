@@ -53,7 +53,7 @@ export async function registerDonor(input: {
 }
 
 export async function getAvailableDonors(
-  userId: string,
+  _userId: string,
   deviceFingerprint?: string,
 ): Promise<AvailableDonor[]> {
   const onlineDonors = await db

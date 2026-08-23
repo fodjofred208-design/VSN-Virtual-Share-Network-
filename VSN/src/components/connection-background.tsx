@@ -8,7 +8,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTheme } from "@/components/theme-provider";
 import {
   subscribeConnection,
   toneFor,
@@ -45,7 +44,6 @@ function buildCircles(tone: ConnectionTone): Circle[] {
 }
 
 export default function ConnectionBackground() {
-  const { theme } = useTheme();
   const [tone, setTone] = useState<ConnectionTone>("disconnected");
 
   useEffect(() => {

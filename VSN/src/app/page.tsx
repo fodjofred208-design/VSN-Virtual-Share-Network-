@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import VSNLogo from "@/components/vsn-splash";
 import { motion, AnimatePresence } from "framer-motion";

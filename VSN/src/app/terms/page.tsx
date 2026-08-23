@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { acceptTerms, hasAcceptedTerms } from "@/lib/onboarding";
+import { acceptTerms } from "@/lib/onboarding";
 
 export default function TermsPage() {
   const router = useRouter();

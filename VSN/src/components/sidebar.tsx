@@ -12,14 +12,12 @@ import {
   Globe,
   Share2,
   Download,
-  Users,
   Shield,
   BarChart3,
   Settings,
   Moon,
   Sun,
   X,
-  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
