@@ -36,6 +36,393 @@ npm run signaling    # WebSocket signaling server on ws://localhost:3002
 
 Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm test && npm run build`.
 
+## 🖥️ How to open the project in VS Code (with ALL folders)
+
+> ⚠️ **The one rule:** open the **ROOT folder** — the folder that contains
+> `VSN/` **and** `apps/` **together**. If you open `VSN/` alone, the
+> `apps/` folder (desktop/android/ios) will NOT appear in your Explorer.
+
+### Method 1 — from GitHub (recommended)
+
+```bash
+git clone https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
+cd VSN-Virtual-Share-Network-
+code .            # opens the ROOT in VS Code
+```
+
+(No git? Open the GitHub repo page → **Code** button → **Download ZIP** →
+extract → open the extracted folder with VS Code.)
+
+### Method 2 — restore from THIS document
+
+1. Create an empty folder named `VSN-Virtual-Share-Network-`.
+2. For every `### `path`` block below: create that file at exactly that path
+   (creating the folders as needed) and paste the block's content.
+3. Open that ROOT folder in VS Code.
+
+### After opening (all methods)
+
+1. VS Code asks **“Do you trust the authors of the files in this folder?”** → **Yes**.
+2. VS Code asks about **recommended extensions** → **Install Recommended**
+   (installs ESLint, Prettier, Tailwind CSS — the ones in `.vscode/extensions.json`).
+3. Compare your Explorer with the tree in the next section — it must match exactly.
+4. Open the terminal (`Ctrl+``) and run:
+   ```bash
+   cd VSN
+   npm install
+   npm run db:init
+   npm run dev
+   ```
+5. Open http://localhost:3000 — splash screen → terms → permissions → dashboard.
+
+## 🌳 The exact plan VS Code will display (Explorer preview)
+
+Generated from the real repository (this is precisely what VS Code's Explorer
+shows: every tracked file/folder; gitignored build artifacts are hidden by
+VS Code — that is normal and intentional, not missing content).
+
+**Root folder name: `VSN-Virtual-Share-Network-`** — total: **206 files**
+
+```text
+VSN-Virtual-Share-Network-/          ← open THIS folder in VS Code
+├── 📁 apps/  ── 24 files
+│   ├── 📁 android/  ── 14 files
+│   │   ├── 📁 app/  ── 10 files
+│   │   │   ├── 📄 build.gradle.kts
+│   │   │   ├── 📄 proguard-rules.pro
+│   │   │   └── 📁 src/  ── 8 files
+│   │   │       └── 📁 main/  ── 8 files
+│   │   │           ├── 📄 AndroidManifest.xml
+│   │   │           ├── 📁 java/  ── 3 files
+│   │   │           │   └── 📁 com/  ── 3 files
+│   │   │           │       └── 📁 vsn/  ── 3 files
+│   │   │           │           └── 📁 app/  ── 3 files
+│   │   │           │               ├── 📄 MainActivity.kt
+│   │   │           │               ├── 📄 VsnAgentService.kt
+│   │   │           │               └── 📄 VsnVpnService.kt
+│   │   │           └── 📁 res/  ── 4 files
+│   │   │               ├── 📁 drawable/  ── 1 file
+│   │   │               │   └── 📄 ic_launcher_foreground.xml
+│   │   │               ├── 📁 layout/  ── 1 file
+│   │   │               │   └── 📄 activity_main.xml
+│   │   │               └── 📁 values/  ── 2 files
+│   │   │                   ├── 📄 strings.xml
+│   │   │                   └── 📄 styles.xml
+│   │   ├── 📄 build.gradle.kts
+│   │   ├── 📄 gradle.properties
+│   │   ├── 📄 README.md
+│   │   └── 📄 settings.gradle.kts
+│   ├── 📁 desktop/  ── 8 files
+│   │   ├── 📁 assets/  ── 1 file
+│   │   │   └── 📄 icon.svg
+│   │   ├── 📄 package-lock.json
+│   │   ├── 📄 package.json
+│   │   ├── 📄 README.md
+│   │   ├── 📁 src/  ── 3 files
+│   │   │   ├── 📄 main.ts
+│   │   │   ├── 📄 preload.ts
+│   │   │   └── 📄 renderer.d.ts
+│   │   └── 📄 tsconfig.json
+│   └── 📁 ios/  ── 2 files
+│       ├── 📄 README.md
+│       └── 📄 VsnPacketTunnelProvider.swift
+├── 📄 LICENSE
+├── 📄 README.md
+├── 📁 VSN/  ── 174 files
+│   ├── 📁 agent/  ── 29 files
+│   │   ├── 📄 package.json
+│   │   ├── 📁 platforms/  ── 5 files
+│   │   │   ├── 📁 android/  ── 1 file
+│   │   │   │   └── 📄 README.md
+│   │   │   ├── 📁 ios/  ── 1 file
+│   │   │   │   └── 📄 README.md
+│   │   │   ├── 📁 linux/  ── 1 file
+│   │   │   │   └── 📄 README.md
+│   │   │   ├── 📁 macos/  ── 1 file
+│   │   │   │   └── 📄 README.md
+│   │   │   └── 📁 windows/  ── 1 file
+│   │   │       └── 📄 README.md
+│   │   ├── 📄 README.md
+│   │   └── 📁 src/  ── 22 files
+│   │       ├── 📁 api/  ── 1 file
+│   │       │   └── 📄 control-client.ts
+│   │       ├── 📁 core/  ── 5 files
+│   │       │   ├── 📄 agent.ts
+│   │       │   ├── 📄 connection-manager.ts
+│   │       │   ├── 📄 donor-manager.ts
+│   │       │   ├── 📄 platform-adapter.ts
+│   │       │   └── 📄 receptor-manager.ts
+│   │       ├── 📁 ipc/  ── 1 file
+│   │       │   └── 📄 ipc-server.ts
+│   │       ├── 📁 network/  ── 5 files
+│   │       │   ├── 📄 dns-manager.ts
+│   │       │   ├── 📄 interface-manager.ts
+│   │       │   ├── 📄 nat-manager.ts
+│   │       │   ├── 📄 network-info.ts
+│   │       │   └── 📄 routing-manager.ts
+│   │       ├── 📁 security/  ── 3 files
+│   │       │   ├── 📄 credentials.ts
+│   │       │   ├── 📄 encryption.ts
+│   │       │   └── 📄 identity.ts
+│   │       └── 📁 tunnel/  ── 7 files
+│   │           ├── 📄 nat-traversal.ts
+│   │           ├── 📄 relay-client.ts
+│   │           ├── 📄 tunnel-client.ts
+│   │           ├── 📄 tunnel-config.ts
+│   │           ├── 📄 tunnel-manager.ts
+│   │           ├── 📄 wireguard-cli.ts
+│   │           └── 📄 wireguard-keys.ts
+│   ├── 📁 docs/  ── 12 files
+│   │   ├── 📁 architecture/  ── 7 files
+│   │   │   ├── 📄 control-plane.md
+│   │   │   ├── 📄 data-plane.md
+│   │   │   ├── 📄 device-to-device.md
+│   │   │   ├── 📄 evolution-plan.md
+│   │   │   ├── 📄 overview.md
+│   │   │   ├── 📄 security.md
+│   │   │   └── 📄 tunnel.md
+│   │   └── 📁 development/  ── 5 files
+│   │       ├── 📄 contributing.md
+│   │       ├── 📄 install-wireguard.md
+│   │       ├── 📄 native-integration.md
+│   │       ├── 📄 setup.md
+│   │       └── 📄 troubleshooting.md
+│   ├── 📄 drizzle.config.ts
+│   ├── 📄 eslint.config.mjs
+│   ├── 📄 next.config.ts
+│   ├── 📄 package-lock.json
+│   ├── 📄 package.json
+│   ├── 📄 postcss.config.mjs
+│   ├── 📁 protocol/  ── 8 files
+│   │   ├── 📁 messages/  ── 6 files
+│   │   │   ├── 📄 authentication.ts
+│   │   │   ├── 📄 donor.ts
+│   │   │   ├── 📄 receptor.ts
+│   │   │   ├── 📄 session.ts
+│   │   │   ├── 📄 signaling.ts
+│   │   │   └── 📄 traversal.ts
+│   │   ├── 📄 README.md
+│   │   └── 📄 types.ts
+│   ├── 📁 public/  ── 3 files
+│   │   └── 📁 assets/  ── 3 files
+│   │       ├── 📄 README.md
+│   │       ├── 📄 vsn-logo-placeholder.svg
+│   │       └── 📄 vsn-logo.svg
+│   ├── 📄 README.md
+│   ├── 📁 server/  ── 4 files
+│   │   ├── 📄 index.ts
+│   │   ├── 📁 services/  ── 2 files
+│   │   │   ├── 📄 relay-manager.ts
+│   │   │   └── 📄 session-manager.ts
+│   │   └── 📁 websocket/  ── 1 file
+│   │       └── 📄 signaling-server.ts
+│   ├── 📄 SETUPME.md
+│   ├── 📁 src/  ── 98 files
+│   │   ├── 📁 app/  ── 42 files
+│   │   │   ├── 📁 (app)/  ── 10 files
+│   │   │   │   ├── 📁 connection/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 dashboard/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 donor/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 help/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📄 layout.tsx
+│   │   │   │   ├── 📁 my-donors/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 receptor/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 security/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 settings/  ── 1 file
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   └── 📁 statistics/  ── 1 file
+│   │   │   │       └── 📄 page.tsx
+│   │   │   ├── 📁 api/  ── 27 files
+│   │   │   │   ├── 📁 audit/  ── 1 file
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 auth/  ── 4 files
+│   │   │   │   │   ├── 📁 challenge/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   ├── 📁 login/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   ├── 📁 register-device/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   └── 📁 verify/  ── 1 file
+│   │   │   │   │       └── 📄 route.ts
+│   │   │   │   ├── 📁 devices/  ── 2 files
+│   │   │   │   │   ├── 📁 revoke/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 donors/  ── 6 files
+│   │   │   │   │   ├── 📁 [id]/  ── 2 files
+│   │   │   │   │   │   ├── 📁 approve/  ── 1 file
+│   │   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   │   └── 📁 status/  ── 1 file
+│   │   │   │   │   │       └── 📄 route.ts
+│   │   │   │   │   ├── 📁 available/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   ├── 📁 heartbeat/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   ├── 📁 register/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 health/  ── 1 file
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 relay/  ── 1 file
+│   │   │   │   │   └── 📁 allocate/  ── 1 file
+│   │   │   │   │       └── 📄 route.ts
+│   │   │   │   ├── 📁 security/  ── 1 file
+│   │   │   │   │   └── 📁 events/  ── 1 file
+│   │   │   │   │       └── 📄 route.ts
+│   │   │   │   ├── 📁 sessions/  ── 7 files
+│   │   │   │   │   ├── 📁 [id]/  ── 5 files
+│   │   │   │   │   │   ├── 📁 accept/  ── 1 file
+│   │   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   │   ├── 📁 reject/  ── 1 file
+│   │   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   │   ├── 📁 status/  ── 1 file
+│   │   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   │   ├── 📁 terminate/  ── 1 file
+│   │   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   │   └── 📁 tunnel-config/  ── 1 file
+│   │   │   │   │   │       └── 📄 route.ts
+│   │   │   │   │   ├── 📁 request/  ── 1 file
+│   │   │   │   │   │   └── 📄 route.ts
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 signaling/  ── 1 file
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   ├── 📁 statistics/  ── 1 file
+│   │   │   │   │   └── 📄 route.ts
+│   │   │   │   └── 📁 users/  ── 2 files
+│   │   │   │       ├── 📁 register/  ── 1 file
+│   │   │   │       │   └── 📄 route.ts
+│   │   │   │       └── 📄 route.ts
+│   │   │   ├── 📄 globals.css
+│   │   │   ├── 📄 layout.tsx
+│   │   │   ├── 📄 page.tsx
+│   │   │   ├── 📁 permissions/  ── 1 file
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📁 terms/  ── 1 file
+│   │   │       └── 📄 page.tsx
+│   │   ├── 📁 components/  ── 15 files
+│   │   │   ├── 📁 connection/  ── 1 file
+│   │   │   │   └── 📄 session-state-machine.tsx
+│   │   │   ├── 📄 connection-background.tsx
+│   │   │   ├── 📁 dashboard/  ── 1 file
+│   │   │   │   └── 📄 stat-card.tsx
+│   │   │   ├── 📁 donor/  ── 1 file
+│   │   │   │   └── 📄 donor-credentials.tsx
+│   │   │   ├── 📄 earth-globe.tsx
+│   │   │   ├── 📄 i18n-provider.tsx
+│   │   │   ├── 📁 layout/  ── 1 file
+│   │   │   │   └── 📄 page-header.tsx
+│   │   │   ├── 📁 receptor/  ── 1 file
+│   │   │   │   └── 📄 donor-list.tsx
+│   │   │   ├── 📁 security/  ── 1 file
+│   │   │   │   └── 📄 security-events-feed.tsx
+│   │   │   ├── 📄 sidebar.tsx
+│   │   │   ├── 📄 status-indicator.tsx
+│   │   │   ├── 📄 theme-provider.tsx
+│   │   │   ├── 📁 ui/  ── 2 files
+│   │   │   │   ├── 📄 button.tsx
+│   │   │   │   └── 📄 card.tsx
+│   │   │   └── 📄 vsn-splash.tsx
+│   │   ├── 📁 db/  ── 10 files
+│   │   │   ├── 📄 index.ts
+│   │   │   ├── 📄 migrate.ts
+│   │   │   └── 📁 schema/  ── 8 files
+│   │   │       ├── 📄 audit.ts
+│   │   │       ├── 📄 devices.ts
+│   │   │       ├── 📄 donors.ts
+│   │   │       ├── 📄 index.ts
+│   │   │       ├── 📄 relay-servers.ts
+│   │   │       ├── 📄 security-events.ts
+│   │   │       ├── 📄 sessions.ts
+│   │   │       └── 📄 users.ts
+│   │   ├── 📁 hooks/  ── 3 files
+│   │   │   ├── 📄 use-api.ts
+│   │   │   ├── 📄 use-identity.ts
+│   │   │   └── 📄 use-tunnel.ts
+│   │   ├── 📁 lib/  ── 21 files
+│   │   │   ├── 📁 api/  ── 7 files
+│   │   │   │   ├── 📄 auth.ts
+│   │   │   │   ├── 📄 client.ts
+│   │   │   │   ├── 📄 donors.ts
+│   │   │   │   ├── 📄 route-helpers.ts
+│   │   │   │   ├── 📄 sessions.ts
+│   │   │   │   ├── 📄 stats.ts
+│   │   │   │   └── 📄 tunnel.ts
+│   │   │   ├── 📁 auth/  ── 2 files
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   └── 📄 jwt.ts
+│   │   │   ├── 📄 connection-store.ts
+│   │   │   ├── 📁 constants/  ── 1 file
+│   │   │   │   └── 📄 index.ts
+│   │   │   ├── 📁 i18n/  ── 1 file
+│   │   │   │   └── 📄 locales.ts
+│   │   │   ├── 📄 mock-data.ts
+│   │   │   ├── 📄 notification-store.ts
+│   │   │   ├── 📄 onboarding.ts
+│   │   │   ├── 📁 security/  ── 2 files
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   └── 📄 rate-limit.ts
+│   │   │   ├── 📁 signaling/  ── 1 file
+│   │   │   │   └── 📄 client.ts
+│   │   │   ├── 📁 types/  ── 1 file
+│   │   │   │   └── 📄 index.ts
+│   │   │   ├── 📁 utils/  ── 1 file
+│   │   │   │   └── 📄 index.ts
+│   │   │   └── 📁 validation/  ── 1 file
+│   │   │       └── 📄 index.ts
+│   │   └── 📁 services/  ── 7 files
+│   │       ├── 📄 auth.service.ts
+│   │       ├── 📄 donor.service.ts
+│   │       ├── 📄 receptor.service.ts
+│   │       ├── 📄 security.service.ts
+│   │       ├── 📄 session.service.ts
+│   │       ├── 📄 signaling.service.ts
+│   │       └── 📄 statistics.service.ts
+│   ├── 📁 tests/  ── 8 files
+│   │   ├── 📁 agent/  ── 3 files
+│   │   │   ├── 📄 nat-traversal.test.ts
+│   │   │   ├── 📄 tunnel-config.test.ts
+│   │   │   └── 📄 wireguard-keys.test.ts
+│   │   ├── 📁 protocol/  ── 1 file
+│   │   │   └── 📄 state-machine.test.ts
+│   │   └── 📁 services/  ── 4 files
+│   │       ├── 📄 auth-jwt.test.ts
+│   │       ├── 📄 donor-utils.test.ts
+│   │       ├── 📄 rate-limit.test.ts
+│   │       └── 📄 relay-manager.test.ts
+│   ├── 📄 tsconfig.json
+│   ├── 📄 vitest.config.ts
+│   ├── 📄 .env.example
+│   └── 📄 .gitignore
+├── 📄 VSN-FULL-DOCUMENT.md
+├── 📄 .gitignore
+├── 📄 .prettierignore
+├── 📄 .prettierrc.json
+└── 📁 .vscode/  ── 2 files
+    ├── 📄 extensions.json
+    └── 📄 settings.json
+```
+
+**Intentionally hidden by VS Code** (gitignored — they appear on disk after
+`npm install`/`npm run dev`, but the Explorer hides them by default):
+`.git/`, `VSN/node_modules/`, `apps/desktop/node_modules/`, `VSN/.next/`,
+`VSN/vsn.db*`, `VSN/next-env.d.ts`, `*.tsbuildinfo`.
+
+**Prove the structure yourself** — open a terminal in VS Code and run:
+
+```bash
+# every folder that should exist:
+find . -type d -not -path '*/node_modules*' -not -path './.git*' -not -path '*/.next*' | sort
+# total file count (should be ≥ 206):
+find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*/.next/*' | wc -l
+```
+
 ## 📦 What's inside this document
 
 - **Part A** — Documentation (README, SETUPME, architecture + development docs)
