@@ -32,8 +32,7 @@ export class TunnelManager {
 
   constructor(opts: TunnelManagerOptions) {
     this.role = opts.role;
-    this.interfaceName =
-      opts.interfaceName ?? (this.role === "donor" ? "vsn-donor0" : "vsn-receptor0");
+    this.interfaceName = opts.interfaceName ?? (this.role === "donor" ? "vsn-donor0" : "vsn-receptor0");
     this.address = opts.address ?? ["10.0.0.2/32"];
     this.client = new TunnelClient({
       role: this.role,

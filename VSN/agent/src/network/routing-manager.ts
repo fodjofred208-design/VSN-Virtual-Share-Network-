@@ -47,11 +47,44 @@ export class RoutingManager {
       try {
         // Drop any traffic from the tunnel that is addressed to the donor's LAN
         // on the LAN interface (prevents LAN scanning / access from the tunnel).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", lanInterface, "-j", "DROP"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          lanInterface,
+          "-j",
+          "DROP",
+        ]);
         // Accept established/related replies and tunnel→internet (added by NAT).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", lanInterface, "-m", "state", "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          lanInterface,
+          "-m",
+          "state",
+          "--state",
+          "ESTABLISHED,RELATED",
+          "-j",
+          "ACCEPT",
+        ]);
         // Block mDNS/LLMNR from the tunnel (prevents service discovery).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-p", "udp", "--dport", "5353", "-j", "DROP"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-p",
+          "udp",
+          "--dport",
+          "5353",
+          "-j",
+          "DROP",
+        ]);
         console.log(`[routing:donor] LAN isolation firewall active on ${lanInterface}`);
       } catch (e) {
         console.warn(`[routing:donor] isolation firewall failed (need root?): ${(e as Error).message}`);
@@ -65,7 +98,9 @@ export class RoutingManager {
     if (isLinux && !sandboxed()) {
       try {
         await execFileAsync("ip", ["route", "del", "default", "dev", tunnelInterface]).catch(() => null);
-        await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "DROP"]).catch(() => null);
+        await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "DROP"]).catch(
+          () => null,
+        );
       } catch {
         // ignore
       }

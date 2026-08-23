@@ -4,10 +4,7 @@ import { withErrors } from "@/lib/api/route-helpers";
 import { approveReceptor } from "@/services/donor.service";
 import { ValidationError } from "@/lib/validation";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const body = await req.json().catch(() => ({}));

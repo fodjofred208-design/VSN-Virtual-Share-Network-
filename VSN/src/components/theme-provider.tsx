@@ -51,14 +51,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!hasMounted) {
-    return <div className="dark" style={{ visibility: "hidden" }}>{children}</div>;
+    return (
+      <div className="dark" style={{ visibility: "hidden" }}>
+        {children}
+      </div>
+    );
   }
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

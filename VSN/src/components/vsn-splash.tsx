@@ -4,7 +4,13 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
-export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?: () => void, showSplash?: boolean }) {
+export default function VSNLogo({
+  onFinished,
+  showSplash = true,
+}: {
+  onFinished?: () => void;
+  showSplash?: boolean;
+}) {
   const [visible, setVisible] = useState(showSplash);
 
   useEffect(() => {
@@ -62,25 +68,46 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
 
       <div className={`vsn-splash ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         <div className="vsn-splash-container">
-          
           {/* Wave Diffraction Ovals */}
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <React.Fragment key={i}>
-              <div className="vsn-wave vsn-wave-left vsn-wave-anim" style={{
-                width: 200 + i*60, height: 400 + i*40,
-                borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
-                left: '20%', animationDelay: `${i * 0.4}s`, '--dir': '-100px'
-              } as React.CSSProperties} />
-              <div className="vsn-wave vsn-wave-right vsn-wave-anim" style={{
-                width: 200 + i*60, height: 400 + i*40,
-                borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
-                right: '20%', animationDelay: `${i * 0.4}s`, '--dir': '100px'
-              } as React.CSSProperties} />
+              <div
+                className="vsn-wave vsn-wave-left vsn-wave-anim"
+                style={
+                  {
+                    width: 200 + i * 60,
+                    height: 400 + i * 40,
+                    borderColor: i < 3 ? "var(--vsn-red)" : i < 5 ? "var(--vsn-yellow)" : "var(--vsn-green)",
+                    left: "20%",
+                    animationDelay: `${i * 0.4}s`,
+                    "--dir": "-100px",
+                  } as React.CSSProperties
+                }
+              />
+              <div
+                className="vsn-wave vsn-wave-right vsn-wave-anim"
+                style={
+                  {
+                    width: 200 + i * 60,
+                    height: 400 + i * 40,
+                    borderColor: i < 3 ? "var(--vsn-red)" : i < 5 ? "var(--vsn-yellow)" : "var(--vsn-green)",
+                    right: "20%",
+                    animationDelay: `${i * 0.4}s`,
+                    "--dir": "100px",
+                  } as React.CSSProperties
+                }
+              />
             </React.Fragment>
           ))}
 
           <div className="vsn-logo-box text-center">
-            <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-40 w-auto mb-8 mx-auto" />
+            <Image
+              src="/assets/vsn-logo.svg"
+              alt="VSN"
+              width={480}
+              height={200}
+              className="h-40 w-auto mb-8 mx-auto"
+            />
             <h1 className="text-7xl font-black tracking-tighter text-white mb-2">
               <span className="text-[var(--vsn-red)]">V</span>
               <span className="text-[var(--vsn-yellow)]">S</span>
@@ -94,12 +121,17 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
             </p>
 
             <div className="mt-16 flex items-center justify-center gap-12">
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-red)] shadow-[0_0_10px_var(--vsn-red)] animate-pulse" />
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-yellow)] shadow-[0_0_10px_var(--vsn-yellow)] animate-pulse" style={{animationDelay:'0.5s'}} />
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-green)] shadow-[0_0_10px_var(--vsn-green)] animate-pulse" style={{animationDelay:'1s'}} />
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-red)] shadow-[0_0_10px_var(--vsn-red)] animate-pulse" />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-yellow)] shadow-[0_0_10px_var(--vsn-yellow)] animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-green)] shadow-[0_0_10px_var(--vsn-green)] animate-pulse"
+                style={{ animationDelay: "1s" }}
+              />
             </div>
           </div>
-
         </div>
       </div>
     </>

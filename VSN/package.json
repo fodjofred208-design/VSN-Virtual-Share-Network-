@@ -16,7 +16,9 @@
     "agent": "tsx agent/src/core/agent.ts",
     "dev:all": "concurrently -k -n web,sig \"npm run dev\" \"npm run signaling\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "format": "prettier --write --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\""
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -50,6 +52,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "postcss": "8.5.8",
+    "prettier": "^3.9.6",
     "tailwindcss": "4.1.17",
     "tsx": "^4.19.2",
     "typescript": "5.9.3",

@@ -72,9 +72,15 @@ export default function PermissionsPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-1 mb-4">
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>V</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>S</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>N</span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              V
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>
+              S
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              N
+            </span>
           </div>
           <h1 className="text-xl font-bold mb-2" style={{ color: "var(--vsn-text)" }}>
             VSN NETWORK PERMISSIONS
@@ -87,10 +93,16 @@ export default function PermissionsPage() {
         <div className="space-y-3 mb-8">
           {permissions.map((perm) => (
             <div key={perm.id} className="vsn-card p-4 flex items-start gap-4">
-              <span className="mt-0.5 flex-shrink-0 w-5 text-center font-bold" style={{ color: "var(--vsn-green)" }}>
+              <span
+                className="mt-0.5 flex-shrink-0 w-5 text-center font-bold"
+                style={{ color: "var(--vsn-green)" }}
+              >
                 ☑
               </span>
-              <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}>
+              <div
+                className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center"
+                style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}
+              >
                 {perm.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -105,9 +117,16 @@ export default function PermissionsPage() {
           ))}
         </div>
 
-        <div className="p-4 rounded-lg mb-6 text-xs leading-relaxed" style={{ backgroundColor: "rgba(212, 175, 55, 0.08)", border: "1px solid rgba(212, 175, 55, 0.25)", color: "var(--vsn-text-muted)" }}>
-          These permissions are required for VSN to establish secure virtual connections. VSN never inspects the
-          contents of your traffic — it only shares and routes encrypted network connectivity.
+        <div
+          className="p-4 rounded-lg mb-6 text-xs leading-relaxed"
+          style={{
+            backgroundColor: "rgba(212, 175, 55, 0.08)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            color: "var(--vsn-text-muted)",
+          }}
+        >
+          These permissions are required for VSN to establish secure virtual connections. VSN never inspects
+          the contents of your traffic — it only shares and routes encrypted network connectivity.
         </div>
 
         <div className="flex gap-3">

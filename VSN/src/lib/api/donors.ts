@@ -10,7 +10,10 @@ import type {
   ApproveReceptorResponse,
 } from "protocol/messages/donor";
 
-export async function registerDonor(req: RegisterDonorRequest, token?: string): Promise<RegisterDonorResponse> {
+export async function registerDonor(
+  req: RegisterDonorRequest,
+  token?: string,
+): Promise<RegisterDonorResponse> {
   return apiClient.post<RegisterDonorResponse>("/api/donors/register", req, token);
 }
 
@@ -26,14 +29,17 @@ export async function getMyDonors(userId: string): Promise<AvailableDonor[]> {
   return res.donors;
 }
 
-export async function donorHeartbeat(req: DonorHeartbeatRequest, token?: string): Promise<DonorHeartbeatResponse> {
+export async function donorHeartbeat(
+  req: DonorHeartbeatRequest,
+  token?: string,
+): Promise<DonorHeartbeatResponse> {
   return apiClient.post<DonorHeartbeatResponse>("/api/donors/heartbeat", req, token);
 }
 
 export async function approveReceptor(
   donorProfileId: string,
   req: ApproveReceptorRequest,
-  token?: string
+  token?: string,
 ): Promise<ApproveReceptorResponse> {
   return apiClient.post<ApproveReceptorResponse>(`/api/donors/${donorProfileId}/approve`, req, token);
 }

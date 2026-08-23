@@ -5,7 +5,12 @@
 //   • privateKey is stored in the OS keychain / encrypted store ONLY.
 //   • publicKey is what the control plane and peers see.
 //   • presharedKey is a session secret shared out-of-band for defense-in-depth.
-import { generateKeyPair, generatePresharedKey, derivePublicKey, type KeyPair } from "../tunnel/wireguard-keys";
+import {
+  generateKeyPair,
+  generatePresharedKey,
+  derivePublicKey,
+  type KeyPair,
+} from "../tunnel/wireguard-keys";
 import { createHash } from "crypto";
 
 export { generateKeyPair, generatePresharedKey, derivePublicKey, type KeyPair };

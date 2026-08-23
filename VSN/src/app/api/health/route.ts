@@ -8,7 +8,10 @@ import { peerCount } from "@/services/signaling.service";
 
 export async function GET() {
   try {
-    await db.select({ count: sql`1` }).from(users).limit(1);
+    await db
+      .select({ count: sql`1` })
+      .from(users)
+      .limit(1);
     return NextResponse.json({
       status: "healthy",
       service: VSN_SERVICE,
@@ -26,7 +29,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         database: "error",
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

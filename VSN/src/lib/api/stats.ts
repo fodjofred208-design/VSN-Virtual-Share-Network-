@@ -8,7 +8,7 @@ export async function getStatistics(userId: string): Promise<ConnectionStats> {
 
 export async function getSecurityEvents(userId: string, limit = 50): Promise<SecurityEvent[]> {
   const res = await apiClient.get<{ events: SecurityEvent[] }>(
-    `/api/security/events?userId=${userId}&limit=${limit}`
+    `/api/security/events?userId=${userId}&limit=${limit}`,
   );
   return res.events;
 }

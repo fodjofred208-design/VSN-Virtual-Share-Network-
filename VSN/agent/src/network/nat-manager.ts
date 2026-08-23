@@ -23,22 +23,66 @@ export class NatManager {
       try {
         // Enable IP forwarding + MASQUERADE for the tunnel subnet.
         await execFileAsync("sysctl", ["-w", "net.ipv4.ip_forward=1"]);
-        await execFileAsync("iptables", ["-t", "nat", "-A", "POSTROUTING", "-s", "10.0.0.0/24", "-o", outInterface, "-j", "MASQUERADE"]);
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", outInterface, "-j", "ACCEPT"]);
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", outInterface, "-o", tunnelInterface, "-m", "state", "--state", "RELATED,ESTABLISHED", "-j", "ACCEPT"]);
+        await execFileAsync("iptables", [
+          "-t",
+          "nat",
+          "-A",
+          "POSTROUTING",
+          "-s",
+          "10.0.0.0/24",
+          "-o",
+          outInterface,
+          "-j",
+          "MASQUERADE",
+        ]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          outInterface,
+          "-j",
+          "ACCEPT",
+        ]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          outInterface,
+          "-o",
+          tunnelInterface,
+          "-m",
+          "state",
+          "--state",
+          "RELATED,ESTABLISHED",
+          "-j",
+          "ACCEPT",
+        ]);
         console.log(`[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (iptables)`);
       } catch (e) {
         console.warn(`[nat:donor] iptables failed (need root?): ${(e as Error).message}`);
       }
     } else {
-      console.log(`[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (${process.platform})`);
+      console.log(
+        `[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (${process.platform})`,
+      );
     }
   }
 
   async disable(tunnelInterface: string): Promise<void> {
     if (isLinux && !sandboxed()) {
       try {
-        await execFileAsync("iptables", ["-t", "nat", "-D", "POSTROUTING", "-s", "10.0.0.0/24", "-j", "MASQUERADE"]);
+        await execFileAsync("iptables", [
+          "-t",
+          "nat",
+          "-D",
+          "POSTROUTING",
+          "-s",
+          "10.0.0.0/24",
+          "-j",
+          "MASQUERADE",
+        ]);
         await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "ACCEPT"]);
         console.log(`[nat] flushed NAT for ${tunnelInterface}`);
       } catch {

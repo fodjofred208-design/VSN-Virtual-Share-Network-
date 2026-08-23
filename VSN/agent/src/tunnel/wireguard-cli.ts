@@ -61,7 +61,9 @@ export async function bringUp(cfg: AgentTunnelConfig): Promise<void> {
 
   try {
     if (hasWgQuick) {
-      await execFileAsync("wg-quick", ["up", cfg.interfaceName], { env: { ...process.env, WG_CONFIG_FILE: confPath } });
+      await execFileAsync("wg-quick", ["up", cfg.interfaceName], {
+        env: { ...process.env, WG_CONFIG_FILE: confPath },
+      });
     } else {
       // Manual `wg` bring-up: create interface, assign config, add route.
       await execFileAsync("ip", ["link", "add", "dev", cfg.interfaceName, "type", "wireguard"]);

@@ -34,7 +34,11 @@ const networkNodes: NetworkNode[] = [
 function latLngToV3(lat: number, lng: number, r: number) {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
-  return new THREE.Vector3(-(r * Math.sin(phi) * Math.cos(theta)), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
+  return new THREE.Vector3(
+    -(r * Math.sin(phi) * Math.cos(theta)),
+    r * Math.cos(phi),
+    r * Math.sin(phi) * Math.sin(theta),
+  );
 }
 
 function Earth({ isDark }: { isDark: boolean }) {
@@ -44,7 +48,7 @@ function Earth({ isDark }: { isDark: boolean }) {
     return loader.load(
       isDark
         ? "https://unpkg.com/three-globe/example/img/earth-dark.jpg"
-        : "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+        : "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
     );
   }, [isDark]);
 
@@ -74,7 +78,7 @@ export default function InteractiveGlobe() {
           minute: "2-digit",
           second: "2-digit",
           hour12: false,
-        }).format(new Date())
+        }).format(new Date()),
       );
     }, 1000);
     return () => clearInterval(iv);
@@ -88,11 +92,7 @@ export default function InteractiveGlobe() {
         <Stars radius={100} depth={50} count={500} factor={4} saturation={0} fade speed={1} />
         <Earth isDark={theme === "dark"} />
         {networkNodes.map((node) => (
-          <mesh
-            key={node.id}
-            position={latLngToV3(node.lat, node.lng, 2)}
-            onClick={() => setSelected(node)}
-          >
+          <mesh key={node.id} position={latLngToV3(node.lat, node.lng, 2)} onClick={() => setSelected(node)}>
             <sphereGeometry args={[0.06, 16, 16]} />
             <meshBasicMaterial color={node.status === "active" ? "#25e64a" : "#D4AF37"} />
           </mesh>
@@ -112,7 +112,9 @@ export default function InteractiveGlobe() {
             <div className="bg-black/40 p-3 rounded-xl border border-white/5">
               <p className="text-[8px] opacity-40 uppercase font-black">Local Time</p>
               <p className="text-2xl font-mono font-black text-gold tracking-tight">{time}</p>
-              <p className="text-[8px] opacity-40 uppercase font-black mt-1">{selected.tz.replace(/_/g, " ")}</p>
+              <p className="text-[8px] opacity-40 uppercase font-black mt-1">
+                {selected.tz.replace(/_/g, " ")}
+              </p>
             </div>
             <div
               className={`flex items-center gap-2 text-[9px] font-black justify-center py-2 rounded-lg ${

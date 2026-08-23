@@ -14,7 +14,10 @@ export class ReceptorManager {
 
   constructor(control: ControlClient) {
     this.control = control;
-    this.tunnel = new TunnelManager({ role: "receptor", interfaceName: this.adapter.interfaceName("receptor") });
+    this.tunnel = new TunnelManager({
+      role: "receptor",
+      interfaceName: this.adapter.interfaceName("receptor"),
+    });
     this.routing = new RoutingManager("receptor");
   }
 

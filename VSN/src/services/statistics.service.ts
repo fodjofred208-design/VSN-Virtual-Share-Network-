@@ -19,7 +19,10 @@ const STATE_KEYS: SessionState[] = [
 export async function getStatistics(userId: string): Promise<ConnectionStats> {
   const whereUser = eq(sessions.receptorUserId, userId);
   const int = (expr: unknown) => sql<number>`cast(${expr} as integer)`;
-  const totalSessions = await db.select({ count: int(sql`count(*)`) }).from(sessions).where(whereUser);
+  const totalSessions = await db
+    .select({ count: int(sql`count(*)`) })
+    .from(sessions)
+    .where(whereUser);
   const activeSessions = await db
     .select({ count: int(sql`count(*)`) })
     .from(sessions)

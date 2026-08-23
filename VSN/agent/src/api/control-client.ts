@@ -122,7 +122,13 @@ export class ControlClient {
       // STUN timed out → we'll relay.
     }
     const tc: TraversalCandidate = { ...candidate, sessionId, role };
-    this.send({ type: "traversal_candidate", sessionId, role, candidate: tc, timestamp: new Date().toISOString() });
+    this.send({
+      type: "traversal_candidate",
+      sessionId,
+      role,
+      candidate: tc,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   private async attemptTraversal(sessionId: string, peerRole: "donor" | "receptor"): Promise<ConnType> {
@@ -131,14 +137,25 @@ export class ControlClient {
     if (plan !== "relay" && peer) {
       const result = await this.nat.holePunch(peer);
       if (result.connType !== "relay") {
-        this.send({ type: "traversal_result", sessionId, connType: result.connType, timestamp: new Date().toISOString() });
+        this.send({
+          type: "traversal_result",
+          sessionId,
+          connType: result.connType,
+          timestamp: new Date().toISOString(),
+        });
         return result.connType;
       }
     }
     // Fall back to relay.
     const alloc = await this.relay.allocate(sessionId);
     await this.relay.forward(alloc.endpoint);
-    this.send({ type: "traversal_result", sessionId, connType: "relay", relayId: alloc.relayId, timestamp: new Date().toISOString() });
+    this.send({
+      type: "traversal_result",
+      sessionId,
+      connType: "relay",
+      relayId: alloc.relayId,
+      timestamp: new Date().toISOString(),
+    });
     return "relay";
   }
 

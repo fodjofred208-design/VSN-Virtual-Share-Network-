@@ -24,14 +24,14 @@
 
 ## 🌎 Overview
 
-VSN is divided into **three layers** so it can move *real* network traffic — not
+VSN is divided into **three layers** so it can move _real_ network traffic — not
 just render a dashboard:
 
-| Layer | What it is | Responsibility |
-|-------|------------|----------------|
-| **Presentation** 🖥️ | Next.js UI (React/TypeScript/Tailwind) | Authentication, role selection, donor discovery, status, logs, settings |
-| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (planned) | Auth, registries, signaling, session management, monitoring |
-| **Data Plane** 🌐 | VSN Agent + WireGuard | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic |
+| Layer                | What it is                                                    | Responsibility                                                          |
+| -------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Presentation** 🖥️  | Next.js UI (React/TypeScript/Tailwind)                        | Authentication, role selection, donor discovery, status, logs, settings |
+| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (planned) | Auth, registries, signaling, session management, monitoring             |
+| **Data Plane** 🌐    | VSN Agent + WireGuard                                         | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic      |
 
 Key principle: **the control plane coordinates; the data plane carries**. The
 browser/UI never performs privileged network operations — the local **VSN Agent**
@@ -41,10 +41,10 @@ does.
 
 ## 👥 The Two Roles
 
-| Role | What it does |
-|------|--------------|
-| **Donor** | Provides an available Internet connection to authorized Receptors. Can start/stop sharing, see connected receptors, monitor bandwidth/duration, disconnect a receptor, and configure sharing limits. |
-| **Receptor** | Connects to an available Donor to use the shared connectivity. Can discover donors, connect/disconnect, view connection quality (latency, bandwidth, duration) and security/tunnel status. |
+| Role         | What it does                                                                                                                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Donor**    | Provides an available Internet connection to authorized Receptors. Can start/stop sharing, see connected receptors, monitor bandwidth/duration, disconnect a receptor, and configure sharing limits. |
+| **Receptor** | Connects to an available Donor to use the shared connectivity. Can discover donors, connect/disconnect, view connection quality (latency, bandwidth, duration) and security/tunnel status.           |
 
 ---
 
@@ -70,12 +70,15 @@ does.
 ```
 
 ### Presentation layer (`src/app`)
+
 The Next.js App Router UI. Splash → Terms of Service → Network Permissions →
 Dashboard onboarding, plus the app shell (desktop-style, hamburger drawer,
 notification hub, three background glass bubbles, footer).
 
 ### Control plane (`src/app/api`, `src/services`, `src/db`, `server/`)
+
 Coordinates connections and stores **metadata only** (never traffic):
+
 - Authentication / device registration / tokens.
 - Donor & receptor registries, pair codes, heartbeats, approvals.
 - Session state machine (idle → requested → approved → negotiating → connecting
@@ -84,6 +87,7 @@ Coordinates connections and stores **metadata only** (never traffic):
 - Statistics, security events, audit log.
 
 ### Data plane (`agent/`, WireGuard)
+
 Runs on each device. Creates the virtual NIC, runs the WireGuard tunnel,
 configures routing/NAT, and enforces the donor isolation firewall.
 
@@ -104,7 +108,7 @@ Receptor app
    → Internet
 ```
 
-The control server only *coordinates* the connection:
+The control server only _coordinates_ the connection:
 
 ```
 Receptor → control server (request) → Donor (notify) → negotiate → tunnel_ready
@@ -119,11 +123,11 @@ Donor & Receptor are usually behind **NAT/CGNAT** (private IPs like
 192.168.x.x, or the carrier's shared IP on mobile). They can't always reach
 each other directly, so VSN tries, in order:
 
-| Step | Method | What happens |
-|------|--------|--------------|
-| 1 | **Direct** | Both have public IPs → connect straight. |
-| 2 | **STUN / ICE** | Ask a STUN server for our public IP:port, exchange candidates over signaling, and **UDP hole-punch** so the two peers connect directly (without a relay). |
-| 3 | **Relay** | If hole-punch fails (CGNAT/symmetric NAT, common on mobile), fall back to an **encrypted relay** that forwards opaque WireGuard packets. The relay **cannot decrypt** anything — that's a crypto guarantee. |
+| Step | Method         | What happens                                                                                                                                                                                                |
+| ---- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Direct**     | Both have public IPs → connect straight.                                                                                                                                                                    |
+| 2    | **STUN / ICE** | Ask a STUN server for our public IP:port, exchange candidates over signaling, and **UDP hole-punch** so the two peers connect directly (without a relay).                                                   |
+| 3    | **Relay**      | If hole-punch fails (CGNAT/symmetric NAT, common on mobile), fall back to an **encrypted relay** that forwards opaque WireGuard packets. The relay **cannot decrypt** anything — that's a crypto guarantee. |
 
 > This is implemented in `agent/src/tunnel/nat-traversal.ts` (STUN + hole punch)
 > and `agent/src/tunnel/relay-client.ts` (relay), coordinated over
@@ -140,12 +144,12 @@ platform's WireGuard CLI to bring the tunnel up.
 
 ### The keys (this is the "key" part)
 
-| Key | Size | Where it lives | Who sees it |
-|-----|------|----------------|-------------|
-| **Private key** | 32 B (base64) | OS keychain / encrypted store on device | **Never leaves the device** |
-| **Public key** | 32 B (base64) | Control plane + peers | Shared — this is your VSN device ID |
-| **Preshared key** | 32 B (base64) | Exchanged out-of-band via control plane | Donor + Receptor only (defense-in-depth) |
-| **Fingerprint** | SHA-256 (16 hex) | Audit/status | Control plane |
+| Key               | Size             | Where it lives                          | Who sees it                              |
+| ----------------- | ---------------- | --------------------------------------- | ---------------------------------------- |
+| **Private key**   | 32 B (base64)    | OS keychain / encrypted store on device | **Never leaves the device**              |
+| **Public key**    | 32 B (base64)    | Control plane + peers                   | Shared — this is your VSN device ID      |
+| **Preshared key** | 32 B (base64)    | Exchanged out-of-band via control plane | Donor + Receptor only (defense-in-depth) |
+| **Fingerprint**   | SHA-256 (16 hex) | Audit/status                            | Control plane                            |
 
 > **Private keys are never sent over the wire.** The agent generates a fresh
 > Curve25519 keypair per device, shares only the public key, and uses a per-session
@@ -153,19 +157,19 @@ platform's WireGuard CLI to bring the tunnel up.
 
 ### How it's wired (implemented files)
 
-| File | Role |
-|------|------|
-| `agent/src/tunnel/wireguard-keys.ts` | Curve25519 keygen, preshared keys, public-key derivation |
-| `agent/src/tunnel/tunnel-config.ts` | WireGuard config + `wg-quick` INI rendering |
-| `agent/src/tunnel/wireguard-cli.ts` | `wg-quick up/down`, `wg show`, `ip` fallback |
-| `agent/src/tunnel/tunnel-client.ts` | Wraps keygen + CLI; injects keys into config |
-| `agent/src/tunnel/tunnel-manager.ts` | Platform-agnostic orchestration + live status |
-| `agent/src/core/platform-adapter.ts` | Per-OS interface/engine/NIC/requirements |
-| `agent/src/network/nat-manager.ts` | Donor NAT (iptables MASQUERADE) |
-| `agent/src/network/routing-manager.ts` | Receptor default route + donor LAN isolation firewall |
-| `agent/src/network/interface-manager.ts` | Create/delete TUN (Linux `ip tuntap`) |
-| `src/services/session.service.ts` | Allocates per-session preshared key + peer config |
-| `src/app/api/sessions/[id]/tunnel-config` | Serves each side's WG config (never private keys) |
+| File                                      | Role                                                     |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `agent/src/tunnel/wireguard-keys.ts`      | Curve25519 keygen, preshared keys, public-key derivation |
+| `agent/src/tunnel/tunnel-config.ts`       | WireGuard config + `wg-quick` INI rendering              |
+| `agent/src/tunnel/wireguard-cli.ts`       | `wg-quick up/down`, `wg show`, `ip` fallback             |
+| `agent/src/tunnel/tunnel-client.ts`       | Wraps keygen + CLI; injects keys into config             |
+| `agent/src/tunnel/tunnel-manager.ts`      | Platform-agnostic orchestration + live status            |
+| `agent/src/core/platform-adapter.ts`      | Per-OS interface/engine/NIC/requirements                 |
+| `agent/src/network/nat-manager.ts`        | Donor NAT (iptables MASQUERADE)                          |
+| `agent/src/network/routing-manager.ts`    | Receptor default route + donor LAN isolation firewall    |
+| `agent/src/network/interface-manager.ts`  | Create/delete TUN (Linux `ip tuntap`)                    |
+| `src/services/session.service.ts`         | Allocates per-session preshared key + peer config        |
+| `src/app/api/sessions/[id]/tunnel-config` | Serves each side's WG config (never private keys)        |
 
 ### Install WireGuard on your host
 
@@ -174,16 +178,16 @@ commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
 ### Tooling used (per OS)
 
-| Tool | Function |
-|------|----------|
-| `wireguard-go` / `boringtun` | Userspace WireGuard engine (Android/iOS/embedded Windows, or kernel fallback). |
-| Kernel WireGuard module | Fastest path on Linux/macOS/Windows where available. |
-| **Wintun** (Windows) / **utun** (macOS) / **tun** (Linux) / **VpnService** (Android) / **NEPacketTunnelProvider** (iOS) | Virtual network interface per OS. |
-| `wg` / `wg-quick` | Configure interfaces, peers, keys; quick setup. |
-| `wgctrl` / WireGuard Go libs | Programmatic control + stats. |
-| STUN / ICE | UDP hole punching for direct connection. |
-| Relay server | Encrypted fallback when hole punching fails (cannot decrypt packets). |
-| `iptables` / `nftables` / pf / Windows Firewall | Donor-side isolation (no LAN access from the tunnel). |
+| Tool                                                                                                                    | Function                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `wireguard-go` / `boringtun`                                                                                            | Userspace WireGuard engine (Android/iOS/embedded Windows, or kernel fallback). |
+| Kernel WireGuard module                                                                                                 | Fastest path on Linux/macOS/Windows where available.                           |
+| **Wintun** (Windows) / **utun** (macOS) / **tun** (Linux) / **VpnService** (Android) / **NEPacketTunnelProvider** (iOS) | Virtual network interface per OS.                                              |
+| `wg` / `wg-quick`                                                                                                       | Configure interfaces, peers, keys; quick setup.                                |
+| `wgctrl` / WireGuard Go libs                                                                                            | Programmatic control + stats.                                                  |
+| STUN / ICE                                                                                                              | UDP hole punching for direct connection.                                       |
+| Relay server                                                                                                            | Encrypted fallback when hole punching fails (cannot decrypt packets).          |
+| `iptables` / `nftables` / pf / Windows Firewall                                                                         | Donor-side isolation (no LAN access from the tunnel).                          |
 
 ---
 
@@ -393,28 +397,31 @@ Every technology was chosen for a specific reason, especially in the data
 plane / NAT traversal path.
 
 ### Control plane & UI
-| Tech | Why |
-|------|-----|
+
+| Tech                     | Why                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | **Next.js (App Router)** | One codebase for UI **and** API routes; server components; great DX. The control plane is just next.js API + a WS server. |
-| **TypeScript** | Type safety across UI, API, server, and agent; catches errors at compile time (we run `tsc --noEmit`). |
-| **Tailwind CSS** | Utility-first styling; fast, consistent, ships only used CSS. |
-| **Drizzle ORM** | Type-safe SQL; migrations; works with SQLite (dev) and Postgres (prod). |
-| **SQLite (dev)** | Internal, zero-setup, file-backed — runs anywhere without a DB server. Postgres is the prod path. |
-| **WebSocket (`ws`)** | Real-time signaling (donor_online, connection_request, tunnel_ready) with low latency. |
+| **TypeScript**           | Type safety across UI, API, server, and agent; catches errors at compile time (we run `tsc --noEmit`).                    |
+| **Tailwind CSS**         | Utility-first styling; fast, consistent, ships only used CSS.                                                             |
+| **Drizzle ORM**          | Type-safe SQL; migrations; works with SQLite (dev) and Postgres (prod).                                                   |
+| **SQLite (dev)**         | Internal, zero-setup, file-backed — runs anywhere without a DB server. Postgres is the prod path.                         |
+| **WebSocket (`ws`)**     | Real-time signaling (donor_online, connection_request, tunnel_ready) with low latency.                                    |
 
 ### Data plane (the tunnel & traversal)
-| Tech | Why |
-|------|-----|
-| **WireGuard** | Modern, audited, Tiny (≈4k LOC), ChaCha20-Poly1305 + Noise, Curve25519 identity, low-latency, roaming. End-to-end — the server can't decrypt. |
-| **`wireguard-go` / `boringtun`** | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows). |
-| **`wg` / `wg-quick`** | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls. |
-| **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**. |
-| **STUN / ICE** | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private. |
-| **Encrypted relay** | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
-| **iptables / nftables / pf / Windows Firewall** | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN. |
-| **Curve25519 (X25519)** | The identity key. We generate real keys in Node `crypto`; private keys never leave the device. |
+
+| Tech                                                          | Why                                                                                                                                                                                          |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **WireGuard**                                                 | Modern, audited, Tiny (≈4k LOC), ChaCha20-Poly1305 + Noise, Curve25519 identity, low-latency, roaming. End-to-end — the server can't decrypt.                                                |
+| **`wireguard-go` / `boringtun`**                              | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows).                                                                                 |
+| **`wg` / `wg-quick`**                                         | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls.                                                            |
+| **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**.                                                                                            |
+| **STUN / ICE**                                                | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private.                                                           |
+| **Encrypted relay**                                           | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
+| **iptables / nftables / pf / Windows Firewall**               | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN.                                                                           |
+| **Curve25519 (X25519)**                                       | The identity key. We generate real keys in Node `crypto`; private keys never leave the device.                                                                                               |
 
 ### Key design decisions
+
 - **The control server never carries traffic** — it only coordinates. This avoids a bottleneck and means the server can't snoop.
 - **Private keys never leave the device** — only public keys + a per-session preshared key (defense-in-depth) are exchanged.
 - **The browser never does privileged networking** — the native agent does, behind an IPC bridge.
@@ -425,45 +432,49 @@ plane / NAT traversal path.
 ## 🚀 Future Improvements & Feature Roadmap
 
 ### Near-term (control plane polish)
+
 - [x] **Real JWT auth** — HS256 JWT sign/verify (`src/lib/auth/jwt.ts`) + `/api/auth/login`;
-  `signToken` replaced by JWT. Root routes require `guard(req, { auth: true })`.
+      `signToken` replaced by JWT. Root routes require `guard(req, { auth: true })`.
 - [x] **Rate limiting** — in-memory token bucket per IP on API routes (`src/lib/security/rate-limit.ts`).
 - [x] **Donor limits & schedule** — per-session data limit (`max_session_data_mb`),
-  duration limit, and a sharing schedule (`schedule_active/start/end`) enforced in
-  `session.service` (rejects sessions outside the window).
+      duration limit, and a sharing schedule (`schedule_active/start/end`) enforced in
+      `session.service` (rejects sessions outside the window).
 - [x] **Manual donor accept/deny** — notification hub Accept/Reject calls
-  `acceptSession`/`rejectSession`; `useTunnel` no longer auto-accepts for receptors.
+      `acceptSession`/`rejectSession`; `useTunnel` no longer auto-accepts for receptors.
 - [ ] **Role-based access control** — enforce donor vs receptor permissions server-side.
 - [ ] **Live stats** — poll `/api/statistics` + session status on an interval.
 - [ ] **Audit/security event recording** — call `logAudit` / `logSecurityEvent`
-  from services on meaningful actions.
+      from services on meaningful actions.
 
 ### Data plane / agent (the real networking work)
+
 - [x] **WireGuard keys + CLI** — real Curve25519 keygen + `wg-quick up/down`.
 - [x] **NAT traversal** — STUN/ICE; UDP hole punching + encrypted relay fallback.
 - [x] **Donor NAT + isolation firewall** — iptables MASQUERADE + LAN isolation.
 - [x] **Routing** — receptor default-route to tunnel.
 - [x] **Cross-platform shells** — desktop (Electron: Windows/macOS/Linux) +
-  Android (VpnService, Samsung/Redmi/Tecno/Xiaomi/Pixel) + iOS scaffold.
+      Android (VpnService, Samsung/Redmi/Tecno/Xiaomi/Pixel) + iOS scaffold.
 - [ ] **TUN adapters (full per-OS)** — Wintun/pf/Windows Firewall adapter polish.
 - [ ] **Routing & DNS** — DoH resolver + kill-switch.
 - [ ] **Bandwidth quotas** — per-receptor limits and session caps.
 
 ### Experience / UX
+
 - [x] **Persistent onboarding** — splash → terms → permissions first run only.
 - [x] **Notification hub** — bottom-right, system/security/connection-request
-  items, click-to-navigate, accept/reject receptor requests.
+      items, click-to-navigate, accept/reject receptor requests.
 - [x] **Animated state background** — 2 (red) / 3–4 (yellow) / 5 (green) circles
-  reflecting live connection state; theme-adaptive; reduced-motion aware.
+      reflecting live connection state; theme-adaptive; reduced-motion aware.
 - [x] **Multi-language / i18n** — 10 languages (en/fr/es/pt/de/it/zh/ja/ko/ru),
-  selector in Settings, instant switch.
+      selector in Settings, instant switch.
 - [x] **Branding** — "Made By Fodjo Fodjo Fred" in splash, sidebar, footer, About.
 - [ ] **More countries on the globe** + timezone search.
 - [ ] **Accessibility pass** (contrast, keyboard nav).
 
 ### Quality
+
 - [ ] Expand unit + integration tests (`tests/api`, `tests/services`,
-  `tests/protocol`, `tests/agent`).
+      `tests/protocol`, `tests/agent`).
 - [ ] CI (GitHub Actions): lint + typecheck + test + build.
 - [ ] E2E tests (Playwright) for the onboarding flow.
 - [ ] Telemetry/health dashboards.
@@ -504,19 +515,19 @@ npm run build
 
 ## 📚 Docs
 
-| Doc | Purpose |
-|-----|---------|
-| `docs/architecture/overview.md` | 3-layer architecture |
-| `docs/architecture/control-plane.md` | Control plane + request flow |
-| `docs/architecture/data-plane.md` | Data plane (agent) |
-| `docs/architecture/tunnel.md` | WireGuard tooling |
-| `docs/architecture/security.md` | Security model |
-| `docs/architecture/evolution-plan.md` | Deep analysis + phased roadmap |
-| `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer |
-| `docs/development/setup.md` | Environment setup |
+| Doc                                     | Purpose                                     |
+| --------------------------------------- | ------------------------------------------- |
+| `docs/architecture/overview.md`         | 3-layer architecture                        |
+| `docs/architecture/control-plane.md`    | Control plane + request flow                |
+| `docs/architecture/data-plane.md`       | Data plane (agent)                          |
+| `docs/architecture/tunnel.md`           | WireGuard tooling                           |
+| `docs/architecture/security.md`         | Security model                              |
+| `docs/architecture/evolution-plan.md`   | Deep analysis + phased roadmap              |
+| `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer               |
+| `docs/development/setup.md`             | Environment setup                           |
 | `docs/development/install-wireguard.md` | OS-by-OS WireGuard install + what to choose |
-| `docs/development/contributing.md` | Contribution rules |
-| `docs/development/troubleshooting.md` | Fixes for common issues |
+| `docs/development/contributing.md`      | Contribution rules                          |
+| `docs/development/troubleshooting.md`   | Fixes for common issues                     |
 
 ---
 

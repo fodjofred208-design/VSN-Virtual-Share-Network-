@@ -6,11 +6,11 @@ a secure encrypted tunnel.
 
 The design splits VSN into three layers:
 
-| Layer | What it is | Responsibility |
-|-------|------------|----------------|
-| **Presentation** 🖥️ | Next.js UI (React/TS/Tailwind) | Authentication, role selection, donor discovery, status, settings, logs |
-| **Control Plane** 🧠 | Next.js API + WebSocket + PostgreSQL/SQLite | Auth, donor registry, signaling, session management, monitoring |
-| **Data Plane** 🌐 | VSN Agent + WireGuard | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic |
+| Layer                | What it is                                  | Responsibility                                                          |
+| -------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| **Presentation** 🖥️  | Next.js UI (React/TS/Tailwind)              | Authentication, role selection, donor discovery, status, settings, logs |
+| **Control Plane** 🧠 | Next.js API + WebSocket + PostgreSQL/SQLite | Auth, donor registry, signaling, session management, monitoring         |
+| **Data Plane** 🌐    | VSN Agent + WireGuard                       | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic      |
 
 ```
         INTERNET

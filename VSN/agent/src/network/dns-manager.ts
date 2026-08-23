@@ -28,7 +28,9 @@ export class DnsManager {
 
   async apply(tunnelInterface: string): Promise<void> {
     if (!isLinux || sandboxed()) {
-      console.log(`[dns] ${this.config.doh ? "DoH + " : ""}DNS configured for ${tunnelInterface} (${process.platform})`);
+      console.log(
+        `[dns] ${this.config.doh ? "DoH + " : ""}DNS configured for ${tunnelInterface} (${process.platform})`,
+      );
       return;
     }
     try {
@@ -36,7 +38,9 @@ export class DnsManager {
       for (const s of servers) {
         await execFileAsync("resolvconf", ["-a", tunnelInterface, "-m", "0", "-x"]).catch(() => null);
       }
-      console.log(`[dns] ${this.config.doh ? "DoH resolver " + (this.config.dohResolver ?? "1.1.1.1") + " " : ""}applied on ${tunnelInterface}`);
+      console.log(
+        `[dns] ${this.config.doh ? "DoH resolver " + (this.config.dohResolver ?? "1.1.1.1") + " " : ""}applied on ${tunnelInterface}`,
+      );
     } catch (e) {
       console.warn(`[dns] apply failed (need root?): ${(e as Error).message}`);
     }
@@ -47,7 +51,9 @@ export class DnsManager {
     if (!isLinux || sandboxed()) return;
     try {
       // Drop all forwarding by default; the tunnel's WG rules re-allow it.
-      await execFileAsync("iptables", ["-A", "OUTPUT", "-o", "eth0", "-j", "DROP"], { env: { ...process.env, WG_QUICK_KILL: "1" } }).catch(() => null);
+      await execFileAsync("iptables", ["-A", "OUTPUT", "-o", "eth0", "-j", "DROP"], {
+        env: { ...process.env, WG_QUICK_KILL: "1" },
+      }).catch(() => null);
       console.log("[dns] kill-switch armed (block non-tunnel traffic)");
     } catch {
       // ignore

@@ -9,7 +9,7 @@ The UI references it via `next/image`:
 ```tsx
 import Image from "next/image";
 
-<Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />
+<Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />;
 ```
 
 Used in:

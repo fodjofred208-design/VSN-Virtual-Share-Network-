@@ -8,7 +8,10 @@ import type {
   SessionStatusResponse,
 } from "protocol/messages/session";
 
-export async function requestSession(req: RequestSessionRequest, token?: string): Promise<RequestSessionResponse> {
+export async function requestSession(
+  req: RequestSessionRequest,
+  token?: string,
+): Promise<RequestSessionResponse> {
   return apiClient.post<RequestSessionResponse>("/api/sessions/request", req, token);
 }
 
@@ -20,7 +23,11 @@ export async function rejectSession(sessionId: string, token?: string): Promise<
   return apiClient.post<SessionActionResponse>(`/api/sessions/${sessionId}/reject`, undefined, token);
 }
 
-export async function terminateSession(sessionId: string, reason?: string, token?: string): Promise<SessionActionResponse> {
+export async function terminateSession(
+  sessionId: string,
+  reason?: string,
+  token?: string,
+): Promise<SessionActionResponse> {
   return apiClient.post<SessionActionResponse>(`/api/sessions/${sessionId}/terminate`, { reason }, token);
 }
 

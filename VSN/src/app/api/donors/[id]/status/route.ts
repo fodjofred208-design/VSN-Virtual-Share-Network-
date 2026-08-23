@@ -5,10 +5,7 @@ import { db } from "@/db";
 import { donorProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const row = await db.select().from(donorProfiles).where(eq(donorProfiles.id, id)).limit(1);

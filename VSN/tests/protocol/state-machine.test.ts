@@ -22,7 +22,9 @@ describe("session state machine", () => {
     const states = Object.keys(SESSION_STATE_TRANSITIONS);
     expect(states).toHaveLength(9);
     for (const from of states) {
-      expect(Array.isArray(SESSION_STATE_TRANSITIONS[from as keyof typeof SESSION_STATE_TRANSITIONS])).toBe(true);
+      expect(Array.isArray(SESSION_STATE_TRANSITIONS[from as keyof typeof SESSION_STATE_TRANSITIONS])).toBe(
+        true,
+      );
     }
   });
 });

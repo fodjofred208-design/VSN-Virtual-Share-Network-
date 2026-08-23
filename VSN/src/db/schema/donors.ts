@@ -7,15 +7,25 @@ import { devices } from "./devices";
 export const donorProfiles = sqliteTable(
   "donor_profiles",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    deviceId: text("device_id").notNull().references(() => devices.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceId: text("device_id")
+      .notNull()
+      .references(() => devices.id, { onDelete: "cascade" }),
     donorId: text("donor_id").notNull().unique(), // e.g. VSN-FR-A72K9
     pairCode: text("pair_code").notNull(),
     pairCodeHash: text("pair_code_hash").notNull(),
     publicKey: text("public_key").notNull(),
-    visibility: text("visibility", { enum: ["private", "trusted", "public"] }).notNull().default("private"),
-    status: text("status", { enum: ["offline", "online", "available", "sharing"] }).notNull().default("offline"),
+    visibility: text("visibility", { enum: ["private", "trusted", "public"] })
+      .notNull()
+      .default("private"),
+    status: text("status", { enum: ["offline", "online", "available", "sharing"] })
+      .notNull()
+      .default("offline"),
     countryCode: text("country_code", { length: 3 }),
     maxReceptors: integer("max_receptors").notNull().default(3),
     bandwidthPerReceptorKbps: integer("bandwidth_per_receptor_kbps").notNull().default(10240),
@@ -31,22 +41,35 @@ export const donorProfiles = sqliteTable(
     endpointIp: text("endpoint_ip", { length: 45 }),
     endpointPort: integer("endpoint_port"),
     wireguardPublicKey: text("wireguard_public_key"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("donor_profiles_user_idx").on(table.userId), index("donor_profiles_status_idx").on(table.status)]
+  (table) => [
+    index("donor_profiles_user_idx").on(table.userId),
+    index("donor_profiles_status_idx").on(table.status),
+  ],
 );
 
 export const authorizedReceptors = sqliteTable(
   "authorized_receptors",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    donorProfileId: text("donor_profile_id").notNull().references(() => donorProfiles.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    donorProfileId: text("donor_profile_id")
+      .notNull()
+      .references(() => donorProfiles.id, { onDelete: "cascade" }),
     deviceFingerprint: text("device_fingerprint").notNull(),
     receptorUserId: text("receptor_user_id").references(() => users.id, { onDelete: "cascade" }),
     label: text("label"),
     isBlocked: integer("is_blocked", { mode: "boolean" }).notNull().default(false),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("auth_receptor_donor_idx").on(table.donorProfileId)]
+  (table) => [index("auth_receptor_donor_idx").on(table.donorProfileId)],
 );

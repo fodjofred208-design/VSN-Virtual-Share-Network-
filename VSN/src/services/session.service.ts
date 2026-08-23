@@ -41,7 +41,11 @@ export async function requestSession(input: {
   receptorDeviceId: string;
   receptorUserId: string;
 }) {
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, input.donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, input.donorProfileId))
+    .limit(1);
   if (!donor.length) throw new SessionNotFoundError(input.donorProfileId);
   if (donor[0].status === "offline") throw new ValidationError("Donor is offline");
 
@@ -105,7 +109,11 @@ export async function acceptSession(sessionId: string) {
   // accepts, so both endpoints can build a matching tunnel config.
   const session = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!session.length) throw new SessionNotFoundError(sessionId);
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, session[0].donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, session[0].donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
   return transition(sessionId, "approved", {
     wireguardPresharedKey: generatePresharedKey(),
@@ -123,7 +131,11 @@ export async function acceptSession(sessionId: string) {
 export async function getTunnelConfig(sessionId: string, role: "donor" | "receptor") {
   const session = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!session.length) throw new SessionNotFoundError(sessionId);
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, session[0].donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, session[0].donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
 
   // Peer public keys come from what each side registered with the control plane.
@@ -156,7 +168,10 @@ export async function getTunnelConfig(sessionId: string, role: "donor" | "recept
     peerPublicKey: donorWgKey,
     peerAllowedIPs: [TUNNEL_SUBNET],
     presharedKey: session[0].wireguardPresharedKey ?? null,
-    endpoint: donor[0].endpointIp && donor[0].endpointPort ? `${donor[0].endpointIp}:${donor[0].endpointPort}` : undefined,
+    endpoint:
+      donor[0].endpointIp && donor[0].endpointPort
+        ? `${donor[0].endpointIp}:${donor[0].endpointPort}`
+        : undefined,
     interfaceName: "vsn-receptor0",
   };
 }
@@ -194,9 +209,12 @@ export async function updateSessionStats(
     bandwidthUpMbps?: number;
     bytesTransferredDown?: number;
     bytesTransferredUp?: number;
-  }
+  },
 ) {
   const existing = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!existing.length) throw new SessionNotFoundError(sessionId);
-  await db.update(sessions).set({ ...stats, updatedAt: new Date() }).where(eq(sessions.id, sessionId));
+  await db
+    .update(sessions)
+    .set({ ...stats, updatedAt: new Date() })
+    .where(eq(sessions.id, sessionId));
 }

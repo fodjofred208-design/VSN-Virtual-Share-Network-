@@ -18,6 +18,8 @@
 | i18n key audit | all 10 languages × 32 keys | ✅ complete, no missing keys |
 | UI → API cross-check | every `apiClient` path | ✅ maps to a real route |
 | Deep audit (links/scripts/imports/unused) | all docs + source | ✅ no broken links, no dead scripts, no TODOs |
+| Prettier format check | `npm run format:check` | ✅ all files use the project style |
+| VS Code workspace | `.vscode/settings.json` + `.vscode/extensions.json` | ✅ format-on-save, ESLint fix-on-save, recommended extensions |
 
 ## 🚀 Quick start (after restoring files)
 
@@ -48,9 +50,13 @@ Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm tes
 > `vsn.db` (created by `npm run db:init`), `package-lock.json`
 > (recreated by `npm install`), `next-env.d.ts` (created by Next.js).
 
-## 📑 Table of contents (all 199 files)
+## 📑 Table of contents (all 203 files)
 
 - `.gitignore`
+- `.prettierignore`
+- `.prettierrc.json`
+- `.vscode/extensions.json`
+- `.vscode/settings.json`
 - `LICENSE`
 - `README.md`
 - `VSN/.env.example`
@@ -268,14 +274,14 @@ VSN (Virtual Share Network) is a **cross-platform networking application** that 
 
 ## Where each part lives
 
-| Part | Path |
-|------|------|
-| Core app (UI + control plane + API) | [`VSN/`](./VSN) |
-| Desktop app (Windows/macOS/Linux) | [`apps/desktop`](./apps/desktop) |
-| Android app (Android/Samsung) | [`apps/android`](./apps/android) |
-| Data-plane agent | [`VSN/agent`](./VSN/agent) |
-| Shared protocol contracts | [`VSN/protocol`](./VSN/protocol) |
-| Architecture docs | [`VSN/docs/architecture`](./VSN/docs/architecture) |
+| Part                                | Path                                               |
+| ----------------------------------- | -------------------------------------------------- |
+| Core app (UI + control plane + API) | [`VSN/`](./VSN)                                    |
+| Desktop app (Windows/macOS/Linux)   | [`apps/desktop`](./apps/desktop)                   |
+| Android app (Android/Samsung)       | [`apps/android`](./apps/android)                   |
+| Data-plane agent                    | [`VSN/agent`](./VSN/agent)                         |
+| Shared protocol contracts           | [`VSN/protocol`](./VSN/protocol)                   |
+| Architecture docs                   | [`VSN/docs/architecture`](./VSN/docs/architecture) |
 
 ## Quick start (dev)
 
@@ -318,14 +324,14 @@ See [`VSN/README.md`](./VSN/README.md) and [`VSN/SETUPME.md`](./VSN/SETUPME.md) 
 
 ## 🌎 Overview
 
-VSN is divided into **three layers** so it can move *real* network traffic — not
+VSN is divided into **three layers** so it can move _real_ network traffic — not
 just render a dashboard:
 
-| Layer | What it is | Responsibility |
-|-------|------------|----------------|
-| **Presentation** 🖥️ | Next.js UI (React/TypeScript/Tailwind) | Authentication, role selection, donor discovery, status, logs, settings |
-| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (planned) | Auth, registries, signaling, session management, monitoring |
-| **Data Plane** 🌐 | VSN Agent + WireGuard | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic |
+| Layer                | What it is                                                    | Responsibility                                                          |
+| -------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Presentation** 🖥️  | Next.js UI (React/TypeScript/Tailwind)                        | Authentication, role selection, donor discovery, status, logs, settings |
+| **Control Plane** 🧠 | Next.js API + WebSocket + SQLite (dev) / PostgreSQL (planned) | Auth, registries, signaling, session management, monitoring             |
+| **Data Plane** 🌐    | VSN Agent + WireGuard                                         | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic      |
 
 Key principle: **the control plane coordinates; the data plane carries**. The
 browser/UI never performs privileged network operations — the local **VSN Agent**
@@ -335,10 +341,10 @@ does.
 
 ## 👥 The Two Roles
 
-| Role | What it does |
-|------|--------------|
-| **Donor** | Provides an available Internet connection to authorized Receptors. Can start/stop sharing, see connected receptors, monitor bandwidth/duration, disconnect a receptor, and configure sharing limits. |
-| **Receptor** | Connects to an available Donor to use the shared connectivity. Can discover donors, connect/disconnect, view connection quality (latency, bandwidth, duration) and security/tunnel status. |
+| Role         | What it does                                                                                                                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Donor**    | Provides an available Internet connection to authorized Receptors. Can start/stop sharing, see connected receptors, monitor bandwidth/duration, disconnect a receptor, and configure sharing limits. |
+| **Receptor** | Connects to an available Donor to use the shared connectivity. Can discover donors, connect/disconnect, view connection quality (latency, bandwidth, duration) and security/tunnel status.           |
 
 ---
 
@@ -364,12 +370,15 @@ does.
 ```
 
 ### Presentation layer (`src/app`)
+
 The Next.js App Router UI. Splash → Terms of Service → Network Permissions →
 Dashboard onboarding, plus the app shell (desktop-style, hamburger drawer,
 notification hub, three background glass bubbles, footer).
 
 ### Control plane (`src/app/api`, `src/services`, `src/db`, `server/`)
+
 Coordinates connections and stores **metadata only** (never traffic):
+
 - Authentication / device registration / tokens.
 - Donor & receptor registries, pair codes, heartbeats, approvals.
 - Session state machine (idle → requested → approved → negotiating → connecting
@@ -378,6 +387,7 @@ Coordinates connections and stores **metadata only** (never traffic):
 - Statistics, security events, audit log.
 
 ### Data plane (`agent/`, WireGuard)
+
 Runs on each device. Creates the virtual NIC, runs the WireGuard tunnel,
 configures routing/NAT, and enforces the donor isolation firewall.
 
@@ -398,7 +408,7 @@ Receptor app
    → Internet
 ```
 
-The control server only *coordinates* the connection:
+The control server only _coordinates_ the connection:
 
 ```
 Receptor → control server (request) → Donor (notify) → negotiate → tunnel_ready
@@ -413,11 +423,11 @@ Donor & Receptor are usually behind **NAT/CGNAT** (private IPs like
 192.168.x.x, or the carrier's shared IP on mobile). They can't always reach
 each other directly, so VSN tries, in order:
 
-| Step | Method | What happens |
-|------|--------|--------------|
-| 1 | **Direct** | Both have public IPs → connect straight. |
-| 2 | **STUN / ICE** | Ask a STUN server for our public IP:port, exchange candidates over signaling, and **UDP hole-punch** so the two peers connect directly (without a relay). |
-| 3 | **Relay** | If hole-punch fails (CGNAT/symmetric NAT, common on mobile), fall back to an **encrypted relay** that forwards opaque WireGuard packets. The relay **cannot decrypt** anything — that's a crypto guarantee. |
+| Step | Method         | What happens                                                                                                                                                                                                |
+| ---- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Direct**     | Both have public IPs → connect straight.                                                                                                                                                                    |
+| 2    | **STUN / ICE** | Ask a STUN server for our public IP:port, exchange candidates over signaling, and **UDP hole-punch** so the two peers connect directly (without a relay).                                                   |
+| 3    | **Relay**      | If hole-punch fails (CGNAT/symmetric NAT, common on mobile), fall back to an **encrypted relay** that forwards opaque WireGuard packets. The relay **cannot decrypt** anything — that's a crypto guarantee. |
 
 > This is implemented in `agent/src/tunnel/nat-traversal.ts` (STUN + hole punch)
 > and `agent/src/tunnel/relay-client.ts` (relay), coordinated over
@@ -434,12 +444,12 @@ platform's WireGuard CLI to bring the tunnel up.
 
 ### The keys (this is the "key" part)
 
-| Key | Size | Where it lives | Who sees it |
-|-----|------|----------------|-------------|
-| **Private key** | 32 B (base64) | OS keychain / encrypted store on device | **Never leaves the device** |
-| **Public key** | 32 B (base64) | Control plane + peers | Shared — this is your VSN device ID |
-| **Preshared key** | 32 B (base64) | Exchanged out-of-band via control plane | Donor + Receptor only (defense-in-depth) |
-| **Fingerprint** | SHA-256 (16 hex) | Audit/status | Control plane |
+| Key               | Size             | Where it lives                          | Who sees it                              |
+| ----------------- | ---------------- | --------------------------------------- | ---------------------------------------- |
+| **Private key**   | 32 B (base64)    | OS keychain / encrypted store on device | **Never leaves the device**              |
+| **Public key**    | 32 B (base64)    | Control plane + peers                   | Shared — this is your VSN device ID      |
+| **Preshared key** | 32 B (base64)    | Exchanged out-of-band via control plane | Donor + Receptor only (defense-in-depth) |
+| **Fingerprint**   | SHA-256 (16 hex) | Audit/status                            | Control plane                            |
 
 > **Private keys are never sent over the wire.** The agent generates a fresh
 > Curve25519 keypair per device, shares only the public key, and uses a per-session
@@ -447,19 +457,19 @@ platform's WireGuard CLI to bring the tunnel up.
 
 ### How it's wired (implemented files)
 
-| File | Role |
-|------|------|
-| `agent/src/tunnel/wireguard-keys.ts` | Curve25519 keygen, preshared keys, public-key derivation |
-| `agent/src/tunnel/tunnel-config.ts` | WireGuard config + `wg-quick` INI rendering |
-| `agent/src/tunnel/wireguard-cli.ts` | `wg-quick up/down`, `wg show`, `ip` fallback |
-| `agent/src/tunnel/tunnel-client.ts` | Wraps keygen + CLI; injects keys into config |
-| `agent/src/tunnel/tunnel-manager.ts` | Platform-agnostic orchestration + live status |
-| `agent/src/core/platform-adapter.ts` | Per-OS interface/engine/NIC/requirements |
-| `agent/src/network/nat-manager.ts` | Donor NAT (iptables MASQUERADE) |
-| `agent/src/network/routing-manager.ts` | Receptor default route + donor LAN isolation firewall |
-| `agent/src/network/interface-manager.ts` | Create/delete TUN (Linux `ip tuntap`) |
-| `src/services/session.service.ts` | Allocates per-session preshared key + peer config |
-| `src/app/api/sessions/[id]/tunnel-config` | Serves each side's WG config (never private keys) |
+| File                                      | Role                                                     |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `agent/src/tunnel/wireguard-keys.ts`      | Curve25519 keygen, preshared keys, public-key derivation |
+| `agent/src/tunnel/tunnel-config.ts`       | WireGuard config + `wg-quick` INI rendering              |
+| `agent/src/tunnel/wireguard-cli.ts`       | `wg-quick up/down`, `wg show`, `ip` fallback             |
+| `agent/src/tunnel/tunnel-client.ts`       | Wraps keygen + CLI; injects keys into config             |
+| `agent/src/tunnel/tunnel-manager.ts`      | Platform-agnostic orchestration + live status            |
+| `agent/src/core/platform-adapter.ts`      | Per-OS interface/engine/NIC/requirements                 |
+| `agent/src/network/nat-manager.ts`        | Donor NAT (iptables MASQUERADE)                          |
+| `agent/src/network/routing-manager.ts`    | Receptor default route + donor LAN isolation firewall    |
+| `agent/src/network/interface-manager.ts`  | Create/delete TUN (Linux `ip tuntap`)                    |
+| `src/services/session.service.ts`         | Allocates per-session preshared key + peer config        |
+| `src/app/api/sessions/[id]/tunnel-config` | Serves each side's WG config (never private keys)        |
 
 ### Install WireGuard on your host
 
@@ -468,16 +478,16 @@ commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
 ### Tooling used (per OS)
 
-| Tool | Function |
-|------|----------|
-| `wireguard-go` / `boringtun` | Userspace WireGuard engine (Android/iOS/embedded Windows, or kernel fallback). |
-| Kernel WireGuard module | Fastest path on Linux/macOS/Windows where available. |
-| **Wintun** (Windows) / **utun** (macOS) / **tun** (Linux) / **VpnService** (Android) / **NEPacketTunnelProvider** (iOS) | Virtual network interface per OS. |
-| `wg` / `wg-quick` | Configure interfaces, peers, keys; quick setup. |
-| `wgctrl` / WireGuard Go libs | Programmatic control + stats. |
-| STUN / ICE | UDP hole punching for direct connection. |
-| Relay server | Encrypted fallback when hole punching fails (cannot decrypt packets). |
-| `iptables` / `nftables` / pf / Windows Firewall | Donor-side isolation (no LAN access from the tunnel). |
+| Tool                                                                                                                    | Function                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `wireguard-go` / `boringtun`                                                                                            | Userspace WireGuard engine (Android/iOS/embedded Windows, or kernel fallback). |
+| Kernel WireGuard module                                                                                                 | Fastest path on Linux/macOS/Windows where available.                           |
+| **Wintun** (Windows) / **utun** (macOS) / **tun** (Linux) / **VpnService** (Android) / **NEPacketTunnelProvider** (iOS) | Virtual network interface per OS.                                              |
+| `wg` / `wg-quick`                                                                                                       | Configure interfaces, peers, keys; quick setup.                                |
+| `wgctrl` / WireGuard Go libs                                                                                            | Programmatic control + stats.                                                  |
+| STUN / ICE                                                                                                              | UDP hole punching for direct connection.                                       |
+| Relay server                                                                                                            | Encrypted fallback when hole punching fails (cannot decrypt packets).          |
+| `iptables` / `nftables` / pf / Windows Firewall                                                                         | Donor-side isolation (no LAN access from the tunnel).                          |
 
 ---
 
@@ -687,28 +697,31 @@ Every technology was chosen for a specific reason, especially in the data
 plane / NAT traversal path.
 
 ### Control plane & UI
-| Tech | Why |
-|------|-----|
+
+| Tech                     | Why                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | **Next.js (App Router)** | One codebase for UI **and** API routes; server components; great DX. The control plane is just next.js API + a WS server. |
-| **TypeScript** | Type safety across UI, API, server, and agent; catches errors at compile time (we run `tsc --noEmit`). |
-| **Tailwind CSS** | Utility-first styling; fast, consistent, ships only used CSS. |
-| **Drizzle ORM** | Type-safe SQL; migrations; works with SQLite (dev) and Postgres (prod). |
-| **SQLite (dev)** | Internal, zero-setup, file-backed — runs anywhere without a DB server. Postgres is the prod path. |
-| **WebSocket (`ws`)** | Real-time signaling (donor_online, connection_request, tunnel_ready) with low latency. |
+| **TypeScript**           | Type safety across UI, API, server, and agent; catches errors at compile time (we run `tsc --noEmit`).                    |
+| **Tailwind CSS**         | Utility-first styling; fast, consistent, ships only used CSS.                                                             |
+| **Drizzle ORM**          | Type-safe SQL; migrations; works with SQLite (dev) and Postgres (prod).                                                   |
+| **SQLite (dev)**         | Internal, zero-setup, file-backed — runs anywhere without a DB server. Postgres is the prod path.                         |
+| **WebSocket (`ws`)**     | Real-time signaling (donor_online, connection_request, tunnel_ready) with low latency.                                    |
 
 ### Data plane (the tunnel & traversal)
-| Tech | Why |
-|------|-----|
-| **WireGuard** | Modern, audited, Tiny (≈4k LOC), ChaCha20-Poly1305 + Noise, Curve25519 identity, low-latency, roaming. End-to-end — the server can't decrypt. |
-| **`wireguard-go` / `boringtun`** | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows). |
-| **`wg` / `wg-quick`** | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls. |
-| **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**. |
-| **STUN / ICE** | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private. |
-| **Encrypted relay** | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
-| **iptables / nftables / pf / Windows Firewall** | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN. |
-| **Curve25519 (X25519)** | The identity key. We generate real keys in Node `crypto`; private keys never leave the device. |
+
+| Tech                                                          | Why                                                                                                                                                                                          |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **WireGuard**                                                 | Modern, audited, Tiny (≈4k LOC), ChaCha20-Poly1305 + Noise, Curve25519 identity, low-latency, roaming. End-to-end — the server can't decrypt.                                                |
+| **`wireguard-go` / `boringtun`**                              | Userspace WireGuard runtime — required where a kernel module isn't available (Android/iOS/embedded Windows).                                                                                 |
+| **`wg` / `wg-quick`**                                         | `wg-quick up/down` applies a config and sets up the interface + routes + DNS automatically — exactly what VSN's CLI bridge calls.                                                            |
+| **Wintun / utun / tun / VpnService / NEPacketTunnelProvider** | The virtual NIC per OS. On mobile, VpnService/Network Extension give a real NIC **without root**.                                                                                            |
+| **STUN / ICE**                                                | Discover the public IP:port so two devices can UDP **hole-punch** a direct connection (no relay needed) — faster and more private.                                                           |
+| **Encrypted relay**                                           | When hole-punching fails (CGNAT/symmetric NAT — common on mobile), packets go through a relay that forwards **opaque** WireGuard data. It cannot decrypt them, so it's not a trust weakness. |
+| **iptables / nftables / pf / Windows Firewall**               | Donor-side **NAT masquerade** + **LAN isolation** so the receptor gets Internet but never reaches the donor's LAN.                                                                           |
+| **Curve25519 (X25519)**                                       | The identity key. We generate real keys in Node `crypto`; private keys never leave the device.                                                                                               |
 
 ### Key design decisions
+
 - **The control server never carries traffic** — it only coordinates. This avoids a bottleneck and means the server can't snoop.
 - **Private keys never leave the device** — only public keys + a per-session preshared key (defense-in-depth) are exchanged.
 - **The browser never does privileged networking** — the native agent does, behind an IPC bridge.
@@ -719,45 +732,49 @@ plane / NAT traversal path.
 ## 🚀 Future Improvements & Feature Roadmap
 
 ### Near-term (control plane polish)
+
 - [x] **Real JWT auth** — HS256 JWT sign/verify (`src/lib/auth/jwt.ts`) + `/api/auth/login`;
-  `signToken` replaced by JWT. Root routes require `guard(req, { auth: true })`.
+      `signToken` replaced by JWT. Root routes require `guard(req, { auth: true })`.
 - [x] **Rate limiting** — in-memory token bucket per IP on API routes (`src/lib/security/rate-limit.ts`).
 - [x] **Donor limits & schedule** — per-session data limit (`max_session_data_mb`),
-  duration limit, and a sharing schedule (`schedule_active/start/end`) enforced in
-  `session.service` (rejects sessions outside the window).
+      duration limit, and a sharing schedule (`schedule_active/start/end`) enforced in
+      `session.service` (rejects sessions outside the window).
 - [x] **Manual donor accept/deny** — notification hub Accept/Reject calls
-  `acceptSession`/`rejectSession`; `useTunnel` no longer auto-accepts for receptors.
+      `acceptSession`/`rejectSession`; `useTunnel` no longer auto-accepts for receptors.
 - [ ] **Role-based access control** — enforce donor vs receptor permissions server-side.
 - [ ] **Live stats** — poll `/api/statistics` + session status on an interval.
 - [ ] **Audit/security event recording** — call `logAudit` / `logSecurityEvent`
-  from services on meaningful actions.
+      from services on meaningful actions.
 
 ### Data plane / agent (the real networking work)
+
 - [x] **WireGuard keys + CLI** — real Curve25519 keygen + `wg-quick up/down`.
 - [x] **NAT traversal** — STUN/ICE; UDP hole punching + encrypted relay fallback.
 - [x] **Donor NAT + isolation firewall** — iptables MASQUERADE + LAN isolation.
 - [x] **Routing** — receptor default-route to tunnel.
 - [x] **Cross-platform shells** — desktop (Electron: Windows/macOS/Linux) +
-  Android (VpnService, Samsung/Redmi/Tecno/Xiaomi/Pixel) + iOS scaffold.
+      Android (VpnService, Samsung/Redmi/Tecno/Xiaomi/Pixel) + iOS scaffold.
 - [ ] **TUN adapters (full per-OS)** — Wintun/pf/Windows Firewall adapter polish.
 - [ ] **Routing & DNS** — DoH resolver + kill-switch.
 - [ ] **Bandwidth quotas** — per-receptor limits and session caps.
 
 ### Experience / UX
+
 - [x] **Persistent onboarding** — splash → terms → permissions first run only.
 - [x] **Notification hub** — bottom-right, system/security/connection-request
-  items, click-to-navigate, accept/reject receptor requests.
+      items, click-to-navigate, accept/reject receptor requests.
 - [x] **Animated state background** — 2 (red) / 3–4 (yellow) / 5 (green) circles
-  reflecting live connection state; theme-adaptive; reduced-motion aware.
+      reflecting live connection state; theme-adaptive; reduced-motion aware.
 - [x] **Multi-language / i18n** — 10 languages (en/fr/es/pt/de/it/zh/ja/ko/ru),
-  selector in Settings, instant switch.
+      selector in Settings, instant switch.
 - [x] **Branding** — "Made By Fodjo Fodjo Fred" in splash, sidebar, footer, About.
 - [ ] **More countries on the globe** + timezone search.
 - [ ] **Accessibility pass** (contrast, keyboard nav).
 
 ### Quality
+
 - [ ] Expand unit + integration tests (`tests/api`, `tests/services`,
-  `tests/protocol`, `tests/agent`).
+      `tests/protocol`, `tests/agent`).
 - [ ] CI (GitHub Actions): lint + typecheck + test + build.
 - [ ] E2E tests (Playwright) for the onboarding flow.
 - [ ] Telemetry/health dashboards.
@@ -798,19 +815,19 @@ npm run build
 
 ## 📚 Docs
 
-| Doc | Purpose |
-|-----|---------|
-| `docs/architecture/overview.md` | 3-layer architecture |
-| `docs/architecture/control-plane.md` | Control plane + request flow |
-| `docs/architecture/data-plane.md` | Data plane (agent) |
-| `docs/architecture/tunnel.md` | WireGuard tooling |
-| `docs/architecture/security.md` | Security model |
-| `docs/architecture/evolution-plan.md` | Deep analysis + phased roadmap |
-| `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer |
-| `docs/development/setup.md` | Environment setup |
+| Doc                                     | Purpose                                     |
+| --------------------------------------- | ------------------------------------------- |
+| `docs/architecture/overview.md`         | 3-layer architecture                        |
+| `docs/architecture/control-plane.md`    | Control plane + request flow                |
+| `docs/architecture/data-plane.md`       | Data plane (agent)                          |
+| `docs/architecture/tunnel.md`           | WireGuard tooling                           |
+| `docs/architecture/security.md`         | Security model                              |
+| `docs/architecture/evolution-plan.md`   | Deep analysis + phased roadmap              |
+| `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer               |
+| `docs/development/setup.md`             | Environment setup                           |
 | `docs/development/install-wireguard.md` | OS-by-OS WireGuard install + what to choose |
-| `docs/development/contributing.md` | Contribution rules |
-| `docs/development/troubleshooting.md` | Fixes for common issues |
+| `docs/development/contributing.md`      | Contribution rules                          |
+| `docs/development/troubleshooting.md`   | Fixes for common issues                     |
 
 ---
 
@@ -848,23 +865,26 @@ It is written so a fresh machine can go from zero to a running app.
 ## 🛠️ What You Need
 
 ### Required
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **Node.js** | 22.x (LTS preferred) | Runtime for Next.js, API, signaling, agent, tests |
-| **npm** | 10.x | Package manager |
-| **Git** | any | Fetch the repository |
-| **Text editor** | VS Code (recommended) | Edit code (project has `.vscode` hints) |
+
+| Tool            | Version               | Purpose                                           |
+| --------------- | --------------------- | ------------------------------------------------- |
+| **Node.js**     | 22.x (LTS preferred)  | Runtime for Next.js, API, signaling, agent, tests |
+| **npm**         | 10.x                  | Package manager                                   |
+| **Git**         | any                   | Fetch the repository                              |
+| **Text editor** | VS Code (recommended) | Edit code (project has `.vscode` hints)           |
 
 ### Optional (for a full local setup)
-| Tool | Purpose |
-|------|---------|
-| **PostgreSQL** 14+ | Production database (optional — dev uses internal SQLite) |
-| **Docker** | Run Postgres in a container for production-style DB |
-| **wireguard-go / boringtun** | Actual WireGuard userspace tunnel (data plane; per-OS) |
-| **WireGuard tools (`wg`, `wg-quick`)** | Install/configure tunnels (data plane) |
-| **Build tools** (`build-essential`, `python3`, `make`, `g++`) | Required if `better-sqlite3` must compile from source |
+
+| Tool                                                          | Purpose                                                   |
+| ------------------------------------------------------------- | --------------------------------------------------------- |
+| **PostgreSQL** 14+                                            | Production database (optional — dev uses internal SQLite) |
+| **Docker**                                                    | Run Postgres in a container for production-style DB       |
+| **wireguard-go / boringtun**                                  | Actual WireGuard userspace tunnel (data plane; per-OS)    |
+| **WireGuard tools (`wg`, `wg-quick`)**                        | Install/configure tunnels (data plane)                    |
+| **Build tools** (`build-essential`, `python3`, `make`, `g++`) | Required if `better-sqlite3` must compile from source     |
 
 ### Verify your environment
+
 ```bash
 node -v   # e.g. v22.22.3
 npm -v    # e.g. 10.9.8
@@ -875,66 +895,69 @@ git --version
 
 ## 🧬 Technology Stack
 
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **Framework** | Next.js 16 (App Router) | React SSR + API routes in one project |
-| **Language** | TypeScript 5 | Type safety across UI, API, server, agent |
-| **UI** | React 19 | Component library |
-| **Styling** | Tailwind CSS 4 + PostCSS | Utility-first styling |
-| **3D / Globe** | Three.js + React Three Fiber + Drei | Rotating interactive Earth |
-| **Animation** | Framer Motion | Splash, drawer, transitions |
-| **Icons** | lucide-react | Professional SVG icons |
-| **ORM** | Drizzle ORM | Type-safe DB access |
-| **DB (dev)** | SQLite (better-sqlite3) | Internal, zero-setup, file-backed |
-| **DB (prod)** | PostgreSQL | Production metadata store |
-| **Migrations** | drizzle-kit | Generate/push schema |
-| **Real-time** | `ws` (WebSocket) | Signaling plane |
-| **Tunnel (data plane)** | WireGuard (`wireguard-go`/`boringtun`) | Encrypted virtual tunnel |
-| **Tests** | Vitest | Unit tests |
+| Layer                   | Technology                             | Why                                       |
+| ----------------------- | -------------------------------------- | ----------------------------------------- |
+| **Framework**           | Next.js 16 (App Router)                | React SSR + API routes in one project     |
+| **Language**            | TypeScript 5                           | Type safety across UI, API, server, agent |
+| **UI**                  | React 19                               | Component library                         |
+| **Styling**             | Tailwind CSS 4 + PostCSS               | Utility-first styling                     |
+| **3D / Globe**          | Three.js + React Three Fiber + Drei    | Rotating interactive Earth                |
+| **Animation**           | Framer Motion                          | Splash, drawer, transitions               |
+| **Icons**               | lucide-react                           | Professional SVG icons                    |
+| **ORM**                 | Drizzle ORM                            | Type-safe DB access                       |
+| **DB (dev)**            | SQLite (better-sqlite3)                | Internal, zero-setup, file-backed         |
+| **DB (prod)**           | PostgreSQL                             | Production metadata store                 |
+| **Migrations**          | drizzle-kit                            | Generate/push schema                      |
+| **Real-time**           | `ws` (WebSocket)                       | Signaling plane                           |
+| **Tunnel (data plane)** | WireGuard (`wireguard-go`/`boringtun`) | Encrypted virtual tunnel                  |
+| **Tests**               | Vitest                                 | Unit tests                                |
 
 ---
 
 ## 📦 All Dependencies
 
 ### Runtime (`dependencies`)
-| Package | Purpose |
-|---------|---------|
-| `next` | Framework |
-| `react`, `react-dom` | UI library |
-| `typescript` | Type safety |
-| `@react-three/fiber`, `@react-three/drei`, `three` | 3D globe |
-| `@types/three` | Three.js types |
-| `three-glow-mesh`, `react-globe.gl` | Globe/glow |
-| `framer-motion` | Animations |
-| `lucide-react` | Icons |
-| `clsx` | Class merging |
-| `drizzle-orm` | ORM |
-| `better-sqlite3` | SQLite driver (dev DB) |
-| `@types/better-sqlite3` | SQLite types |
-| `pg` | PostgreSQL driver |
-| `dotenv` | Env loading |
-| `ws` | WebSocket (signaling) |
+
+| Package                                            | Purpose                |
+| -------------------------------------------------- | ---------------------- |
+| `next`                                             | Framework              |
+| `react`, `react-dom`                               | UI library             |
+| `typescript`                                       | Type safety            |
+| `@react-three/fiber`, `@react-three/drei`, `three` | 3D globe               |
+| `@types/three`                                     | Three.js types         |
+| `three-glow-mesh`, `react-globe.gl`                | Globe/glow             |
+| `framer-motion`                                    | Animations             |
+| `lucide-react`                                     | Icons                  |
+| `clsx`                                             | Class merging          |
+| `drizzle-orm`                                      | ORM                    |
+| `better-sqlite3`                                   | SQLite driver (dev DB) |
+| `@types/better-sqlite3`                            | SQLite types           |
+| `pg`                                               | PostgreSQL driver      |
+| `dotenv`                                           | Env loading            |
+| `ws`                                               | WebSocket (signaling)  |
 
 ### Development (`devDependencies`)
-| Package | Purpose |
-|---------|---------|
-| `@tailwindcss/postcss`, `tailwindcss`, `postcss` | Styling |
-| `drizzle-kit` | DB migrations/schema push |
-| `typescript`, `@types/node`, `@types/react`, `@types/react-dom`, `@types/pg`, `@types/ws` | Types |
-| `eslint`, `eslint-config-next` | Linting |
-| `tsx` | Run TS scripts (db:init, signaling, agent) |
-| `concurrently` | Run multiple dev commands (`dev:all`) |
-| `vitest` | Test runner |
+
+| Package                                                                                   | Purpose                                    |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `@tailwindcss/postcss`, `tailwindcss`, `postcss`                                          | Styling                                    |
+| `drizzle-kit`                                                                             | DB migrations/schema push                  |
+| `typescript`, `@types/node`, `@types/react`, `@types/react-dom`, `@types/pg`, `@types/ws` | Types                                      |
+| `eslint`, `eslint-config-next`                                                            | Linting                                    |
+| `tsx`                                                                                     | Run TS scripts (db:init, signaling, agent) |
+| `concurrently`                                                                            | Run multiple dev commands (`dev:all`)      |
+| `vitest`                                                                                  | Test runner                                |
 
 ### Data plane (per-OS / required for a real tunnel)
-| Tool | Purpose |
-|------|---------|
-| `wireguard-go` | Userspace WireGuard runtime |
-| `boringtun` | Alternative userspace WireGuard runtime |
-| `wg` / `wg-quick` | WireGuard config/CLI (apply config, bring interface up/down) |
-| `iproute2` (Linux) | Create/manage interfaces, routes |
-| `iptables` / `nftables` (Linux), `pf` (macOS), Windows Firewall | Donor isolation |
-| STUN server + ICE libraries | NAT traversal |
+
+| Tool                                                            | Purpose                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------ |
+| `wireguard-go`                                                  | Userspace WireGuard runtime                                  |
+| `boringtun`                                                     | Alternative userspace WireGuard runtime                      |
+| `wg` / `wg-quick`                                               | WireGuard config/CLI (apply config, bring interface up/down) |
+| `iproute2` (Linux)                                              | Create/manage interfaces, routes                             |
+| `iptables` / `nftables` (Linux), `pf` (macOS), Windows Firewall | Donor isolation                                              |
+| STUN server + ICE libraries                                     | NAT traversal                                                |
 
 > The VSN Agent generates the WireGuard Curve25519 keys itself
 > (`agent/src/tunnel/wireguard-keys.ts`), so you don't manually create keys — but
@@ -948,57 +971,74 @@ git --version
 ## 🚦 Step-by-Step Setup
 
 ### Step 1 — Install prerequisites
+
 Install Node.js 22+, npm 10+, and Git. Confirm with:
+
 ```bash
 node -v && npm -v
 ```
 
 ### Step 2 — Get the code
+
 ```bash
 git clone https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
 cd VSN-Virtual-Share-Network-/VSN
 ```
 
 ### Step 3 — Install dependencies
+
 ```bash
 npm install
 ```
+
 > If the native `better-sqlite3` build fails, install build tools
 > (`build-essential` on Debian/Ubuntu, or "Desktop development with C++" on
 > Windows) and re-run `npm install`. It usually downloads a prebuilt binary —
 > no compiler needed.
 
 ### Step 4 — Configure environment
+
 ```bash
 cp .env.example .env
 ```
+
 `.env` is git-ignored — never commit it. Safe defaults are fine for local dev.
 
 ### Step 5 — Initialize the internal database
+
 ```bash
 npm run db:init
 ```
+
 This creates `./vsn.db`, all tables, and a demo user
 (`demo@vsn.local`). The app runs with no external database.
 
 ### Step 6 — Start the app
+
 **Terminal 1 — web + control-plane API:**
+
 ```bash
 npm run dev
 ```
+
 Open http://localhost:3000.
 
 **Terminal 2 — signaling server (real-time):**
+
 ```bash
 npm run signaling
 ```
+
 Or run both at once:
+
 ```bash
 npm run dev:all
 ```
 
 ### Step 7 — First launch / onboarding
+
 On first open you'll see, **in order**:
+
 1. **Branding splash screen** (cinematic VSN advertisement).
 2. **Terms of Service** agreement — tick the box, then **Accept & Continue**.
 3. **VSN Network Permissions** — **Allow & Continue** (or Decline).
@@ -1006,12 +1046,14 @@ On first open you'll see, **in order**:
    its local time. Toggle **dark/light** in the sidebar or Settings.
 
 ### Step 8 — Verify it runs
+
 ```bash
 curl http://localhost:3000/api/health
 # → {"status":"healthy","service":"VSN — Virtual Share Network",...}
 ```
 
 ### Step 9 — Typecheck, test, build
+
 ```bash
 npm run typecheck
 npm test
@@ -1023,26 +1065,26 @@ npm start      # production serve (after build)
 
 ## 🌐 Environment Variables
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `VSN_SQLITE_PATH` | `./vsn.db` | Path to the internal SQLite DB file. |
-| `AUTH_SECRET` | dev-only | HMAC secret for session tokens. **Change in prod.** |
-| `TOKEN_TTL_SECONDS` | `3600` | Session token lifetime. |
-| `CHALLENGE_TTL_SECONDS` | `300` | Challenge nonce lifetime. |
-| `SIGNALING_PORT` | `3002` | Port of the standalone signaling server (`npm run signaling`). |
-| `SIGNALING_URL` | `ws://localhost:3002` | WebSocket URL used by the UI and the agent. |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Base URL for the browser API client (empty = same origin). |
-| `NEXT_PUBLIC_DEMO_USER_ID` | `00000000-...0001` | Demo user shown in the UI before login. |
-| `VSN_DEMO_USER_ID` | `00000000-...0001` | Seeded demo user id (`npm run db:init`). |
-| `VSN_DEMO_USER_EMAIL` | `demo@vsn.local` | Seeded demo user email. |
-| `VSN_AGENT_ROLE` | `donor` | Agent role: `donor` or `receptor`. |
-| `CONTROL_SERVER_URL` | `ws://localhost:3002` | Control/signaling WebSocket URL the agent connects to. |
-| `AGENT_IPC_PORT` | `4173` | Port of the agent's local IPC API (machine-local). |
-| `VSN_DONOR_OUT_IFACE` | `eth0` | Outbound interface the donor shares. |
-| `VSN_RECEPTOR_OUT_IFACE` | `eth0` | Outbound interface the receptor routes through. |
-| `VSN_PLATFORM` | — (auto) | Force agent platform detection (defaults to `os.platform()`). |
-| `VSN_RELAY_ENDPOINT` | `relay.vsn.example.com:5199` | Fallback relay endpoint for NAT traversal. |
-| `VSN_SANDBOX` | — | Set `1` to skip privileged network ops (CI / dev without root). |
+| Variable                   | Default                      | Purpose                                                         |
+| -------------------------- | ---------------------------- | --------------------------------------------------------------- |
+| `VSN_SQLITE_PATH`          | `./vsn.db`                   | Path to the internal SQLite DB file.                            |
+| `AUTH_SECRET`              | dev-only                     | HMAC secret for session tokens. **Change in prod.**             |
+| `TOKEN_TTL_SECONDS`        | `3600`                       | Session token lifetime.                                         |
+| `CHALLENGE_TTL_SECONDS`    | `300`                        | Challenge nonce lifetime.                                       |
+| `SIGNALING_PORT`           | `3002`                       | Port of the standalone signaling server (`npm run signaling`).  |
+| `SIGNALING_URL`            | `ws://localhost:3002`        | WebSocket URL used by the UI and the agent.                     |
+| `NEXT_PUBLIC_API_URL`      | `http://localhost:3000`      | Base URL for the browser API client (empty = same origin).      |
+| `NEXT_PUBLIC_DEMO_USER_ID` | `00000000-...0001`           | Demo user shown in the UI before login.                         |
+| `VSN_DEMO_USER_ID`         | `00000000-...0001`           | Seeded demo user id (`npm run db:init`).                        |
+| `VSN_DEMO_USER_EMAIL`      | `demo@vsn.local`             | Seeded demo user email.                                         |
+| `VSN_AGENT_ROLE`           | `donor`                      | Agent role: `donor` or `receptor`.                              |
+| `CONTROL_SERVER_URL`       | `ws://localhost:3002`        | Control/signaling WebSocket URL the agent connects to.          |
+| `AGENT_IPC_PORT`           | `4173`                       | Port of the agent's local IPC API (machine-local).              |
+| `VSN_DONOR_OUT_IFACE`      | `eth0`                       | Outbound interface the donor shares.                            |
+| `VSN_RECEPTOR_OUT_IFACE`   | `eth0`                       | Outbound interface the receptor routes through.                 |
+| `VSN_PLATFORM`             | — (auto)                     | Force agent platform detection (defaults to `os.platform()`).   |
+| `VSN_RELAY_ENDPOINT`       | `relay.vsn.example.com:5199` | Fallback relay endpoint for NAT traversal.                      |
+| `VSN_SANDBOX`              | —                            | Set `1` to skip privileged network ops (CI / dev without root). |
 
 > Full annotated template: `.env.example` in `VSN/`.
 
@@ -1050,21 +1092,21 @@ npm start      # production serve (after build)
 
 ## 📜 How to Run Every Command
 
-| Command | What it does |
-|---------|--------------|
-| `npm run dev` | Start Next.js dev server (UI + control-plane API) on :3000 |
-| `npm run build` | Production build |
-| `npm run start` | Serve the production build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript type-check (`tsc --noEmit`) |
-| `npm run db:init` | Create/init internal SQLite DB + tables + demo user |
-| `npm run db:push` | Drizzle push schema (Postgres) |
-| `npm run db:generate` | Drizzle generate migration (Postgres) |
-| `npm run signaling` | Start the WebSocket signaling server on :3002 |
-| `npm run agent` | Run the VSN Agent (needs `VSN_AGENT_ROLE=donor/receptor`) |
-| `npm run dev:all` | Run web + signaling together (`concurrently`) |
-| `npm test` | Run Vitest tests |
-| `npm run test:watch` | Run tests in watch mode |
+| Command               | What it does                                               |
+| --------------------- | ---------------------------------------------------------- |
+| `npm run dev`         | Start Next.js dev server (UI + control-plane API) on :3000 |
+| `npm run build`       | Production build                                           |
+| `npm run start`       | Serve the production build                                 |
+| `npm run lint`        | ESLint                                                     |
+| `npm run typecheck`   | TypeScript type-check (`tsc --noEmit`)                     |
+| `npm run db:init`     | Create/init internal SQLite DB + tables + demo user        |
+| `npm run db:push`     | Drizzle push schema (Postgres)                             |
+| `npm run db:generate` | Drizzle generate migration (Postgres)                      |
+| `npm run signaling`   | Start the WebSocket signaling server on :3002              |
+| `npm run agent`       | Run the VSN Agent (needs `VSN_AGENT_ROLE=donor/receptor`)  |
+| `npm run dev:all`     | Run web + signaling together (`concurrently`)              |
+| `npm test`            | Run Vitest tests                                           |
+| `npm run test:watch`  | Run tests in watch mode                                    |
 
 ---
 
@@ -1075,11 +1117,13 @@ npm start      # production serve (after build)
 - **Agent IPC:** `http://127.0.0.1:4173`
 
 ### Become a Donor
+
 Go to **Dashboard → Donor Mode** or **Command Center → Donor Mode**. Register a
 donor to get a Donor ID (`VSN-XX-XXXXX`) and a **Pair Code**. Share the pair code
 with receptors you authorize. Then start sharing.
 
 ### Become a Receptor
+
 Go to **Receptor Mode**. Discover available donors (respecting their visibility),
 select one, and connect. On a real device the **VSN Agent** brings up the
 WireGuard tunnel and routes your traffic through the donor.
@@ -1088,15 +1132,15 @@ WireGuard tunnel and routes your traffic through the donor.
 
 ## 🔧 Troubleshooting
 
-| Symptom | Fix |
-|---------|-----|
-| Empty stats / no donors | Run `npm run db:init`; API must be running (`npm run dev`). |
-| `better-sqlite3` build error | Install build tools and re-run `npm install`. |
-| Port 3000/3002 in use | Change port in `.env` (`SIGNALING_PORT`, etc.). |
-| Signaling not connecting | Run `npm run signaling` (or `dev:all`); check `SIGNALING_URL`. |
-| Globe texture not loading | Textures load from `unpkg.com` — needs internet access. |
-| Agent IPC not reachable | Run `VSN_AGENT_ROLE=receptor npm run agent`; binds 127.0.0.1:4173. |
-| `.env` not applied | Ensure it's copied from `.env.example` and at `VSN/.env`. |
+| Symptom                      | Fix                                                                |
+| ---------------------------- | ------------------------------------------------------------------ |
+| Empty stats / no donors      | Run `npm run db:init`; API must be running (`npm run dev`).        |
+| `better-sqlite3` build error | Install build tools and re-run `npm install`.                      |
+| Port 3000/3002 in use        | Change port in `.env` (`SIGNALING_PORT`, etc.).                    |
+| Signaling not connecting     | Run `npm run signaling` (or `dev:all`); check `SIGNALING_URL`.     |
+| Globe texture not loading    | Textures load from `unpkg.com` — needs internet access.            |
+| Agent IPC not reachable      | Run `VSN_AGENT_ROLE=receptor npm run agent`; binds 127.0.0.1:4173. |
+| `.env` not applied           | Ensure it's copied from `.env.example` and at `VSN/.env`.          |
 
 ---
 
@@ -1131,14 +1175,14 @@ registries, signaling, and sessions — but **never** Internet traffic.
 
 ## Where it lives
 
-| Piece | Path |
-|-------|------|
-| API routes | `src/app/api/**` (thin handlers) |
-| Business logic | `src/services/*.service.ts` |
-| Database | `src/db/` (SQLite dev / Postgres prod via Drizzle) |
-| Signaling server | `server/websocket/signaling-server.ts` |
-| Signaling client | `src/lib/signaling/client.ts` |
-| Shared contracts | `protocol/` |
+| Piece            | Path                                               |
+| ---------------- | -------------------------------------------------- |
+| API routes       | `src/app/api/**` (thin handlers)                   |
+| Business logic   | `src/services/*.service.ts`                        |
+| Database         | `src/db/` (SQLite dev / Postgres prod via Drizzle) |
+| Signaling server | `server/websocket/signaling-server.ts`             |
+| Signaling client | `src/lib/signaling/client.ts`                      |
+| Shared contracts | `protocol/`                                        |
 
 ## Request flow
 
@@ -1226,13 +1270,13 @@ differs.
 
 ## Supported platforms & shells
 
-| Platform | Shell | Data plane | Apps |
-|----------|-------|-----------|------|
-| Windows | Electron (`apps/desktop`) | `agent/` + Wintun + WireGuard | `VSN` desktop |
-| macOS | Electron (`apps/desktop`) | `agent/` + utun + WireGuard | `VSN` desktop |
-| Linux | Electron (`apps/desktop`) | `agent/` + tun + WireGuard | `VSN` desktop |
+| Platform          | Shell                       | Data plane                                  | Apps          |
+| ----------------- | --------------------------- | ------------------------------------------- | ------------- |
+| Windows           | Electron (`apps/desktop`)   | `agent/` + Wintun + WireGuard               | `VSN` desktop |
+| macOS             | Electron (`apps/desktop`)   | `agent/` + utun + WireGuard                 | `VSN` desktop |
+| Linux             | Electron (`apps/desktop`)   | `agent/` + tun + WireGuard                  | `VSN` desktop |
 | Android / Samsung | Native app (`apps/android`) | `VsnVpnService` (VpnService + wireguard-go) | `VSN` Android |
-| iOS | (future) | NEPacketTunnelProvider | (future) |
+| iOS               | (future)                    | NEPacketTunnelProvider                      | (future)      |
 
 ## Laptop ↔ Laptop
 
@@ -1328,7 +1372,7 @@ interoperate peer-to-peer over the same WireGuard tunnel.
 > This document is kept as the historical analysis + roadmap that drove the
 > work; the "current repo" descriptions below refer to the repo state on the
 > date written.
-> **Scope:** Evolve the existing Next.js project into the target Control Plane + Data Plane + VSN Agent architecture, *without* throwing away the current work.
+> **Scope:** Evolve the existing Next.js project into the target Control Plane + Data Plane + VSN Agent architecture, _without_ throwing away the current work.
 > **Date:** 2026-08-22
 
 ---
@@ -1337,7 +1381,7 @@ interoperate peer-to-peer over the same WireGuard tunnel.
 
 The current repo is a **control-plane UI prototype** that is **disconnected from its own control-plane API**, and it has **no data-plane layer at all**. In other words: today it is essentially a mock dashboard, not a networking system.
 
-The spec's core intuition is correct and is *provably* confirmed by the code:
+The spec's core intuition is correct and is _provably_ confirmed by the code:
 
 1. **The UI never calls the API.** A grep for `fetch(`, `axios`, or `/api/` across every page under `src/app/(app)/`, `src/app/permissions/`, and `src/app/page.tsx` returns **zero** hits. Instead the pages import from `src/lib/mock-data.ts` (all empty arrays / zeroed stats) and render from that.
 2. **The API routes are real but orphaned.** `src/app/api/**` are genuine Postgres/Drizzle handlers (`auth`, `donors`, `sessions`, `stats`, `security`, `audit`, `health`), but nothing in the UI consumes them.
@@ -1385,15 +1429,15 @@ VSN/
 
 ### 2.2 The presentation ↔ control-plane disconnect (the critical issue)
 
-| Page | Data source today | Correct data source (target) |
-|------|-------------------|------------------------------|
-| `dashboard` / `connection` | local component state (simulated) | `GET /api/sessions` + signaling |
-| `donor` | local component state | `POST /api/donors/register` + agent |
-| `receptor` | `mockDonors`, `mockSessions` | `GET /api/donors/available`, session API |
-| `my-donors` | `mockDonors` | `GET /api/donors` (owned) |
-| `statistics` | `mockStats` | `GET /api/statistics` (aggregated) |
-| `security` | `mockSecurityEvents`, `mockAuditLog` | `GET /api/security/events`, `GET /api/audit` |
-| `permissions` | `mockPermissions` | local, then agent gate |
+| Page                       | Data source today                    | Correct data source (target)                 |
+| -------------------------- | ------------------------------------ | -------------------------------------------- |
+| `dashboard` / `connection` | local component state (simulated)    | `GET /api/sessions` + signaling              |
+| `donor`                    | local component state                | `POST /api/donors/register` + agent          |
+| `receptor`                 | `mockDonors`, `mockSessions`         | `GET /api/donors/available`, session API     |
+| `my-donors`                | `mockDonors`                         | `GET /api/donors` (owned)                    |
+| `statistics`               | `mockStats`                          | `GET /api/statistics` (aggregated)           |
+| `security`                 | `mockSecurityEvents`, `mockAuditLog` | `GET /api/security/events`, `GET /api/audit` |
+| `permissions`              | `mockPermissions`                    | local, then agent gate                       |
 
 **Consequence:** the UI shows static/empty state regardless of what the API would return, so the "app" never reflects a real session, donor, or security event.
 
@@ -1414,16 +1458,16 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 
 ### Current ⇒ Target mapping
 
-| Layer | Current | Target | Delta needed |
-|-------|---------|--------|--------------|
-| **UI** | `src/app/(app)/*` + `permissions/` | Same pages, but wired to a **services/API client** instead of `mock-data` | Add API client; replace mock imports |
-| **Control API** | `src/app/api/**` (thin handlers) | Handlers call a **`services/` layer** (business logic) | Extract services; keep handlers thin |
-| **DB** | `src/db/schema.ts` (flat) | `src/db/schema/{users,devices,donors,sessions,security-events,audit}.ts` + migrations | Split schema; add migrations dir |
-| **Real-time** | none | `server/websocket/signaling-server.ts` + `src/lib/signaling/` client | New signaling plane |
-| **Data plane** | none | `agent/` (native core + tunnel/network/routing/security) + `src/services/*` orchestration | New `agent/` subsystem |
-| **Contracts** | `src/lib/types.ts` (one file) | `protocol/` shared message + type contracts | New `protocol/` package |
-| **Docs/Tests** | none | `docs/architecture/*`, `docs/development/*`, `tests/*` | New |
-| **Secrets** | none | `.gitignore`, `.env.example` | Add now (immediate) |
+| Layer           | Current                            | Target                                                                                    | Delta needed                         |
+| --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------ |
+| **UI**          | `src/app/(app)/*` + `permissions/` | Same pages, but wired to a **services/API client** instead of `mock-data`                 | Add API client; replace mock imports |
+| **Control API** | `src/app/api/**` (thin handlers)   | Handlers call a **`services/` layer** (business logic)                                    | Extract services; keep handlers thin |
+| **DB**          | `src/db/schema.ts` (flat)          | `src/db/schema/{users,devices,donors,sessions,security-events,audit}.ts` + migrations     | Split schema; add migrations dir     |
+| **Real-time**   | none                               | `server/websocket/signaling-server.ts` + `src/lib/signaling/` client                      | New signaling plane                  |
+| **Data plane**  | none                               | `agent/` (native core + tunnel/network/routing/security) + `src/services/*` orchestration | New `agent/` subsystem               |
+| **Contracts**   | `src/lib/types.ts` (one file)      | `protocol/` shared message + type contracts                                               | New `protocol/` package              |
+| **Docs/Tests**  | none                               | `docs/architecture/*`, `docs/development/*`, `tests/*`                                    | New                                  |
+| **Secrets**     | none                               | `.gitignore`, `.env.example`                                                              | Add now (immediate)                  |
 
 ---
 
@@ -1432,6 +1476,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 > Phases are ordered so that every phase leaves the app runnable and each builds on the prior.
 
 ### Phase 0 — Foundations (immediate, low-risk, no code behavior change)
+
 - [x] Add `.gitignore` (node_modules, .next, .env*, out, coverage, etc.)
 - [x] Add `.env.example` (SQLite path, JWT secret, signaling URL, agent vars, etc.)
 - [x] Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`
@@ -1439,6 +1484,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - [ ] Decide whether to keep the app at `VSN/` root or reorganize to `frontend/` (spec §12 suggests `frontend/`; recommend keeping `VSN/` and adding sibling `agent/`, `server/`, `protocol/`, `tests/`, `docs/` to avoid churn).
 
 ### Phase 1 — Wire the UI to the real API (closes the biggest gap)
+
 - Add `src/lib/api/client.ts` (typed fetch wrapper for route handlers).
 - Add `src/lib/api/donors.ts`, `sessions.ts`, `statistics.ts`, `security.ts`, `audit.ts`, `auth.ts`.
 - Replace `mock-data` imports in `receptor`, `my-donors`, `statistics`, `security` with real API calls (with loading/error states).
@@ -1446,12 +1492,14 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Keep `mock-data.ts` only as fixtures; move to `tests/mocks/` ultimately.
 
 ### Phase 2 — Database schema split + migrations
+
 - Split `src/db/schema.ts` → `src/db/schema/{users,devices,donors,sessions,authorized-receptors,session-events,security-events,audit,relay-servers}.ts`.
 - Add `src/db/schema/index.ts` re-exports.
 - Set up `src/db/migrations/` (drizzle-kit) so schema pushes are versioned.
 - Keep `drizzle.config` pointing at the new schema path (it already points to `./src/db/schema.ts` → update to the folder).
 
 ### Phase 3 — Services layer (business logic out of route handlers)
+
 - `src/services/auth.service.ts` (challenge/verify/register-device).
 - `src/services/donor.service.ts` (register/available/approve/heartbeat).
 - `src/services/session.service.ts` (request/accept/reject/terminate/status + state machine).
@@ -1460,6 +1508,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Refactor each `src/app/api/**/route.ts` to call the corresponding service (thin handlers).
 
 ### Phase 4 — Signaling / real-time plane
+
 - Add `src/lib/signaling/client.ts` (WebSocket client: `donor_online`, `donor_offline`, `connection_request`, `connection_accepted`, `connection_rejected`, `tunnel_ready`, `tunnel_closed`, `heartbeat`).
 - Add `server/websocket/signaling-server.ts` (standalone Node WS server) + `server/index.ts`.
 - Add `src/app/api/signaling/route.ts` to broker WebSocket upgrades (or run `server/` as a separate process in dev).
@@ -1467,17 +1516,20 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Add a small dev script (`npm run signaling`) + `concurrently` option.
 
 ### Phase 5 — VSN Agent (the data plane) — **native / non-browser**
+
 - Add `agent/` scaffold: `core/{agent,connection-manager,donor-manager,receptor-manager}.ts`, `tunnel/{tunnel-manager,tunnel-client,tunnel-config}.ts`, `network/{interface-manager,routing-manager,nat-manager,network-info}.ts`, `security/{encryption,credentials,identity}.ts`, `api/control-client.ts`, `ipc/ipc-server.ts`.
 - Add `agent/platforms/{windows,linux,macos,android}/` + README per platform.
 - Wire the UI to the agent via **IPC / local API** (the agent exposes a local HTTP/WS endpoint the UI calls), so the browser never does privileged networking.
 - **Feasibility note:** the tunnel, TUN adapter, routing and NAT code cannot run or be tested inside a browser/Next.js sandbox. This layer is delivered as documented TypeScript scaffolding + platform integration guides, and must be built/run on each target OS by the user (or via an Electron/Tauri-style desktop shell).
 
 ### Phase 6 — Protocol contracts
+
 - Add `protocol/messages/{authentication,donor,receptor,session,signaling}.ts` + `protocol/types.ts` (shared, framework-agnostic).
 - Add `protocol/README.md`.
 - Have `src/lib`, `agent/`, and `server/` all import from `protocol/` (single source of truth).
 
 ### Phase 7 — Docs + tests + cleanup
+
 - Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`.
 - Add `docs/development/{setup,contributing,troubleshooting}.md`.
 - Add `tests/{api,services,protocol,agent}/` with vitest.
@@ -1487,15 +1539,15 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 
 ## 5. Sandbox Feasibility Notes (what I can actually build & verify here)
 
-This is a browser-based agent sandbox. That bounds what is *verifiable*:
+This is a browser-based agent sandbox. That bounds what is _verifiable_:
 
-| Work item | Buildable & typecheckable here? | Runnable here? |
-|-----------|--------------------------------|----------------|
-| `.gitignore`, `.env.example`, `docs/**`, `protocol/**` (types) | Yes | Yes (static) |
-| `services/**`, `src/lib/api/**`, schema split, route refactor | Yes (TS) | Needs `npm install` + a Postgres/`DATABASE_URL` |
-| `src/lib/signaling` client + `server/websocket` server | Yes (TS) | Can run a WS server server-side |
-| `tests/**` (unit) | Yes | Yes (vitest, no DB) |
-| `agent/**` native tunnel / TUN / routing / NAT | Scaffold only | **No** — requires OS-level features |
+| Work item                                                      | Buildable & typecheckable here? | Runnable here?                                  |
+| -------------------------------------------------------------- | ------------------------------- | ----------------------------------------------- |
+| `.gitignore`, `.env.example`, `docs/**`, `protocol/**` (types) | Yes                             | Yes (static)                                    |
+| `services/**`, `src/lib/api/**`, schema split, route refactor  | Yes (TS)                        | Needs `npm install` + a Postgres/`DATABASE_URL` |
+| `src/lib/signaling` client + `server/websocket` server         | Yes (TS)                        | Can run a WS server server-side                 |
+| `tests/**` (unit)                                              | Yes                             | Yes (vitest, no DB)                             |
+| `agent/**` native tunnel / TUN / routing / NAT                 | Scaffold only                   | **No** — requires OS-level features             |
 
 > **Recommendation:** implement Phases 0–4 fully here (they are pure TS and belong to the control plane), and deliver Phase 5 (`agent/`) as well-structured scaffolding + per-platform integration documentation, since real tunnel/NAT work must run outside the browser.
 
@@ -1568,11 +1620,11 @@ a secure encrypted tunnel.
 
 The design splits VSN into three layers:
 
-| Layer | What it is | Responsibility |
-|-------|------------|----------------|
-| **Presentation** 🖥️ | Next.js UI (React/TS/Tailwind) | Authentication, role selection, donor discovery, status, settings, logs |
-| **Control Plane** 🧠 | Next.js API + WebSocket + PostgreSQL/SQLite | Auth, donor registry, signaling, session management, monitoring |
-| **Data Plane** 🌐 | VSN Agent + WireGuard | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic |
+| Layer                | What it is                                  | Responsibility                                                          |
+| -------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| **Presentation** 🖥️  | Next.js UI (React/TS/Tailwind)              | Authentication, role selection, donor discovery, status, settings, logs |
+| **Control Plane** 🧠 | Next.js API + WebSocket + PostgreSQL/SQLite | Auth, donor registry, signaling, session management, monitoring         |
+| **Data Plane** 🌐    | VSN Agent + WireGuard                       | Virtual NIC, tunnel, routing, NAT, encryption — the actual traffic      |
 
 ```
         INTERNET
@@ -1615,14 +1667,14 @@ Depth**.
 
 ## Pillars
 
-| Pillar | Implementation |
-|--------|----------------|
-| Cryptographic identity | Device keypairs, mutual auth; server never holds private keys |
-| End-to-end encryption | WireGuard: ChaCha20-Poly1305, Noise handshake, forward secrecy |
-| Network isolation | Receptor gets Internet ✅, never access to Donor LAN ❌ (firewall) |
-| Audit logging | Metadata only (who/when/volume/duration), never traffic contents |
-| Device revocation | Terminate sessions, revoked auth, reject future connections, rotate keys |
-| Device verification | Fingerprint-based device identity, authorization before connection |
+| Pillar                 | Implementation                                                           |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Cryptographic identity | Device keypairs, mutual auth; server never holds private keys            |
+| End-to-end encryption  | WireGuard: ChaCha20-Poly1305, Noise handshake, forward secrecy           |
+| Network isolation      | Receptor gets Internet ✅, never access to Donor LAN ❌ (firewall)       |
+| Audit logging          | Metadata only (who/when/volume/duration), never traffic contents         |
+| Device revocation      | Terminate sessions, revoked auth, reject future connections, rotate keys |
+| Device verification    | Fingerprint-based device identity, authorization before connection       |
 
 ## Secrets handling
 
@@ -1632,15 +1684,15 @@ Depth**.
 
 ## Threat model (STRIDE)
 
-| Threat | Risk | Mitigation |
-|--------|------|------------|
-| Malicious receptor | LAN scanning, bandwidth abuse | Firewall isolation, quotas, monitoring |
-| Malicious donor | Traffic inspection, MITM | E2E encryption, HTTPS, WireGuard |
-| Compromised server | MITM, credential theft | Server never holds private keys |
-| Stolen device | Unauthorized access | Device revocation, key rotation |
-| API abuse | Brute force, DoS | Rate limiting, auth, validation |
-| Relay abuse | Traffic inspection | Encrypted packets; relay cannot decrypt |
-| Replay attacks | Session hijacking | Short-lived tokens, nonce-based auth |
+| Threat             | Risk                          | Mitigation                              |
+| ------------------ | ----------------------------- | --------------------------------------- |
+| Malicious receptor | LAN scanning, bandwidth abuse | Firewall isolation, quotas, monitoring  |
+| Malicious donor    | Traffic inspection, MITM      | E2E encryption, HTTPS, WireGuard        |
+| Compromised server | MITM, credential theft        | Server never holds private keys         |
+| Stolen device      | Unauthorized access           | Device revocation, key rotation         |
+| API abuse          | Brute force, DoS              | Rate limiting, auth, validation         |
+| Relay abuse        | Traffic inspection            | Encrypted packets; relay cannot decrypt |
+| Replay attacks     | Session hijacking             | Short-lived tokens, nonce-based auth    |
 
 ## Tools used (data plane)
 
@@ -1676,24 +1728,24 @@ Receptor app → OS → VSN Virtual NIC (TUN) → WireGuard tunnel → Donor →
 
 ## 2. How it was implemented in the VSN Agent
 
-| File | Role |
-|------|------|
+| File                                 | Role                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `agent/src/tunnel/wireguard-keys.ts` | **Real Curve25519 (X25519) key generation**, preshared keys, public-key derivation (Node `crypto`, no native deps). |
-| `agent/src/tunnel/tunnel-config.ts` | WireGuard config types + `renderWireGuardConfig()` → `wg-quick`-compatible INI. |
-| `agent/src/tunnel/wireguard-cli.ts` | Platform CLI bridge: `wg-quick up/down`, `wg show`, `ip` fallback; graceful no-op if tools aren't installed. |
-| `agent/src/tunnel/tunnel-client.ts` | Wraps keygen + CLI; injects the device private key + preshared key into the config. |
-| `agent/src/tunnel/tunnel-manager.ts` | Platform-agnostic orchestration; exposes live status (peers, bytes). |
-| `agent/src/core/platform-adapter.ts` | Per-OS settings (interface name, address, engine, NIC, requirements). |
-| `agent/src/security/identity.ts` | Device identity: Curve25519 keypair + SHA-256 fingerprint (private key never leaves device). |
+| `agent/src/tunnel/tunnel-config.ts`  | WireGuard config types + `renderWireGuardConfig()` → `wg-quick`-compatible INI.                                     |
+| `agent/src/tunnel/wireguard-cli.ts`  | Platform CLI bridge: `wg-quick up/down`, `wg show`, `ip` fallback; graceful no-op if tools aren't installed.        |
+| `agent/src/tunnel/tunnel-client.ts`  | Wraps keygen + CLI; injects the device private key + preshared key into the config.                                 |
+| `agent/src/tunnel/tunnel-manager.ts` | Platform-agnostic orchestration; exposes live status (peers, bytes).                                                |
+| `agent/src/core/platform-adapter.ts` | Per-OS settings (interface name, address, engine, NIC, requirements).                                               |
+| `agent/src/security/identity.ts`     | Device identity: Curve25519 keypair + SHA-256 fingerprint (private key never leaves device).                        |
 
 ### The keys (and where they go)
 
-| Key | How it's made | Size | Where it lives | Who sees it |
-|-----|---------------|------|----------------|-------------|
-| **Private key** | `generateKeyPair()` → X25519 scalar | 32 bytes (base64) | OS keychain / encrypted store on the device | **Never leaves the device** |
-| **Public key** | derived via X25519 from private | 32 bytes (base64) | registered with the control plane / peers | Shared (this is your "ID") |
-| **Preshared key** | `generatePresharedKey()` | 32 bytes (base64) | exchanged out-of-band via the control plane | Donor + Receptor only (defense-in-depth) |
-| **Fingerprint** | SHA-256(publicKey) → 16 hex | — | audit/logging | Control plane |
+| Key               | How it's made                       | Size              | Where it lives                              | Who sees it                              |
+| ----------------- | ----------------------------------- | ----------------- | ------------------------------------------- | ---------------------------------------- |
+| **Private key**   | `generateKeyPair()` → X25519 scalar | 32 bytes (base64) | OS keychain / encrypted store on the device | **Never leaves the device**              |
+| **Public key**    | derived via X25519 from private     | 32 bytes (base64) | registered with the control plane / peers   | Shared (this is your "ID")               |
+| **Preshared key** | `generatePresharedKey()`            | 32 bytes (base64) | exchanged out-of-band via the control plane | Donor + Receptor only (defense-in-depth) |
+| **Fingerprint**   | SHA-256(publicKey) → 16 hex         | —                 | audit/logging                               | Control plane                            |
 
 > **Private keys are never transmitted.** Only public keys and fingerprints are
 > shared. The preshared key adds post-quantum defense-in-depth for a session.
@@ -1735,6 +1787,7 @@ PersistentKeepalive = 25
 ## 4. Verified correctness
 
 The key module is unit-tested (`tests/agent/wireguard-keys.test.ts`):
+
 - Keys are well-formed 44-char base64 (32-byte scalars).
 - `derivePublicKey(privateKey) === publicKey` (guaranteed matching pair).
 - Preshared keys are 32 bytes.
@@ -1749,12 +1802,12 @@ derive(private) === public: true
 
 ## 5. What you need on the host to actually run a tunnel
 
-| OS | Tools |
-|----|-------|
-| Linux | `wireguard-tools` (`wg`, `wg-quick`), `iproute2`, CAP_NET_ADMIN/root |
-| macOS | `wireguard-tools` (or `wireguard-go`), Network Extension/root |
-| Windows | WireGuard for Windows (`wg`), Wintun, Administrator |
-| Android | VSN app + VpnService (wireguard-go) — no root needed |
+| OS      | Tools                                                                |
+| ------- | -------------------------------------------------------------------- |
+| Linux   | `wireguard-tools` (`wg`, `wg-quick`), `iproute2`, CAP_NET_ADMIN/root |
+| macOS   | `wireguard-tools` (or `wireguard-go`), Network Extension/root        |
+| Windows | WireGuard for Windows (`wg`), Wintun, Administrator                  |
+| Android | VSN app + VpnService (wireguard-go) — no root needed                 |
 
 > In this sandbox `wg-quick` is not installed, so the CLI prints a clear message
 > and skips rather than crashing — the control-plane UI still runs.
@@ -1763,13 +1816,13 @@ derive(private) === public: true
 
 ## 6. Feasibility recap
 
-| Work | Status |
-|------|--------|
-| WireGuard keygen (Curve25519) | ✅ Implemented + tested |
-| Config generation | ✅ Implemented |
-| CLI bridge (wg-quick/wg/ip) | ✅ Implemented (host-tool dependent) |
-| Platform adapters | ✅ Implemented |
-| Real tunnel on host | ⚠️ Requires OS tools (run on your machine) |
+| Work                          | Status                                     |
+| ----------------------------- | ------------------------------------------ |
+| WireGuard keygen (Curve25519) | ✅ Implemented + tested                    |
+| Config generation             | ✅ Implemented                             |
+| CLI bridge (wg-quick/wg/ip)   | ✅ Implemented (host-tool dependent)       |
+| Platform adapters             | ✅ Implemented                             |
+| Real tunnel on host           | ⚠️ Requires OS tools (run on your machine) |
 
 ````
 ### `VSN/docs/development/contributing.md`
@@ -1828,6 +1881,7 @@ generates the Curve25519 keys; the OS WireGuard tooling is what applies the
 config and creates the tunnel interface.
 
 > **TL;DR — what to choose:**
+>
 > - **Linux (recommended for VSN host/donor)** → the **in-kernel WireGuard**
 >   module + `wireguard-tools` (`wg`, `wg-quick`). Best performance.
 > - **macOS** → **`wireguard-go`** via Homebrew + `wireguard-tools` (or the
@@ -1846,12 +1900,12 @@ config and creates the tunnel interface.
 
 WireGuard is a **protocol** (encrypted tunnel). Each OS provides a way to run it:
 
-| Component | What it is | Needed? |
-|-----------|-----------|----------|
-| **WireGuard engine** | Runs the crypto + tunnel. Either a **kernel module** (Linux/macOS) or a **userspace daemon** (`wireguard-go`, `boringtun`). | Required |
-| **`wg` tool** | Configures the interface: add peers, set private/public keys, dump stats. | Required |
-| **`wg-quick`** | Helper that wraps `wg` to set up interface + routing + DNS automatically. | Recommended (VSN uses it) |
-| **Virtual NIC driver** | The interface packets go through. **tun/tap** (Linux), **utun** (macOS), **Wintun** (Windows), **VpnService** (Android). | Required |
+| Component              | What it is                                                                                                                  | Needed?                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **WireGuard engine**   | Runs the crypto + tunnel. Either a **kernel module** (Linux/macOS) or a **userspace daemon** (`wireguard-go`, `boringtun`). | Required                  |
+| **`wg` tool**          | Configures the interface: add peers, set private/public keys, dump stats.                                                   | Required                  |
+| **`wg-quick`**         | Helper that wraps `wg` to set up interface + routing + DNS automatically.                                                   | Recommended (VSN uses it) |
+| **Virtual NIC driver** | The interface packets go through. **tun/tap** (Linux), **utun** (macOS), **Wintun** (Windows), **VpnService** (Android).    | Required                  |
 
 VSN generates the **private/public/preshared keys** for you (in the agent), but
 the OS **engine + tools** must be installed for the tunnel to come up.
@@ -1863,11 +1917,14 @@ the OS **engine + tools** must be installed for the tunnel to come up.
 **Choose:** the in-kernel WireGuard module (fastest) + `wireguard-tools`.
 
 ### Ubuntu / Debian
+
 ```bash
 sudo apt update
 sudo apt install wireguard wireguard-tools   # pulls the kernel module + wg/wg-quick
 ```
+
 The kernel module is usually already built in. Verify:
+
 ```bash
 sudo modprobe wireguard
 lsmod | grep wireguard        # should show wireguard
@@ -1875,17 +1932,20 @@ which wg wg-quick             # /usr/bin/wg  /usr/bin/wg-quick
 ```
 
 ### Fedora / RHEL
+
 ```bash
 sudo dnf install wireguard-tools
 sudo modprobe wireguard
 ```
 
 ### Arch
+
 ```bash
 sudo pacman -S wireguard-tools
 ```
 
 ### Or use userspace engine (no kernel module, e.g. on a VPS without it)
+
 ```bash
 # wireguard-go — userspace implementation
 curl -sSL https://github.com/WireGuard/wireguard-go/releases/download/v0.0.20230223/wireguard-go-linux-amd64.tar.gz | tar xz
@@ -1894,7 +1954,9 @@ sudo apt install wireguard-tools   # still need wg/wg-quick
 ```
 
 ### What you need for privileges (donor)
+
 WireGuard interface + routing + firewall need `CAP_NET_ADMIN` / root:
+
 ```bash
 sudo setcap cap_net_admin,cap_net_raw+ep /usr/bin/wg
 # or run the VSN agent as root / via sudo.
@@ -1908,22 +1970,27 @@ sudo setcap cap_net_admin,cap_net_raw+ep /usr/bin/wg
 official WireGuard app.
 
 ### Option A — Homebrew (recommended)
+
 ```bash
 brew install wireguard-tools         # gives wg + wg-quick
 # wireguard-go comes with the WireGuard app; or install the userspace engine:
 brew install wireguard-go
 ```
+
 Verify:
+
 ```bash
 which wg wg-quick
 ```
 
 ### Option B — the WireGuard.app
+
 Install from https://www.wireguard.com/install/ (Apple Silicon/Intel). It
 installs `wg`/`wg-quick` and a Network Extension tunnel. VSN can use
 `wg-quick` once it's installed.
 
 ### TUN
+
 macOS uses the built-in **utun** device — no extra driver needed.
 
 ---
@@ -1933,15 +2000,19 @@ macOS uses the built-in **utun** device — no extra driver needed.
 **Choose:** **WireGuard for Windows** (installs `wg.exe` + the **Wintun** driver).
 
 ### Install
+
 1. Download from https://www.wireguard.com/install/ — the MSI/installer.
 2. Run the installer (it installs `wg.exe` and registers the **Wintun** driver).
 3. Verify in PowerShell:
+
 ```powershell
 Get-Command wg          # C:\Program Files\WireGuard\wg.exe
 ```
+
 4. The `wg-quick` equivalent is available in `C:\Program Files\WireGuard\`.
 
 ### For VSN
+
 - The desktop shell (`apps/desktop`) + agent use `wg` (WireGuard for Windows).
 - VSN runs the tunnel via the userspace engine and the **Wintun** virtual NIC.
 - Donor mode needs **Administrator** privileges for routing/ICS.
@@ -1953,17 +2024,19 @@ Get-Command wg          # C:\Program Files\WireGuard\wg.exe
 **Choose:** the **WireGuard app** (or VSN's built-in `VpnService`).
 
 ### Option A — the WireGuard app (for testing/manual)
+
 1. Install from the Play Store ("WireGuard" by WireGuard).
 2. It uses **`wireguard-go`** + Android's **VpnService** — **no root needed**.
 3. You can import a `.conf` VSN generates.
 
 ### Option B — VSN's own app (`apps/android`)
+
 - VSN's Android app already wraps `VpnService` (`VsnVpnService.kt`) and uses
   `wireguard-android` (userspace `wireguard-go`).
 - Just run the VSN app and allow the **VPN** prompt.
 - This is the recommended path — no manual WirelessGuard install.
 
-> **Important:** On Android, the VpnService *receives* traffic into the tunnel
+> **Important:** On Android, the VpnService _receives_ traffic into the tunnel
 > (receptor). Full **donor-side NAT** (sharing a phone's connection to others)
 > typically needs **root** or a custom kernel because Android restricts interface
 > forwarding. For casual donor sharing on Android, use the desktop donor instead.
@@ -1982,17 +2055,18 @@ Get-Command wg          # C:\Program Files\WireGuard\wg.exe
 
 ## 7. What should YOU choose? (decision guide)
 
-| Situation | Recommended |
-|-----------|-------------|
-| **VSN host running as a Donor** (laptop/PC) | Linux + kernel WireGuard + `wireguard-tools` (best routing/NAT/firewall) |
-| **VSN desktop on Windows** | WireGuard for Windows (Wintun) |
-| **VSN desktop on macOS** | `wireguard-go` + `wireguard-tools` via Homebrew |
-| **VSN Receptor on a phone (Android/Samsung)** | VSN app's built-in VpnService (no root) |
-| **VSN Donor on a phone** | Best-effort; full NAT needs root. Use a desktop Donor. |
-| **VPS/relay server** | Kernel WireGuard + `wireguard-tools` |
-| **Sandbox/CI** | Skip (VSN prints a clear message and no-ops) |
+| Situation                                     | Recommended                                                              |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| **VSN host running as a Donor** (laptop/PC)   | Linux + kernel WireGuard + `wireguard-tools` (best routing/NAT/firewall) |
+| **VSN desktop on Windows**                    | WireGuard for Windows (Wintun)                                           |
+| **VSN desktop on macOS**                      | `wireguard-go` + `wireguard-tools` via Homebrew                          |
+| **VSN Receptor on a phone (Android/Samsung)** | VSN app's built-in VpnService (no root)                                  |
+| **VSN Donor on a phone**                      | Best-effort; full NAT needs root. Use a desktop Donor.                   |
+| **VPS/relay server**                          | Kernel WireGuard + `wireguard-tools`                                     |
+| **Sandbox/CI**                                | Skip (VSN prints a clear message and no-ops)                             |
 
 ### Why Linux + kernel WireGuard for the donor is best:
+
 1. **Performance** — kernel module is faster than userspace.
 2. **Full NAT + routing control** — `iptables`/`ip` make donor sharing + LAN
    isolation straightforward.
@@ -2017,6 +2091,7 @@ wg --version
 ```
 
 Then confirm the engine is available:
+
 ```bash
 # Linux kernel module
 sudo modprobe wireguard && sudo wg show
@@ -2036,6 +2111,7 @@ which wireguard-go
    control-plane UI still works).
 
 ### Files that use the tools
+
 - `agent/src/tunnel/wireguard-cli.ts` — `wg-quick up/down`, `wg show`.
 - `agent/src/network/routing-manager.ts` — `ip route`, `iptables` (donor isolation).
 - `agent/src/network/nat-manager.ts` — `iptables -t nat` MASQUERADE.
@@ -2052,6 +2128,7 @@ links so the web UI / control plane can open the correct in-app screen.
 ## Android (VpnService consent + deep link)
 
 ### VPN consent (the OS prompt)
+
 Android requires the user to **grant VpnService consent** before a VPN can run.
 `apps/android/app/src/main/java/com/vsn/app/MainActivity.kt`:
 
@@ -2064,6 +2141,7 @@ Android requires the user to **grant VpnService consent** before a VPN can run.
 This is the mobile equivalent of the desktop's UAC/admin prompt for the tunnel.
 
 ### Deep link
+
 `AndroidManifest.xml` registers a `vsn://connect` scheme so the control plane can
 deep-link into the tunnel-consent flow:
 
@@ -2093,11 +2171,13 @@ Deep link scheme: register a URL type (e.g. `vsn://connect`) in the iOS
 `Info.plist`/`SCN` so the control plane can open the app.
 
 ## Consent vs the VSN onboarding permissions
+
 - The **VSN in-app permission page** documents the 5 permissions conceptually.
 - The **OS consent** (VpnService on Android, Network Extension on iOS) is the
-  *actual* system grant that enables the tunnel. VSN requests it on demand.
+  _actual_ system grant that enables the tunnel. VSN requests it on demand.
 
 ## Why both?
+
 The web control plane cannot itself create a TUN interface or elevate privileges.
 The native shell (Android/iOS/desktop) is the only component allowed to do so —
 and it does, behind the OS's official consent prompt.
@@ -2281,6 +2361,90 @@ apps/android/local.properties
 apps/android/.idea/
 
 ````
+### `.prettierignore`
+````text
+# Dependencies / build output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Generated / local artifacts
+next-env.d.ts
+*.tsbuildinfo
+*.db
+*.db-*
+vsn.db*
+
+# Lockfiles (kept in canonical npm formatting)
+package-lock.json
+
+# The full-project document embeds every file in code fences —
+# reformatting it would desync it from the real files.
+VSN-FULL-DOCUMENT.md
+
+# Binary-ish / asset files we keep as authored
+*.svg
+
+# Android resource files (no Prettier XML parser in v3 — keep as authored)
+apps/android/**/*.xml
+
+````
+### `.prettierrc.json`
+````json
+{
+  "printWidth": 110,
+  "tabWidth": 2,
+  "singleQuote": false,
+  "semi": true,
+  "trailingComma": "all"
+}
+
+````
+### `.vscode/extensions.json`
+````json
+{
+  "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "bradlc.vscode-tailwindcss"]
+}
+
+````
+### `.vscode/settings.json`
+````json
+{
+  // VSN — VS Code workspace settings (open the repo ROOT for these to apply)
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.rulers": [110],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "VSN/node_modules/typescript/lib",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "files.exclude": {
+    "**/*.tsbuildinfo": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/*.db": true,
+    "**/*.db-*": true,
+    "VSN-FULL-DOCUMENT.md": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/vsn.db*": true
+  }
+}
+
+````
 ### `LICENSE`
 ````text
 MIT License
@@ -2455,7 +2619,9 @@ export default nextConfig;
     "agent": "tsx agent/src/core/agent.ts",
     "dev:all": "concurrently -k -n web,sig \"npm run dev\" \"npm run signaling\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "format": "prettier --write --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\""
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -2489,6 +2655,7 @@ export default nextConfig;
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "postcss": "8.5.8",
+    "prettier": "^3.9.6",
     "tailwindcss": "4.1.17",
     "tsx": "^4.19.2",
     "typescript": "5.9.3",
@@ -2513,11 +2680,7 @@ export default postcssConfig;
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -2531,18 +2694,10 @@ export default postcssConfig;
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "protocol/*": [
-        "./protocol/*"
-      ],
-      "server/*": [
-        "./server/*"
-      ],
-      "agent/*": [
-        "./agent/*"
-      ]
+      "@/*": ["./src/*"],
+      "protocol/*": ["./protocol/*"],
+      "server/*": ["./server/*"],
+      "agent/*": ["./agent/*"]
     },
     "plugins": [
       {
@@ -2550,16 +2705,8 @@ export default postcssConfig;
       }
     ]
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
 
 ````
@@ -2594,9 +2741,19 @@ export default defineConfig({
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Zap, Share2, Download, AlertCircle, Clock, Shield, BarChart, 
-  Terminal, ArrowRight, ChevronRight, Activity, Globe
+import {
+  Zap,
+  Share2,
+  Download,
+  AlertCircle,
+  Clock,
+  Shield,
+  BarChart,
+  Terminal,
+  ArrowRight,
+  ChevronRight,
+  Activity,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { useTunnel } from "@/hooks/use-tunnel";
@@ -2646,109 +2803,155 @@ export default function CommandCenterPage() {
   const quickAccess = [
     { label: "Donor Profile", icon: <Share2 className="text-gold" />, href: "/donor", color: "gold" },
     { label: "Find Donors", icon: <Download className="text-blue-500" />, href: "/receptor", color: "blue" },
-    { label: "Security Audit", icon: <Shield className="text-green-500" />, href: "/security", color: "green" },
-    { label: "Network Stats", icon: <BarChart className="text-purple-500" />, href: "/statistics", color: "purple" },
+    {
+      label: "Security Audit",
+      icon: <Shield className="text-green-500" />,
+      href: "/security",
+      color: "green",
+    },
+    {
+      label: "Network Stats",
+      icon: <BarChart className="text-purple-500" />,
+      href: "/statistics",
+      color: "purple",
+    },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      
       {/* Validation Banner */}
       {showBanner && (
         <div className="bg-red-500 text-white px-6 py-3 rounded-lg flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
           <AlertCircle size={18} />
-          <span className="font-bold text-sm">Action required: Choose either Donor mode or Receptor mode to proceed.</span>
+          <span className="font-bold text-sm">
+            Action required: Choose either Donor mode or Receptor mode to proceed.
+          </span>
         </div>
       )}
 
       {/* Main Connection Hub */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Left: Mode Selection */}
         <div className="lg:col-span-2 space-y-6">
-           <div className="vsn-panel p-8 bg-black/40 rounded-3xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5"><Zap size={120} /></div>
-             <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
-                <Globe className="text-gold" size={20} />
-                Network Configuration
-             </h2>
+          <div className="vsn-panel p-8 bg-black/40 rounded-3xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <Zap size={120} />
+            </div>
+            <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+              <Globe className="text-gold" size={20} />
+              Network Configuration
+            </h2>
 
-             <div className="grid grid-cols-2 gap-6">
-                <button 
-                  onClick={() => setMode("donor")}
-                  className={`p-6 rounded-2xl border-2 transition-all text-left group vsn-small-panel ${mode === "donor" ? "border-gold bg-gold/5" : "border-white/5 bg-white/5 hover:border-gold/30"}`}
-                >
-                  <Share2 className={`mb-4 transition-transform group-hover:scale-110 ${mode === "donor" ? "text-gold" : "text-white/40"}`} size={32} />
-                  <h3 className="font-bold text-lg">Donor Mode</h3>
-                  <p className="text-[11px] opacity-40 mt-1">Share your connectivity with authorized receptors worldwide.</p>
-                </button>
+            <div className="grid grid-cols-2 gap-6">
+              <button
+                onClick={() => setMode("donor")}
+                className={`p-6 rounded-2xl border-2 transition-all text-left group vsn-small-panel ${mode === "donor" ? "border-gold bg-gold/5" : "border-white/5 bg-white/5 hover:border-gold/30"}`}
+              >
+                <Share2
+                  className={`mb-4 transition-transform group-hover:scale-110 ${mode === "donor" ? "text-gold" : "text-white/40"}`}
+                  size={32}
+                />
+                <h3 className="font-bold text-lg">Donor Mode</h3>
+                <p className="text-[11px] opacity-40 mt-1">
+                  Share your connectivity with authorized receptors worldwide.
+                </p>
+              </button>
 
-                <button 
-                  onClick={() => setMode("receptor")}
-                  className={`p-6 rounded-2xl border-2 transition-all text-left group vsn-small-panel ${mode === "receptor" ? "border-gold bg-gold/5" : "border-white/5 bg-white/5 hover:border-gold/30"}`}
-                >
-                  <Download className={`mb-4 transition-transform group-hover:scale-110 ${mode === "receptor" ? "text-gold" : "text-white/40"}`} size={32} />
-                  <h3 className="font-bold text-lg">Receptor Mode</h3>
-                  <p className="text-[11px] opacity-40 mt-1">Connect to a secure virtual donor and reach the Internet.</p>
-                </button>
-             </div>
+              <button
+                onClick={() => setMode("receptor")}
+                className={`p-6 rounded-2xl border-2 transition-all text-left group vsn-small-panel ${mode === "receptor" ? "border-gold bg-gold/5" : "border-white/5 bg-white/5 hover:border-gold/30"}`}
+              >
+                <Download
+                  className={`mb-4 transition-transform group-hover:scale-110 ${mode === "receptor" ? "text-gold" : "text-white/40"}`}
+                  size={32}
+                />
+                <h3 className="font-bold text-lg">Receptor Mode</h3>
+                <p className="text-[11px] opacity-40 mt-1">
+                  Connect to a secure virtual donor and reach the Internet.
+                </p>
+              </button>
+            </div>
 
-             <div className="mt-12 flex justify-center">
-                <button 
-                  onClick={handleCentralAction}
-                  disabled={starting}
-                  className="vsn-panel bg-gold text-black font-black px-12 py-4 rounded-full flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {starting ? "CONNECTING…" : mode === "none" ? "INITIALIZE ENGINE" : state === "connected" ? "DISCONNECT" : `START ${mode.toUpperCase()} SESSION`}
-                  <ArrowRight size={20} />
-                </button>
-                {error && (
-                  <span className="absolute mt-16 text-xs font-bold" style={{ color: "var(--vsn-red)" }}>{error}</span>
-                )}
-             </div>
-           </div>
+            <div className="mt-12 flex justify-center">
+              <button
+                onClick={handleCentralAction}
+                disabled={starting}
+                className="vsn-panel bg-gold text-black font-black px-12 py-4 rounded-full flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {starting
+                  ? "CONNECTING…"
+                  : mode === "none"
+                    ? "INITIALIZE ENGINE"
+                    : state === "connected"
+                      ? "DISCONNECT"
+                      : `START ${mode.toUpperCase()} SESSION`}
+                <ArrowRight size={20} />
+              </button>
+              {error && (
+                <span className="absolute mt-16 text-xs font-bold" style={{ color: "var(--vsn-red)" }}>
+                  {error}
+                </span>
+              )}
+            </div>
+          </div>
 
-           {/* Quick Access Grid */}
-           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {quickAccess.map(item => (
-                <Link key={item.label} href={item.href} className="vsn-panel p-4 bg-white/5 rounded-2xl hover:bg-gold/5 group">
-                   <div className="mb-3">{item.icon}</div>
-                   <div className="text-[10px] uppercase tracking-widest font-black opacity-40 group-hover:text-gold group-hover:opacity-100 transition-all">{item.label}</div>
-                   <ChevronRight className="mt-2 opacity-20 group-hover:translate-x-1 transition-all" size={14} />
-                </Link>
-              ))}
-           </div>
+          {/* Quick Access Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickAccess.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="vsn-panel p-4 bg-white/5 rounded-2xl hover:bg-gold/5 group"
+              >
+                <div className="mb-3">{item.icon}</div>
+                <div className="text-[10px] uppercase tracking-widest font-black opacity-40 group-hover:text-gold group-hover:opacity-100 transition-all">
+                  {item.label}
+                </div>
+                <ChevronRight
+                  className="mt-2 opacity-20 group-hover:translate-x-1 transition-all"
+                  size={14}
+                />
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Right: Live Log Panel */}
         <div className="vsn-panel bg-black/60 rounded-3xl flex flex-col h-full border-white/5">
-           <div className="p-6 border-b border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                 <Terminal className="text-gold" size={16} />
-                 <h3 className="text-xs font-bold uppercase tracking-widest">System Log</h3>
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Terminal className="text-gold" size={16} />
+              <h3 className="text-xs font-bold uppercase tracking-widest">System Log</h3>
+            </div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#25e64a]" />
+          </div>
+          <div className="flex-1 p-6 overflow-y-auto font-mono text-[11px] space-y-3 scrollbar-hide">
+            {logs.map((log) => (
+              <div key={log.id} className="flex gap-3 animate-in slide-in-from-left duration-500">
+                <span className="opacity-20 text-[9px] mt-0.5">{log.time}</span>
+                <span
+                  className={
+                    log.type === "success"
+                      ? "text-green-500"
+                      : log.type === "warn"
+                        ? "text-red-500"
+                        : "text-gold/80"
+                  }
+                >
+                  {log.msg}
+                </span>
               </div>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#25e64a]" />
-           </div>
-           <div className="flex-1 p-6 overflow-y-auto font-mono text-[11px] space-y-3 scrollbar-hide">
-              {logs.map(log => (
-                <div key={log.id} className="flex gap-3 animate-in slide-in-from-left duration-500">
-                  <span className="opacity-20 text-[9px] mt-0.5">{log.time}</span>
-                  <span className={log.type === "success" ? "text-green-500" : log.type === "warn" ? "text-red-500" : "text-gold/80"}>
-                    {log.msg}
-                  </span>
-                </div>
-              ))}
-              {logs.length === 0 && <div className="opacity-20">Awaiting activity...</div>}
-           </div>
-           <div className="p-4 bg-white/5 text-[9px] opacity-30 flex items-center gap-2 italic">
-              <Activity size={10} />
-              {state === "connected"
-                ? `Tunnel UP · ${tunnelInfo?.config ? (tunnelInfo.config as { interfaceName: string }).interfaceName : ""}${tunnelInfo?.relay ? " · RELAY" : ""}`
-                : "Encryption: ChaCha20-Poly1305 · Layer 7 Isolated"}
-           </div>
+            ))}
+            {logs.length === 0 && <div className="opacity-20">Awaiting activity...</div>}
+          </div>
+          <div className="p-4 bg-white/5 text-[9px] opacity-30 flex items-center gap-2 italic">
+            <Activity size={10} />
+            {state === "connected"
+              ? `Tunnel UP · ${tunnelInfo?.config ? (tunnelInfo.config as { interfaceName: string }).interfaceName : ""}${tunnelInfo?.relay ? " · RELAY" : ""}`
+              : "Encryption: ChaCha20-Poly1305 · Layer 7 Isolated"}
+          </div>
         </div>
       </div>
-
     </div>
   );
 }
@@ -2787,7 +2990,12 @@ export default function ConnectionPage() {
   }, []);
 
   const statusColor = sessionStateToColor(sessionState);
-  const colorHex = statusColor === "green" ? "var(--vsn-green)" : statusColor === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+  const colorHex =
+    statusColor === "green"
+      ? "var(--vsn-green)"
+      : statusColor === "yellow"
+        ? "var(--vsn-yellow)"
+        : "var(--vsn-red)";
 
   const startDonor = () => {
     setMode("donor");
@@ -2828,12 +3036,19 @@ export default function ConnectionPage() {
       {/* Dynamic Sub-Header */}
       <div className="flex items-center justify-between border-b border-[var(--vsn-border)] pb-6 mb-8">
         <div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--vsn-text)" }}>CONNECTION HUB</h1>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--vsn-text)" }}>
+            CONNECTION HUB
+          </h1>
           <p className="text-xs uppercase tracking-widest opacity-40 font-bold">Network Bridge Management</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--vsn-bg-card)", border: "1px solid var(--vsn-border)" }}>
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+          style={{ backgroundColor: "var(--vsn-bg-card)", border: "1px solid var(--vsn-border)" }}
+        >
           <Zap size={14} style={{ color: "var(--vsn-accent)" }} />
-          <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>Fresh Node</span>
+          <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>
+            Fresh Node
+          </span>
         </div>
       </div>
 
@@ -2841,9 +3056,15 @@ export default function ConnectionPage() {
       <div className="vsn-card p-8 text-center">
         {/* VSN Title */}
         <div className="flex items-center justify-center gap-1 mb-1">
-          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>V</span>
-          <span className="text-xl font-black" style={{ color: "var(--vsn-accent)" }}>S</span>
-          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>N</span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>
+            V
+          </span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-accent)" }}>
+            S
+          </span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>
+            N
+          </span>
         </div>
         <p className="text-xs uppercase tracking-[0.25em] mb-6" style={{ color: "var(--vsn-text-muted)" }}>
           Virtual Share Network
@@ -2853,7 +3074,11 @@ export default function ConnectionPage() {
         <div className="relative flex items-center justify-center mb-6">
           <div
             className={`w-32 h-32 rounded-full flex items-center justify-center ${
-              statusColor === "green" ? "vsn-pulse-green" : statusColor === "yellow" ? "vsn-pulse-yellow" : "vsn-pulse-red"
+              statusColor === "green"
+                ? "vsn-pulse-green"
+                : statusColor === "yellow"
+                  ? "vsn-pulse-yellow"
+                  : "vsn-pulse-red"
             }`}
             style={{ backgroundColor: `${colorHex}15`, border: `3px solid ${colorHex}` }}
           >
@@ -2882,11 +3107,18 @@ export default function ConnectionPage() {
               { icon: <Shield size={16} />, label: "Tunnel", value: "WireGuard" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="flex items-center justify-center gap-1 mb-1" style={{ color: "var(--vsn-accent)" }}>
+                <div
+                  className="flex items-center justify-center gap-1 mb-1"
+                  style={{ color: "var(--vsn-accent)" }}
+                >
                   {stat.icon}
                 </div>
-                <div className="text-lg font-bold" style={{ color: "var(--vsn-text)" }}>{stat.value}</div>
-                <div className="text-[10px] uppercase" style={{ color: "var(--vsn-text-muted)" }}>{stat.label}</div>
+                <div className="text-lg font-bold" style={{ color: "var(--vsn-text)" }}>
+                  {stat.value}
+                </div>
+                <div className="text-[10px] uppercase" style={{ color: "var(--vsn-text-muted)" }}>
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -2918,13 +3150,26 @@ export default function ConnectionPage() {
               Connect to Donor
             </button>
           )}
-          {(sessionState === "connected" || sessionState === "connecting" || sessionState === "negotiating" || sessionState === "approved") && (
-            <button onClick={disconnect} className="px-6 py-3 rounded-lg font-semibold text-sm text-white" style={{ backgroundColor: "var(--vsn-red)" }}>
+          {(sessionState === "connected" ||
+            sessionState === "connecting" ||
+            sessionState === "negotiating" ||
+            sessionState === "approved") && (
+            <button
+              onClick={disconnect}
+              className="px-6 py-3 rounded-lg font-semibold text-sm text-white"
+              style={{ backgroundColor: "var(--vsn-red)" }}
+            >
               Disconnect
             </button>
           )}
           {sessionState === "terminated" && (
-            <button onClick={() => { setSessionState("idle"); setMode("none"); }} className="vsn-btn-outline px-6 py-3">
+            <button
+              onClick={() => {
+                setSessionState("idle");
+                setMode("none");
+              }}
+              className="vsn-btn-outline px-6 py-3"
+            >
               Reset
             </button>
           )}
@@ -2940,22 +3185,41 @@ export default function ConnectionPage() {
         ].map((stat) => (
           <div key={stat.label} className="vsn-card p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>{stat.label}</span>
+              <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>
+                {stat.label}
+              </span>
               <div style={{ color: "var(--vsn-accent)" }}>{stat.icon}</div>
             </div>
-            <div className="text-xl font-bold" style={{ color: "var(--vsn-text)" }}>{stat.value}</div>
+            <div className="text-xl font-bold" style={{ color: "var(--vsn-text)" }}>
+              {stat.value}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Session State Machine Visual */}
       <div className="vsn-card p-4">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Session State Machine</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>
+          Session State Machine
+        </h3>
         <div className="flex flex-wrap gap-2">
-          {(["idle", "requested", "approved", "negotiating", "connecting", "connected", "reconnecting", "terminated", "error"] as SessionState[]).map((state) => {
+          {(
+            [
+              "idle",
+              "requested",
+              "approved",
+              "negotiating",
+              "connecting",
+              "connected",
+              "reconnecting",
+              "terminated",
+              "error",
+            ] as SessionState[]
+          ).map((state) => {
             const isActive = sessionState === state;
             const sc = sessionStateToColor(state);
-            const hex = sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+            const hex =
+              sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
             return (
               <div
                 key={state}
@@ -2983,26 +3247,40 @@ export default function ConnectionPage() {
 "use client";
 
 import { useState } from "react";
-import { 
-  Key, RefreshCw, Users, Shield, HardDrive, Clock, 
-  ChevronRight, ArrowUpRight, ArrowDownRight, Ban, Settings2, Trash2
+import {
+  Key,
+  RefreshCw,
+  Users,
+  Shield,
+  HardDrive,
+  Clock,
+  ChevronRight,
+  ArrowUpRight,
+  ArrowDownRight,
+  Ban,
+  Settings2,
+  Trash2,
 } from "lucide-react";
 
 export default function DonorPage() {
   const [pairCode, setPairCode] = useState("");
   const [publicKey, setPublicKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
   const [devices, setDevices] = useState<any[]>([]);
 
-  const [selectedDevice, setSelectedDevice] = useState<typeof devices[0] | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<(typeof devices)[0] | null>(null);
 
   const generateNewKeys = () => {
     setIsGenerating(true);
     setTimeout(() => {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      const newCode = Array.from({length: 12}, (_, i) => (i===4 || i===9) ? "-" : chars[Math.floor(Math.random() * chars.length)]).join("");
-      const newKey = Array.from({length: 44}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const newCode = Array.from({ length: 12 }, (_, i) =>
+        i === 4 || i === 9 ? "-" : chars[Math.floor(Math.random() * chars.length)],
+      ).join("");
+      const newKey = Array.from({ length: 44 }, () => chars[Math.floor(Math.random() * chars.length)]).join(
+        "",
+      );
       setPairCode(newCode);
       setPublicKey(newKey);
       setIsGenerating(false);
@@ -3011,133 +3289,155 @@ export default function DonorPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      
       {/* Identity & Keys */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 vsn-panel p-6 bg-black/40 rounded-2xl relative overflow-hidden">
-           <h3 className="text-sm font-bold uppercase tracking-widest text-gold mb-6 flex items-center gap-2">
-             <Key size={16} /> Security Credentials
-           </h3>
-           
-           <div className="space-y-4">
-              <div className="flex flex-col gap-1">
-                 <span className="text-[10px] uppercase opacity-40 font-bold ml-1">Pair Code</span>
-                 <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-gold text-lg tracking-wider">
-                       {pairCode}
-                    </div>
-                    <button 
-                      onClick={generateNewKeys}
-                      className={`w-12 h-12 rounded-lg flex items-center justify-center border border-gold/30 hover:border-gold hover:bg-gold/10 transition-all ${isGenerating ? 'animate-spin' : ''}`}
-                    >
-                      <RefreshCw size={20} />
-                    </button>
-                 </div>
-              </div>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-gold mb-6 flex items-center gap-2">
+            <Key size={16} /> Security Credentials
+          </h3>
 
-              <div className="flex flex-col gap-1">
-                 <span className="text-[10px] uppercase opacity-40 font-bold ml-1">WireGuard Public Key</span>
-                 <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-[10px] break-all opacity-80">
-                    {publicKey}
-                 </div>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase opacity-40 font-bold ml-1">Pair Code</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-gold text-lg tracking-wider">
+                  {pairCode}
+                </div>
+                <button
+                  onClick={generateNewKeys}
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center border border-gold/30 hover:border-gold hover:bg-gold/10 transition-all ${isGenerating ? "animate-spin" : ""}`}
+                >
+                  <RefreshCw size={20} />
+                </button>
               </div>
-           </div>
-           
-           <div className="mt-6 flex items-center gap-2 text-[10px] text-green-500 font-bold">
-              <Shield size={12} /> ROTATION ACTIVE · RSA-4096 / Ed25519
-           </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase opacity-40 font-bold ml-1">WireGuard Public Key</span>
+              <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-[10px] break-all opacity-80">
+                {publicKey}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-2 text-[10px] text-green-500 font-bold">
+            <Shield size={12} /> ROTATION ACTIVE · RSA-4096 / Ed25519
+          </div>
         </div>
 
         <div className="vsn-panel p-6 bg-gold/5 border-gold/20 rounded-2xl flex flex-col justify-center text-center group">
-           <Users className="mx-auto mb-4 text-gold group-hover:scale-110 transition-transform" size={40} />
-           <div className="text-3xl font-black">{devices.length}</div>
-           <div className="text-[10px] uppercase font-bold opacity-40 tracking-widest">Active Receptors</div>
-           <button className="mt-6 vsn-panel bg-gold text-black text-[10px] font-black py-2 px-4 rounded-full mx-auto hover:scale-105 transition-all">
-              MANAGE POOL
-           </button>
+          <Users className="mx-auto mb-4 text-gold group-hover:scale-110 transition-transform" size={40} />
+          <div className="text-3xl font-black">{devices.length}</div>
+          <div className="text-[10px] uppercase font-bold opacity-40 tracking-widest">Active Receptors</div>
+          <button className="mt-6 vsn-panel bg-gold text-black text-[10px] font-black py-2 px-4 rounded-full mx-auto hover:scale-105 transition-all">
+            MANAGE POOL
+          </button>
         </div>
       </div>
 
       {/* Bandwidth & Device Management */}
       <div className="vsn-panel bg-black/40 rounded-2xl overflow-hidden">
-         <div className="p-6 border-b border-white/5 flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-gold flex items-center gap-2">
-               <HardDrive size={16} /> Bandwidth Management
-            </h3>
-            <div className="flex items-center gap-4 text-[10px] font-bold opacity-40">
-               <span className="flex items-center gap-1"><ArrowUpRight size={12} className="text-green-500" /> 12.4 Mbps</span>
-               <span className="flex items-center gap-1"><ArrowDownRight size={12} className="text-blue-500" /> 2.1 Mbps</span>
-            </div>
-         </div>
+        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-gold flex items-center gap-2">
+            <HardDrive size={16} /> Bandwidth Management
+          </h3>
+          <div className="flex items-center gap-4 text-[10px] font-bold opacity-40">
+            <span className="flex items-center gap-1">
+              <ArrowUpRight size={12} className="text-green-500" /> 12.4 Mbps
+            </span>
+            <span className="flex items-center gap-1">
+              <ArrowDownRight size={12} className="text-blue-500" /> 2.1 Mbps
+            </span>
+          </div>
+        </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-2">
-            {/* Device List */}
-            <div className="p-4 space-y-2 border-r border-white/5">
-               {devices.length > 0 ? (
-                 devices.map(dev => (
-                   <div 
-                     key={dev.id} 
-                     onClick={() => setSelectedDevice(dev)}
-                     className={`p-4 rounded-xl border transition-all cursor-pointer group vsn-small-panel ${selectedDevice?.id === dev.id ? 'border-gold bg-gold/10' : 'border-white/5 bg-white/5 hover:border-gold/30'}`}
-                   >
-                      <div className="flex justify-between items-start">
-                         <div>
-                            <div className="text-sm font-bold">{dev.name}</div>
-                            <div className="text-[10px] opacity-40 font-bold">{dev.country} · {dev.time} elapsed</div>
-                         </div>
-                         <div className="text-right">
-                            <div className="text-xs font-mono font-bold text-gold">{dev.usage} / {dev.limit}</div>
-                            <div className="h-1 w-24 bg-white/10 rounded-full mt-2 overflow-hidden">
-                               <div className="h-full bg-gold" style={{ width: '35%' }} />
-                            </div>
-                         </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Device List */}
+          <div className="p-4 space-y-2 border-r border-white/5">
+            {devices.length > 0 ? (
+              devices.map((dev) => (
+                <div
+                  key={dev.id}
+                  onClick={() => setSelectedDevice(dev)}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer group vsn-small-panel ${selectedDevice?.id === dev.id ? "border-gold bg-gold/10" : "border-white/5 bg-white/5 hover:border-gold/30"}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-sm font-bold">{dev.name}</div>
+                      <div className="text-[10px] opacity-40 font-bold">
+                        {dev.country} · {dev.time} elapsed
                       </div>
-                   </div>
-                 ))
-               ) : (
-                 <div className="text-center py-20 opacity-20">
-                    <Users className="mx-auto mb-2" size={32} />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Awaiting connections...</p>
-                 </div>
-               )}
-            </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-mono font-bold text-gold">
+                        {dev.usage} / {dev.limit}
+                      </div>
+                      <div className="h-1 w-24 bg-white/10 rounded-full mt-2 overflow-hidden">
+                        <div className="h-full bg-gold" style={{ width: "35%" }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-20 opacity-20">
+                <Users className="mx-auto mb-2" size={32} />
+                <p className="text-[10px] font-black uppercase tracking-widest">Awaiting connections...</p>
+              </div>
+            )}
+          </div>
 
-            {/* Restriction Panel */}
-            <div className="p-8 bg-black/20 flex flex-col justify-center">
-               {selectedDevice ? (
-                 <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                    <div className="flex items-center gap-3 mb-4">
-                       <Settings2 className="text-gold" size={20} />
-                       <h4 className="font-black text-lg">Restrict {selectedDevice.name.split(' ')[1]}</h4>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-2">
-                          <label className="text-[10px] uppercase font-black opacity-40">Data Limit (GB)</label>
-                          <input type="number" defaultValue={2} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-gold focus:border-gold outline-none" />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] uppercase font-black opacity-40">Time Limit (Min)</label>
-                          <input type="number" defaultValue={120} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-gold focus:border-gold outline-none" />
-                       </div>
-                    </div>
+          {/* Restriction Panel */}
+          <div className="p-8 bg-black/20 flex flex-col justify-center">
+            {selectedDevice ? (
+              <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <Settings2 className="text-gold" size={20} />
+                  <h4 className="font-black text-lg">Restrict {selectedDevice.name.split(" ")[1]}</h4>
+                </div>
 
-                    <div className="flex gap-3 mt-8">
-                       <button className="flex-1 bg-gold text-black font-black py-3 rounded-xl hover:scale-[1.02] transition-all">APPLY RESTRICTIONS</button>
-                       <button className="p-3 border border-red-500/30 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Ban size={20} /></button>
-                       <button className="p-3 border border-white/10 text-white/40 rounded-xl hover:bg-white/10 transition-all"><Trash2 size={20} /></button>
-                    </div>
-                 </div>
-               ) : (
-                 <div className="text-center opacity-20 space-y-4">
-                    <Users className="mx-auto" size={48} />
-                    <p className="text-sm font-bold uppercase tracking-widest">Select a device to modify restrictions</p>
-                 </div>
-               )}
-            </div>
-         </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-black opacity-40">Data Limit (GB)</label>
+                    <input
+                      type="number"
+                      defaultValue={2}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-gold focus:border-gold outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-black opacity-40">Time Limit (Min)</label>
+                    <input
+                      type="number"
+                      defaultValue={120}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-gold focus:border-gold outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                  <button className="flex-1 bg-gold text-black font-black py-3 rounded-xl hover:scale-[1.02] transition-all">
+                    APPLY RESTRICTIONS
+                  </button>
+                  <button className="p-3 border border-red-500/30 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                    <Ban size={20} />
+                  </button>
+                  <button className="p-3 border border-white/10 text-white/40 rounded-xl hover:bg-white/10 transition-all">
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center opacity-20 space-y-4">
+                <Users className="mx-auto" size={48} />
+                <p className="text-sm font-bold uppercase tracking-widest">
+                  Select a device to modify restrictions
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
     </div>
   );
 }
@@ -3174,35 +3474,43 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "What is VSN?",
-    answer: "VSN (Virtual Share Network) is a platform that allows someone with reliable Internet to voluntarily share that connectivity with another authorized user through a secure encrypted virtual network. The receptor's traffic is routed through the donor: Receptor → encrypted VSN tunnel → Donor → Donor's ISP → Internet.",
+    answer:
+      "VSN (Virtual Share Network) is a platform that allows someone with reliable Internet to voluntarily share that connectivity with another authorized user through a secure encrypted virtual network. The receptor's traffic is routed through the donor: Receptor → encrypted VSN tunnel → Donor → Donor's ISP → Internet.",
   },
   {
     question: "Can VSN create Internet where there is none?",
-    answer: "No. VSN requires at least some underlying communication path — weak mobile data, limited Wi-Fi, unstable Internet, or another relay path. If the receptor has literally zero connectivity (no Wi-Fi, no mobile, no Ethernet, no local communication), remote communication is physically impossible. VSN helps with poor/limited connectivity, not zero connectivity.",
+    answer:
+      "No. VSN requires at least some underlying communication path — weak mobile data, limited Wi-Fi, unstable Internet, or another relay path. If the receptor has literally zero connectivity (no Wi-Fi, no mobile, no Ethernet, no local communication), remote communication is physically impossible. VSN helps with poor/limited connectivity, not zero connectivity.",
   },
   {
     question: "Is my traffic encrypted?",
-    answer: "Yes. All traffic flows through a WireGuard tunnel using ChaCha20-Poly1305 encryption with Noise protocol handshake. This provides forward secrecy and authenticated encryption. Even a compromised VSN server cannot decrypt your tunnel traffic — the server never holds private keys.",
+    answer:
+      "Yes. All traffic flows through a WireGuard tunnel using ChaCha20-Poly1305 encryption with Noise protocol handshake. This provides forward secrecy and authenticated encryption. Even a compromised VSN server cannot decrypt your tunnel traffic — the server never holds private keys.",
   },
   {
     question: "Can the receptor access the donor's local network?",
-    answer: "No. Network isolation is mandatory. The receptor obtains Internet through the donor but NEVER access to the donor's LAN — no router access, no files, no SSH, no administration. This is enforced with firewall rules, routing policies, and network namespaces.",
+    answer:
+      "No. Network isolation is mandatory. The receptor obtains Internet through the donor but NEVER access to the donor's LAN — no router access, no files, no SSH, no administration. This is enforced with firewall rules, routing policies, and network namespaces.",
   },
   {
     question: "What is a Pair Code?",
-    answer: "A Pair Code is an invitation/connection token that allows a receptor to request connection to a donor. It works alongside cryptographic identity, authentication, and device verification — it is NOT the only security mechanism. Pair Codes are never stored in plaintext.",
+    answer:
+      "A Pair Code is an invitation/connection token that allows a receptor to request connection to a donor. It works alongside cryptographic identity, authentication, and device verification — it is NOT the only security mechanism. Pair Codes are never stored in plaintext.",
   },
   {
     question: "What about the donor's privacy?",
-    answer: "The receptor learns the donor's IP address (unless Hidden Donor mode is enabled, which routes through a relay). The donor can see connection-level traffic metadata (volume, timing) but not the contents of encrypted HTTPS traffic. This is the same privacy model as using an ISP. Encrypted DNS (DNS-over-HTTPS) prevents DNS leakage to the donor.",
+    answer:
+      "The receptor learns the donor's IP address (unless Hidden Donor mode is enabled, which routes through a relay). The donor can see connection-level traffic metadata (volume, timing) but not the contents of encrypted HTTPS traffic. This is the same privacy model as using an ISP. Encrypted DNS (DNS-over-HTTPS) prevents DNS leakage to the donor.",
   },
   {
     question: "What is the NAT traversal strategy?",
-    answer: "VSN tries: 1) Direct connection → 2) STUN/ICE → 3) UDP hole punching → 4) Direct encrypted tunnel → 5) If unsuccessful → 6) Encrypted relay fallback. Since target receptors are often on CGNAT/mobile networks where hole punching frequently fails, the relay is treated as a normal path, not an edge case.",
+    answer:
+      "VSN tries: 1) Direct connection → 2) STUN/ICE → 3) UDP hole punching → 4) Direct encrypted tunnel → 5) If unsuccessful → 6) Encrypted relay fallback. Since target receptors are often on CGNAT/mobile networks where hole punching frequently fails, the relay is treated as a normal path, not an edge case.",
   },
   {
     question: "Is sharing Internet legal?",
-    answer: "Most consumer ISP contracts prohibit third-party traffic sharing (similar to Tor exit nodes and residential proxies). VSN includes: abuse reporting, session termination, user blocking, donor revocation, account suspension, and clear consent screens. Users should review their ISP terms of service.",
+    answer:
+      "Most consumer ISP contracts prohibit third-party traffic sharing (similar to Tor exit nodes and residential proxies). VSN includes: abuse reporting, session termination, user blocking, donor revocation, account suspension, and clear consent screens. Users should review their ISP terms of service.",
   },
 ];
 
@@ -3212,25 +3520,38 @@ export default function HelpPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>Help & Documentation</h1>
-        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Architecture, guides, security documentation, and FAQ</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+          Help & Documentation
+        </h1>
+        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+          Architecture, guides, security documentation, and FAQ
+        </p>
       </div>
 
       {/* Architecture Overview */}
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Book size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Architecture Overview</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Architecture Overview
+          </h3>
         </div>
         <div className="space-y-3 text-xs leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>Network flow:</strong> RECEPTOR → Virtual Network Interface → Encrypted VSN Tunnel → DONOR → Routing/NAT → Donor ISP → Internet
+            <strong style={{ color: "var(--vsn-text)" }}>Network flow:</strong> RECEPTOR → Virtual Network
+            Interface → Encrypted VSN Tunnel → DONOR → Routing/NAT → Donor ISP → Internet
           </p>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>Control plane vs Data plane:</strong> The VSN server handles authentication, discovery, signaling, and session management (control plane). User Internet traffic flows through the direct encrypted tunnel Receptor ↔ Donor (data plane). The server never carries user traffic and cannot decrypt tunnels.
+            <strong style={{ color: "var(--vsn-text)" }}>Control plane vs Data plane:</strong> The VSN server
+            handles authentication, discovery, signaling, and session management (control plane). User
+            Internet traffic flows through the direct encrypted tunnel Receptor ↔ Donor (data plane). The
+            server never carries user traffic and cannot decrypt tunnels.
           </p>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>WireGuard:</strong> VSN uses WireGuard as the tunnel core — mature, audited, ChaCha20-Poly1305 encryption, Noise-based handshake, roaming, fast rekey, forward secrecy. The real engineering is the surrounding system: TUN handling, routing rules, DNS, donor-side isolation firewall, key exchange.
+            <strong style={{ color: "var(--vsn-text)" }}>WireGuard:</strong> VSN uses WireGuard as the tunnel
+            core — mature, audited, ChaCha20-Poly1305 encryption, Noise-based handshake, roaming, fast rekey,
+            forward secrecy. The real engineering is the surrounding system: TUN handling, routing rules, DNS,
+            donor-side isolation firewall, key exchange.
           </p>
         </div>
       </div>
@@ -3239,17 +3560,30 @@ export default function HelpPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Network size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>NAT / CGNAT Problem</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            NAT / CGNAT Problem
+          </h3>
         </div>
         <div className="space-y-3 text-xs leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>Why can&apos;t devices just connect directly?</strong> Most devices are behind NAT (Network Address Translation) — they have private IPs (192.168.x.x, 10.x.x.x) that are not routable on the Internet. The router translates private → public IP, but incoming connections from the Internet are blocked by default.
+            <strong style={{ color: "var(--vsn-text)" }}>
+              Why can&apos;t devices just connect directly?
+            </strong>{" "}
+            Most devices are behind NAT (Network Address Translation) — they have private IPs (192.168.x.x,
+            10.x.x.x) that are not routable on the Internet. The router translates private → public IP, but
+            incoming connections from the Internet are blocked by default.
           </p>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>CGNAT (Carrier-Grade NAT):</strong> Mobile carriers often put thousands of users behind a single public IP. This makes hole punching much harder — even STUN often fails. Symmetric NAT (common on mobile) further restricts port mapping, making P2P connections unreliable.
+            <strong style={{ color: "var(--vsn-text)" }}>CGNAT (Carrier-Grade NAT):</strong> Mobile carriers
+            often put thousands of users behind a single public IP. This makes hole punching much harder —
+            even STUN often fails. Symmetric NAT (common on mobile) further restricts port mapping, making P2P
+            connections unreliable.
           </p>
           <p>
-            <strong style={{ color: "var(--vsn-text)" }}>VSN strategy:</strong> Try direct → STUN/ICE → UDP hole punching → if all fail → encrypted relay. The relay forwards opaque encrypted packets WITHOUT inspecting contents — this is a cryptographic fact, not a policy. Regional relay allocation is designed from the start.
+            <strong style={{ color: "var(--vsn-text)" }}>VSN strategy:</strong> Try direct → STUN/ICE → UDP
+            hole punching → if all fail → encrypted relay. The relay forwards opaque encrypted packets WITHOUT
+            inspecting contents — this is a cryptographic fact, not a policy. Regional relay allocation is
+            designed from the start.
           </p>
         </div>
       </div>
@@ -3258,22 +3592,52 @@ export default function HelpPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Lock size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>WireGuard Integration Blueprint</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            WireGuard Integration Blueprint
+          </h3>
         </div>
         <div className="space-y-4">
           {[
-            { icon: <Server size={14} />, title: "TUN Adapters per OS", desc: "Windows: Wintun adapter • macOS: utun interface • Linux: tun/tap device • Android: VpnService API • iOS: NEPacketTunnelProvider" },
-            { icon: <Key size={14} />, title: "Key Exchange", desc: "Device generates WireGuard keypair → public key registered with control plane → server coordinates key exchange between donor and receptor → pre-shared key established for each session" },
-            { icon: <Globe size={14} />, title: "Routing Rules", desc: "Receptor: all traffic → virtual interface → WireGuard tunnel. Donor: tunnel traffic → NAT/masquerade → ISP. Non-tunnel traffic unaffected." },
-            { icon: <Shield size={14} />, title: "Donor Isolation Firewall", desc: "iptables/nftables rules: allow tunnel traffic → NAT → Internet. Block: donor LAN access, SSH, file sharing, router admin, mDNS, link-local. Enforce per-receptor bandwidth quotas." },
-            { icon: <Wifi size={14} />, title: "DNS Handling", desc: "Receptor DNS queries routed through tunnel → donor DNS resolver (or DoH resolver for privacy). Prevent DNS leakage outside tunnel. Kill switch blocks all traffic if tunnel drops." },
+            {
+              icon: <Server size={14} />,
+              title: "TUN Adapters per OS",
+              desc: "Windows: Wintun adapter • macOS: utun interface • Linux: tun/tap device • Android: VpnService API • iOS: NEPacketTunnelProvider",
+            },
+            {
+              icon: <Key size={14} />,
+              title: "Key Exchange",
+              desc: "Device generates WireGuard keypair → public key registered with control plane → server coordinates key exchange between donor and receptor → pre-shared key established for each session",
+            },
+            {
+              icon: <Globe size={14} />,
+              title: "Routing Rules",
+              desc: "Receptor: all traffic → virtual interface → WireGuard tunnel. Donor: tunnel traffic → NAT/masquerade → ISP. Non-tunnel traffic unaffected.",
+            },
+            {
+              icon: <Shield size={14} />,
+              title: "Donor Isolation Firewall",
+              desc: "iptables/nftables rules: allow tunnel traffic → NAT → Internet. Block: donor LAN access, SSH, file sharing, router admin, mDNS, link-local. Enforce per-receptor bandwidth quotas.",
+            },
+            {
+              icon: <Wifi size={14} />,
+              title: "DNS Handling",
+              desc: "Receptor DNS queries routed through tunnel → donor DNS resolver (or DoH resolver for privacy). Prevent DNS leakage outside tunnel. Kill switch blocks all traffic if tunnel drops.",
+            },
           ].map((item) => (
-            <div key={item.title} className="p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+            <div
+              key={item.title}
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
               <div className="flex items-center gap-2 mb-1">
                 <div style={{ color: "var(--vsn-accent)" }}>{item.icon}</div>
-                <span className="text-xs font-semibold" style={{ color: "var(--vsn-text)" }}>{item.title}</span>
+                <span className="text-xs font-semibold" style={{ color: "var(--vsn-text)" }}>
+                  {item.title}
+                </span>
               </div>
-              <p className="text-[10px] leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>{item.desc}</p>
+              <p className="text-[10px] leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
+                {item.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -3283,16 +3647,24 @@ export default function HelpPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <HelpCircle size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Frequently Asked Questions</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Frequently Asked Questions
+          </h3>
         </div>
         <div className="space-y-2">
           {faqs.map((faq, i) => (
-            <div key={i} className="rounded-lg overflow-hidden" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+            <div
+              key={i}
+              className="rounded-lg overflow-hidden"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
               <button
                 onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
                 className="w-full flex items-center justify-between p-3 text-left"
               >
-                <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{faq.question}</span>
+                <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {faq.question}
+                </span>
                 {openFAQ === i ? (
                   <ChevronDown size={16} style={{ color: "var(--vsn-text-muted)" }} />
                 ) : (
@@ -3313,7 +3685,9 @@ export default function HelpPage() {
       <div className="vsn-card p-6" style={{ borderColor: "var(--vsn-yellow)" }}>
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle size={16} style={{ color: "var(--vsn-yellow)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-yellow)" }}>Legal & Compliance Checklist</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-yellow)" }}>
+            Legal & Compliance Checklist
+          </h3>
         </div>
         <div className="space-y-2 text-xs leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
           <p>☐ Review ISP Terms of Service for bandwidth-sharing restrictions</p>
@@ -3335,20 +3709,32 @@ export default function HelpPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Shield size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Threat Model (STRIDE) — Summary</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Threat Model (STRIDE) — Summary
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--vsn-border)" }}>
-                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>Threat</th>
-                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>Risk</th>
-                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>Mitigation</th>
+                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>
+                  Threat
+                </th>
+                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>
+                  Risk
+                </th>
+                <th className="text-left p-2 font-semibold" style={{ color: "var(--vsn-text)" }}>
+                  Mitigation
+                </th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["Malicious receptor", "LAN scanning, bandwidth abuse", "Firewall isolation, quotas, monitoring"],
+                [
+                  "Malicious receptor",
+                  "LAN scanning, bandwidth abuse",
+                  "Firewall isolation, quotas, monitoring",
+                ],
                 ["Malicious donor", "Traffic inspection, MITM", "E2E encryption, HTTPS, WireGuard"],
                 ["Compromised server", "MITM, credential theft", "Server never holds private keys"],
                 ["Stolen device", "Unauthorized access", "Device revocation, key rotation"],
@@ -3357,7 +3743,9 @@ export default function HelpPage() {
                 ["Replay attacks", "Session hijacking", "Short-lived tokens, nonce-based auth"],
               ].map(([threat, risk, mitigation]) => (
                 <tr key={threat} style={{ borderBottom: "1px solid var(--vsn-border)" }}>
-                  <td className="p-2 font-medium" style={{ color: "var(--vsn-text)" }}>{threat}</td>
+                  <td className="p-2 font-medium" style={{ color: "var(--vsn-text)" }}>
+                    {threat}
+                  </td>
                   <td className="p-2">{risk}</td>
                   <td className="p-2">{mitigation}</td>
                 </tr>
@@ -3384,7 +3772,12 @@ import InteractiveGlobe from "@/components/earth-globe";
 import ConnectionBackground from "@/components/connection-background";
 import { Bell, Shield, Activity, X, Menu, Check, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { subscribeNotifications, markRead, markAllRead, type VsnNotification } from "@/lib/notification-store";
+import {
+  subscribeNotifications,
+  markRead,
+  markAllRead,
+  type VsnNotification,
+} from "@/lib/notification-store";
 import { acceptSession, rejectSession } from "@/lib/api/sessions";
 import { pushNotification } from "@/lib/notification-store";
 
@@ -3403,7 +3796,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (showNotifications && notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+      if (
+        showNotifications &&
+        notificationRef.current &&
+        !notificationRef.current.contains(e.target as Node)
+      ) {
         setShowNotifications(false);
       }
     };
@@ -3445,25 +3842,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <ConnectionBackground />
 
       <div className="vsn-app-window w-full h-[95vh] max-w-[1600px] flex flex-col relative bg-[var(--vsn-surface)]/80 backdrop-blur-3xl shadow-[var(--vsn-shadow)] border-[var(--vsn-border)] z-10 transition-all duration-500">
-        
         {/* Fixed Top Header Branding */}
         <div className="absolute top-0 left-0 right-0 h-20 z-40 flex items-center justify-center pointer-events-none">
-           <div className="flex flex-col items-center">
-              <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
-                  <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />
-                  <h1 className="text-2xl font-black tracking-tighter flex">
-                    <span className="text-[var(--vsn-red)]">V</span>
-                    <span className="text-[var(--vsn-yellow)] px-0.5">S</span>
-                    <span className="text-[var(--vsn-green)]">N</span>
-                  </h1>
-              </motion.div>
-              <p className="text-[7px] uppercase tracking-[0.6em] opacity-30 font-black text-[var(--vsn-text-primary)]">VIRTUAL SHARE NETWORK</p>
-           </div>
+          <div className="flex flex-col items-center">
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-4"
+            >
+              <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />
+              <h1 className="text-2xl font-black tracking-tighter flex">
+                <span className="text-[var(--vsn-red)]">V</span>
+                <span className="text-[var(--vsn-yellow)] px-0.5">S</span>
+                <span className="text-[var(--vsn-green)]">N</span>
+              </h1>
+            </motion.div>
+            <p className="text-[7px] uppercase tracking-[0.6em] opacity-30 font-black text-[var(--vsn-text-primary)]">
+              VIRTUAL SHARE NETWORK
+            </p>
+          </div>
         </div>
 
         {/* Global UI Controls */}
-        <button 
-          onClick={() => setSidebarOpen(true)} 
+        <button
+          onClick={() => setSidebarOpen(true)}
           className="absolute top-6 left-6 z-[80] p-2 bg-[var(--vsn-surface)] border border-[var(--vsn-border)] rounded-xl hover:border-[var(--vsn-accent)] transition-all group"
         >
           <Menu className="text-[var(--vsn-accent)]" size={18} />
@@ -3473,65 +3875,121 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Rotating Earth — top-right of every app page; click a country to see its local time */}
         <div className="absolute top-2 right-4 w-[160px] h-[160px] z-[60] pointer-events-auto">
-           <InteractiveGlobe />
+          <InteractiveGlobe />
         </div>
 
-        <main className="flex-1 p-8 pt-24 overflow-auto scrollbar-hide relative z-0">
-          {children}
-        </main>
+        <main className="flex-1 p-8 pt-24 overflow-auto scrollbar-hide relative z-0">{children}</main>
 
         <footer className="px-10 py-3 border-t border-[var(--vsn-border)] flex justify-between items-center bg-black/10 backdrop-blur-md">
-           <span className="text-[8px] font-bold opacity-30 tracking-widest uppercase">v0.1.0-alpha · Desktop Suite</span>
-           <span className="text-[9px] font-black tracking-[0.25em] text-[var(--vsn-accent)]">MADE BY FODJO FODJO FRED</span>
+          <span className="text-[8px] font-bold opacity-30 tracking-widest uppercase">
+            v0.1.0-alpha · Desktop Suite
+          </span>
+          <span className="text-[9px] font-black tracking-[0.25em] text-[var(--vsn-accent)]">
+            MADE BY FODJO FODJO FRED
+          </span>
         </footer>
 
         {/* Notification Hub — bottom right */}
         <div className="absolute bottom-6 right-8 z-[100]" ref={notificationRef}>
-           <button onClick={() => { setShowNotifications(!showNotifications); markAllRead(); }} className="w-12 h-12 rounded-xl flex items-center justify-center vsn-glass hover:border-[var(--vsn-accent)] transition-all relative shadow-2xl">
-             <Bell className="text-[var(--vsn-accent)]" size={20} />
-             {unread > 0 && (
-               <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--vsn-red)] rounded-full text-[8px] flex items-center justify-center text-white font-black">
-                 {unread}
-               </motion.span>
-             )}
-           </button>
+          <button
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              markAllRead();
+            }}
+            className="w-12 h-12 rounded-xl flex items-center justify-center vsn-glass hover:border-[var(--vsn-accent)] transition-all relative shadow-2xl"
+          >
+            <Bell className="text-[var(--vsn-accent)]" size={20} />
+            {unread > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--vsn-red)] rounded-full text-[8px] flex items-center justify-center text-white font-black"
+              >
+                {unread}
+              </motion.span>
+            )}
+          </button>
 
-           <AnimatePresence>
-             {showNotifications && (
-               <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="absolute bottom-16 right-0 w-80 bg-[#080808]/95 backdrop-blur-xl border border-gold/20 rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,1)]">
-                 <div className="flex items-center justify-between mb-3">
-                   <h3 className="text-[10px] font-black uppercase tracking-widest text-gold">System Feed</h3>
-                   <span className="text-[9px] opacity-40">{unread} unread</span>
-                 </div>
-                 <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-hide">
-                   {notifications.length === 0 && <p className="text-[10px] opacity-40">No notifications.</p>}
-                   {notifications.map((n) => (
-                     <div key={n.id} className="p-3 rounded-lg bg-white/5 border border-white/5 text-[10px] flex gap-2 items-start">
-                       <div className="mt-0.5 flex-shrink-0" style={{ color: n.kind === "security" ? "var(--vsn-red)" : n.kind === "request" ? "var(--vsn-yellow)" : "var(--vsn-green)" }}>
-                         {n.kind === "security" ? <Shield size={12} /> : n.kind === "request" ? <Activity size={12} /> : <Check size={12} />}
-                       </div>
-                       <div className="flex-1 min-w-0">
-                         <div className="font-bold" style={{ color: "var(--vsn-text)" }}>{n.title}</div>
-                         <p className="opacity-50 mt-0.5">{n.body}</p>
-                         <div className="flex items-center gap-2 mt-1">
-                           <span className="opacity-30">{n.time}</span>
-                           {n.action && (
-                             <span className="ml-auto flex gap-1">
-                               <button disabled={busyId === n.id} onClick={() => handleAction(n, "accept")} className="px-2 py-0.5 rounded bg-green-500/20 text-green-500 font-bold hover:bg-green-500/40 disabled:opacity-40">Accept</button>
-                               <button disabled={busyId === n.id} onClick={() => handleAction(n, "reject")} className="px-2 py-0.5 rounded bg-red-500/20 text-red-500 font-bold hover:bg-red-500/40 disabled:opacity-40">Reject</button>
-                             </span>
-                           )}
-                         </div>
-                       </div>
-                       <button onClick={(e) => { e.stopPropagation(); handleOpen(n); }} className="flex-shrink-0 opacity-40 hover:opacity-100">
-                         <X size={12} />
-                       </button>
-                     </div>
-                   ))}
-                 </div>
-               </motion.div>
-             )}
-           </AnimatePresence>
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="absolute bottom-16 right-0 w-80 bg-[#080808]/95 backdrop-blur-xl border border-gold/20 rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,1)]"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-gold">System Feed</h3>
+                  <span className="text-[9px] opacity-40">{unread} unread</span>
+                </div>
+                <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-hide">
+                  {notifications.length === 0 && <p className="text-[10px] opacity-40">No notifications.</p>}
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="p-3 rounded-lg bg-white/5 border border-white/5 text-[10px] flex gap-2 items-start"
+                    >
+                      <div
+                        className="mt-0.5 flex-shrink-0"
+                        style={{
+                          color:
+                            n.kind === "security"
+                              ? "var(--vsn-red)"
+                              : n.kind === "request"
+                                ? "var(--vsn-yellow)"
+                                : "var(--vsn-green)",
+                        }}
+                      >
+                        {n.kind === "security" ? (
+                          <Shield size={12} />
+                        ) : n.kind === "request" ? (
+                          <Activity size={12} />
+                        ) : (
+                          <Check size={12} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold" style={{ color: "var(--vsn-text)" }}>
+                          {n.title}
+                        </div>
+                        <p className="opacity-50 mt-0.5">{n.body}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="opacity-30">{n.time}</span>
+                          {n.action && (
+                            <span className="ml-auto flex gap-1">
+                              <button
+                                disabled={busyId === n.id}
+                                onClick={() => handleAction(n, "accept")}
+                                className="px-2 py-0.5 rounded bg-green-500/20 text-green-500 font-bold hover:bg-green-500/40 disabled:opacity-40"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                disabled={busyId === n.id}
+                                onClick={() => handleAction(n, "reject")}
+                                className="px-2 py-0.5 rounded bg-red-500/20 text-red-500 font-bold hover:bg-red-500/40 disabled:opacity-40"
+                              >
+                                Reject
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpen(n);
+                        }}
+                        className="flex-shrink-0 opacity-40 hover:opacity-100"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -3560,8 +4018,12 @@ export default function MyDonorsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>My Donors</h1>
-          <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Manage your trusted and authorized donors</p>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+            My Donors
+          </h1>
+          <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+            Manage your trusted and authorized donors
+          </p>
         </div>
         <button className="vsn-btn-primary flex items-center gap-1.5 text-sm">
           <Plus size={16} />
@@ -3573,33 +4035,51 @@ export default function MyDonorsPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Shield size={16} style={{ color: "var(--vsn-accent)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Trusted Donors</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Trusted Donors
+          </h3>
         </div>
         <div className="space-y-3">
-          {mockDonors.filter((d) => d.visibility === "trusted").map((donor) => (
-            <div key={donor.id} className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{donor.countryFlag}</span>
-                <div>
-                  <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                  <div className="flex items-center gap-2 text-xs" style={{ color: "var(--vsn-text-muted)" }}>
-                    <span>{donor.countryCode}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-0.5">
-                      <Star size={10} fill="var(--vsn-yellow)" style={{ color: "var(--vsn-yellow)" }} />
-                      {donor.rating} ({donor.ratingCount})
-                    </span>
-                    <span>•</span>
-                    <span>{formatBandwidth(donor.bandwidthPerReceptorKbps)}</span>
+          {mockDonors
+            .filter((d) => d.visibility === "trusted")
+            .map((donor) => (
+              <div
+                key={donor.id}
+                className="flex items-center justify-between p-4 rounded-lg"
+                style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{donor.countryFlag}</span>
+                  <div>
+                    <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+                      {donor.donorId}
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-xs"
+                      style={{ color: "var(--vsn-text-muted)" }}
+                    >
+                      <span>{donor.countryCode}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-0.5">
+                        <Star size={10} fill="var(--vsn-yellow)" style={{ color: "var(--vsn-yellow)" }} />
+                        {donor.rating} ({donor.ratingCount})
+                      </span>
+                      <span>•</span>
+                      <span>{formatBandwidth(donor.bandwidthPerReceptorKbps)}</span>
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full vsn-pulse-green"
+                    style={{ backgroundColor: "var(--vsn-green)" }}
+                  />
+                  <span className="text-xs" style={{ color: "var(--vsn-green)" }}>
+                    Online
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full vsn-pulse-green" style={{ backgroundColor: "var(--vsn-green)" }} />
-                <span className="text-xs" style={{ color: "var(--vsn-green)" }}>Online</span>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
@@ -3607,37 +4087,57 @@ export default function MyDonorsPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Users size={16} style={{ color: "var(--vsn-text-muted)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Private Donors</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Private Donors
+          </h3>
         </div>
         <div className="space-y-3">
-          {mockDonors.filter((d) => d.visibility === "private").map((donor) => (
-            <div key={donor.id} className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{donor.countryFlag}</span>
-                <div>
-                  <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                  <div className="flex items-center gap-2 text-xs" style={{ color: "var(--vsn-text-muted)" }}>
-                    <span>{donor.countryCode}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-0.5">
-                      <Star size={10} fill="var(--vsn-yellow)" style={{ color: "var(--vsn-yellow)" }} />
-                      {donor.rating}
-                    </span>
+          {mockDonors
+            .filter((d) => d.visibility === "private")
+            .map((donor) => (
+              <div
+                key={donor.id}
+                className="flex items-center justify-between p-4 rounded-lg"
+                style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{donor.countryFlag}</span>
+                  <div>
+                    <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+                      {donor.donorId}
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-xs"
+                      style={{ color: "var(--vsn-text-muted)" }}
+                    >
+                      <span>{donor.countryCode}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-0.5">
+                        <Star size={10} fill="var(--vsn-yellow)" style={{ color: "var(--vsn-yellow)" }} />
+                        {donor.rating}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  {donor.status === "sharing" ? (
+                    <>
+                      <div
+                        className="w-2 h-2 rounded-full vsn-pulse-green"
+                        style={{ backgroundColor: "var(--vsn-green)" }}
+                      />
+                      <span className="text-xs" style={{ color: "var(--vsn-green)" }}>
+                        Sharing
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs" style={{ color: "var(--vsn-yellow)" }}>
+                      Available
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                {donor.status === "sharing" ? (
-                  <>
-                    <div className="w-2 h-2 rounded-full vsn-pulse-green" style={{ backgroundColor: "var(--vsn-green)" }} />
-                    <span className="text-xs" style={{ color: "var(--vsn-green)" }}>Sharing</span>
-                  </>
-                ) : (
-                  <span className="text-xs" style={{ color: "var(--vsn-yellow)" }}>Available</span>
-                )}
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
@@ -3645,28 +4145,45 @@ export default function MyDonorsPage() {
       <div className="vsn-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Globe size={16} style={{ color: "var(--vsn-text-muted)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Public Donors</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Public Donors
+          </h3>
         </div>
-        <div className="p-4 rounded-lg mb-3" style={{ backgroundColor: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+        <div
+          className="p-4 rounded-lg mb-3"
+          style={{ backgroundColor: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)" }}
+        >
           <p className="text-xs" style={{ color: "var(--vsn-yellow)" }}>
-            ⚠️ Public donors are visible to all users. Your traffic will be routed through their connection. Exercise caution with public donors — they are functionally your ISP for the session duration.
+            ⚠️ Public donors are visible to all users. Your traffic will be routed through their connection.
+            Exercise caution with public donors — they are functionally your ISP for the session duration.
           </p>
         </div>
         <div className="space-y-3">
-          {mockDonors.filter((d) => d.visibility === "public").map((donor) => (
-            <div key={donor.id} className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{donor.countryFlag}</span>
-                <div>
-                  <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                  <div className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
-                    {donor.countryCode} • {formatBandwidth(donor.bandwidthPerReceptorKbps)} • ⭐ {donor.rating}
+          {mockDonors
+            .filter((d) => d.visibility === "public")
+            .map((donor) => (
+              <div
+                key={donor.id}
+                className="flex items-center justify-between p-4 rounded-lg"
+                style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{donor.countryFlag}</span>
+                  <div>
+                    <div className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+                      {donor.donorId}
+                    </div>
+                    <div className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
+                      {donor.countryCode} • {formatBandwidth(donor.bandwidthPerReceptorKbps)} • ⭐{" "}
+                      {donor.rating}
+                    </div>
                   </div>
                 </div>
+                <span className="text-xs" style={{ color: "var(--vsn-green)" }}>
+                  Online
+                </span>
               </div>
-              <span className="text-xs" style={{ color: "var(--vsn-green)" }}>Online</span>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
@@ -3710,7 +4227,12 @@ export default function ReceptorPage() {
   const { data: donors, loading, error } = useApi(() => getAvailableDonors(userId), [userId]);
 
   const statusColor = sessionStateToColor(sessionState);
-  const colorHex = statusColor === "green" ? "var(--vsn-green)" : statusColor === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+  const colorHex =
+    statusColor === "green"
+      ? "var(--vsn-green)"
+      : statusColor === "yellow"
+        ? "var(--vsn-yellow)"
+        : "var(--vsn-red)";
 
   const requestConnection = async (donor: AvailableDonor) => {
     setSelectedDonor(donor);
@@ -3748,8 +4270,12 @@ export default function ReceptorPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>Receptor Mode</h1>
-        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Connect to a donor and access the Internet through their connectivity</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+          Receptor Mode
+        </h1>
+        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+          Connect to a donor and access the Internet through their connectivity
+        </p>
       </div>
 
       {/* Current Connection */}
@@ -3759,8 +4285,12 @@ export default function ReceptorPage() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">{selectedDonor.countryFlag}</span>
               <div>
-                <div className="text-sm font-bold" style={{ color: "var(--vsn-text)" }}>{selectedDonor.donorId}</div>
-                <div className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>{selectedDonor.countryCode} • {selectedDonor.visibility}</div>
+                <div className="text-sm font-bold" style={{ color: "var(--vsn-text)" }}>
+                  {selectedDonor.donorId}
+                </div>
+                <div className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
+                  {selectedDonor.countryCode} • {selectedDonor.visibility}
+                </div>
               </div>
             </div>
             <StatusIndicator state={sessionState} size="md" />
@@ -3774,10 +4304,23 @@ export default function ReceptorPage() {
                 { icon: <Zap size={14} />, label: "Jitter", value: "18 ms" },
                 { icon: <Shield size={14} />, label: "Tunnel", value: "WireGuard" },
               ].map((m) => (
-                <div key={m.label} className="text-center p-2 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-                  <div className="flex items-center justify-center mb-1" style={{ color: "var(--vsn-accent)" }}>{m.icon}</div>
-                  <div className="text-sm font-bold" style={{ color: "var(--vsn-text)" }}>{m.value}</div>
-                  <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{m.label}</div>
+                <div
+                  key={m.label}
+                  className="text-center p-2 rounded-lg"
+                  style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+                >
+                  <div
+                    className="flex items-center justify-center mb-1"
+                    style={{ color: "var(--vsn-accent)" }}
+                  >
+                    {m.icon}
+                  </div>
+                  <div className="text-sm font-bold" style={{ color: "var(--vsn-text)" }}>
+                    {m.value}
+                  </div>
+                  <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                    {m.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -3790,7 +4333,11 @@ export default function ReceptorPage() {
               </button>
             )}
             {sessionState !== "idle" && sessionState !== "terminated" && (
-              <button onClick={disconnect} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "var(--vsn-red)" }}>
+              <button
+                onClick={disconnect}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                style={{ backgroundColor: "var(--vsn-red)" }}
+              >
                 Disconnect
               </button>
             )}
@@ -3801,7 +4348,9 @@ export default function ReceptorPage() {
       {/* Available Donors */}
       <div className="vsn-card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Available Donors</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Available Donors
+          </h3>
           <div className="flex items-center gap-1 text-xs" style={{ color: "var(--vsn-text-muted)" }}>
             <Globe size={12} />
             {(donors ?? []).filter((d) => d.status !== "offline").length} online
@@ -3810,15 +4359,24 @@ export default function ReceptorPage() {
 
         <div className="space-y-2">
           {loading && (
-            <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>
+            <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">
+              Loading donors…
+            </div>
           )}
           {error && (
-            <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>{error}</div>
+            <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>
+              {error}
+            </div>
           )}
           {(donors ?? []).length > 0 ? (
             (donors ?? []).map((donor) => {
               const isOnline = donor.status !== "offline";
-              const dotColor = donor.status === "sharing" || donor.status === "online" ? "var(--vsn-green)" : donor.status === "available" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+              const dotColor =
+                donor.status === "sharing" || donor.status === "online"
+                  ? "var(--vsn-green)"
+                  : donor.status === "available"
+                    ? "var(--vsn-yellow)"
+                    : "var(--vsn-red)";
               return (
                 <div
                   key={donor.id}
@@ -3831,11 +4389,19 @@ export default function ReceptorPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <span className="text-xl">{donor.countryFlag}</span>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }} />
+                      <div
+                        className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
+                        style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }}
+                      />
                     </div>
                     <div>
-                      <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                      <div className="flex items-center gap-2 text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                      <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+                        {donor.donorId}
+                      </div>
+                      <div
+                        className="flex items-center gap-2 text-[10px]"
+                        style={{ color: "var(--vsn-text-muted)" }}
+                      >
                         <span>{donor.visibility}</span>
                         <span>•</span>
                         <span>{formatBandwidth(donor.bandwidthPerReceptorKbps)}</span>
@@ -3864,8 +4430,8 @@ export default function ReceptorPage() {
             })
           ) : (
             <div className="text-center py-10 opacity-30">
-               <WifiOff className="mx-auto mb-3" size={32} />
-               <p className="text-xs uppercase font-black tracking-widest">No donors currently visible</p>
+              <WifiOff className="mx-auto mb-3" size={32} />
+              <p className="text-xs uppercase font-black tracking-widest">No donors currently visible</p>
             </div>
           )}
         </div>
@@ -3873,32 +4439,59 @@ export default function ReceptorPage() {
 
       {/* Trusted Donors */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Trusted Donors</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>
+          Trusted Donors
+        </h3>
         <div className="space-y-2">
-          {(donors ?? []).filter((d) => d.visibility === "trusted").map((donor) => (
-            <div key={donor.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-              <div className="flex items-center gap-2">
-                <span>{donor.countryFlag}</span>
-                <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "var(--vsn-accent)", color: "white" }}>Trusted</span>
+          {(donors ?? [])
+            .filter((d) => d.visibility === "trusted")
+            .map((donor) => (
+              <div
+                key={donor.id}
+                className="flex items-center justify-between p-3 rounded-lg"
+                style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{donor.countryFlag}</span>
+                  <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+                    {donor.donorId}
+                  </span>
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: "var(--vsn-accent)", color: "white" }}
+                  >
+                    Trusted
+                  </span>
+                </div>
+                <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                  Last used 2d ago
+                </span>
               </div>
-              <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>Last used 2d ago</span>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
       {/* Previous Sessions */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Previous Donors</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>
+          Previous Donors
+        </h3>
         <div className="space-y-2">
           {(donors ?? []).slice(0, 3).map((donor, i) => (
-            <div key={donor.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+            <div
+              key={donor.id}
+              className="flex items-center justify-between p-3 rounded-lg"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
               <div className="flex items-center gap-2">
                 <span>{donor.countryFlag}</span>
-                <span className="text-sm" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</span>
+                <span className="text-sm" style={{ color: "var(--vsn-text)" }}>
+                  {donor.donorId}
+                </span>
               </div>
-              <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{timeAgo(`2025-01-${14 - i}T10:00:00Z`)}</span>
+              <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                {timeAgo(`2025-01-${14 - i}T10:00:00Z`)}
+              </span>
             </div>
           ))}
         </div>
@@ -3947,45 +4540,92 @@ export default function SecurityPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>Security</h1>
-        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Zero Trust security monitoring, device management, and threat protection</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+          Security
+        </h1>
+        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+          Zero Trust security monitoring, device management, and threat protection
+        </p>
       </div>
 
       {/* Security Overview */}
       <div className="grid grid-cols-3 gap-4">
         {[
           { icon: <Shield size={20} />, label: "Threat Level", value: "Low", color: "var(--vsn-green)" },
-          { icon: <Fingerprint size={20} />, label: "Verified Devices", value: "2", color: "var(--vsn-accent)" },
+          {
+            icon: <Fingerprint size={20} />,
+            label: "Verified Devices",
+            value: "2",
+            color: "var(--vsn-accent)",
+          },
           { icon: <Ban size={20} />, label: "Blocked Devices", value: "1", color: "var(--vsn-red)" },
         ].map((card) => (
           <div key={card.label} className="vsn-card p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>{card.label}</span>
+              <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
+                {card.label}
+              </span>
               <div style={{ color: card.color }}>{card.icon}</div>
             </div>
-            <div className="text-xl font-bold" style={{ color: card.color }}>{card.value}</div>
+            <div className="text-xl font-bold" style={{ color: card.color }}>
+              {card.value}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Security Architecture */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Security Architecture — Zero Trust + Defense in Depth</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>
+          Security Architecture — Zero Trust + Defense in Depth
+        </h3>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: <Key size={16} />, title: "Cryptographic Identity", desc: "Device keypairs, mutual authentication, server never holds private keys" },
-            { icon: <Lock size={16} />, title: "End-to-End Encryption", desc: "WireGuard: ChaCha20-Poly1305, Noise handshake, forward secrecy" },
-            { icon: <Network size={16} />, title: "Network Isolation", desc: "Receptor gets Internet ✅ but NEVER access to Donor LAN ❌" },
-            { icon: <Eye size={16} />, title: "Audit Logging", desc: "Metadata only: who, when, volume, duration — NEVER traffic contents" },
-            { icon: <Shield size={16} />, title: "Device Revocation", desc: "Terminate sessions, revoke auth, reject future connections, rotate keys" },
-            { icon: <Fingerprint size={16} />, title: "Device Verification", desc: "Fingerprint-based device identity, authorization before connection" },
+            {
+              icon: <Key size={16} />,
+              title: "Cryptographic Identity",
+              desc: "Device keypairs, mutual authentication, server never holds private keys",
+            },
+            {
+              icon: <Lock size={16} />,
+              title: "End-to-End Encryption",
+              desc: "WireGuard: ChaCha20-Poly1305, Noise handshake, forward secrecy",
+            },
+            {
+              icon: <Network size={16} />,
+              title: "Network Isolation",
+              desc: "Receptor gets Internet ✅ but NEVER access to Donor LAN ❌",
+            },
+            {
+              icon: <Eye size={16} />,
+              title: "Audit Logging",
+              desc: "Metadata only: who, when, volume, duration — NEVER traffic contents",
+            },
+            {
+              icon: <Shield size={16} />,
+              title: "Device Revocation",
+              desc: "Terminate sessions, revoke auth, reject future connections, rotate keys",
+            },
+            {
+              icon: <Fingerprint size={16} />,
+              title: "Device Verification",
+              desc: "Fingerprint-based device identity, authorization before connection",
+            },
           ].map((item) => (
-            <div key={item.title} className="p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+            <div
+              key={item.title}
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
               <div className="flex items-center gap-2 mb-1">
                 <div style={{ color: "var(--vsn-accent)" }}>{item.icon}</div>
-                <span className="text-xs font-semibold" style={{ color: "var(--vsn-text)" }}>{item.title}</span>
+                <span className="text-xs font-semibold" style={{ color: "var(--vsn-text)" }}>
+                  {item.title}
+                </span>
               </div>
-              <p className="text-[10px] leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>{item.desc}</p>
+              <p className="text-[10px] leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
+                {item.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -3994,24 +4634,44 @@ export default function SecurityPage() {
       {/* Security Events */}
       <div className="vsn-card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>Security Events</h3>
-          <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>{mockSecurityEvents.length} events</span>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+            Security Events
+          </h3>
+          <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
+            {mockSecurityEvents.length} events
+          </span>
         </div>
         <div className="space-y-2">
           {mockSecurityEvents.map((event) => {
             const config = severityConfig[event.severity];
             return (
-              <div key={event.id} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: config.bg, border: `1px solid ${config.color}20` }}>
-                <div className="mt-0.5 flex-shrink-0" style={{ color: config.color }}>{config.icon}</div>
+              <div
+                key={event.id}
+                className="flex items-start gap-3 p-3 rounded-lg"
+                style={{ backgroundColor: config.bg, border: `1px solid ${config.color}20` }}
+              >
+                <div className="mt-0.5 flex-shrink-0" style={{ color: config.color }}>
+                  {config.icon}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-medium" style={{ color: "var(--vsn-text)" }}>{event.eventType}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full uppercase font-medium" style={{ backgroundColor: config.color, color: "white" }}>
+                    <span className="text-xs font-medium" style={{ color: "var(--vsn-text)" }}>
+                      {event.eventType}
+                    </span>
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full uppercase font-medium"
+                      style={{ backgroundColor: config.color, color: "white" }}
+                    >
                       {event.severity}
                     </span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{event.description}</p>
-                  <div className="flex items-center gap-2 mt-1 text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                  <p className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                    {event.description}
+                  </p>
+                  <div
+                    className="flex items-center gap-2 mt-1 text-[10px]"
+                    style={{ color: "var(--vsn-text-muted)" }}
+                  >
                     <span>{timeAgo(event.createdAt)}</span>
                     {event.sourceIp && <span>• IP: {event.sourceIp}</span>}
                   </div>
@@ -4024,16 +4684,34 @@ export default function SecurityPage() {
 
       {/* Audit Log */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Audit Log</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>
+          Audit Log
+        </h3>
         <div className="space-y-1">
           {mockAuditLog.map((entry) => {
-            const outcomeColor = entry.outcome === "success" ? "var(--vsn-green)" : entry.outcome === "failure" ? "var(--vsn-red)" : "var(--vsn-yellow)";
+            const outcomeColor =
+              entry.outcome === "success"
+                ? "var(--vsn-green)"
+                : entry.outcome === "failure"
+                  ? "var(--vsn-red)"
+                  : "var(--vsn-yellow)";
             return (
-              <div key={entry.id} className="flex items-center gap-3 p-2 rounded text-xs" style={{ backgroundColor: "var(--vsn-bg)" }}>
-                <span className="font-mono" style={{ color: "var(--vsn-text-muted)" }}>{timeAgo(entry.createdAt)}</span>
-                <span className="font-medium" style={{ color: "var(--vsn-text)" }}>{entry.action}</span>
+              <div
+                key={entry.id}
+                className="flex items-center gap-3 p-2 rounded text-xs"
+                style={{ backgroundColor: "var(--vsn-bg)" }}
+              >
+                <span className="font-mono" style={{ color: "var(--vsn-text-muted)" }}>
+                  {timeAgo(entry.createdAt)}
+                </span>
+                <span className="font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {entry.action}
+                </span>
                 {entry.resource && <span style={{ color: "var(--vsn-text-muted)" }}>→ {entry.resource}</span>}
-                <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: `${outcomeColor}20`, color: outcomeColor }}>
+                <span
+                  className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium"
+                  style={{ backgroundColor: `${outcomeColor}20`, color: outcomeColor }}
+                >
                   {entry.outcome}
                 </span>
               </div>
@@ -4046,10 +4724,15 @@ export default function SecurityPage() {
       <div className="vsn-card p-6" style={{ borderColor: "var(--vsn-green)" }}>
         <div className="flex items-center gap-2 mb-2">
           <Network size={16} style={{ color: "var(--vsn-green)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-green)" }}>Network Isolation — Active</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--vsn-green)" }}>
+            Network Isolation — Active
+          </h3>
         </div>
         <p className="text-xs leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
-          The receptor obtains Internet through the donor but <strong style={{ color: "var(--vsn-text)" }}>NEVER access to the donor&apos;s LAN</strong> — no router access, no files, no SSH, no administration. Enforced with firewall rules, routing policies, and network namespaces.
+          The receptor obtains Internet through the donor but{" "}
+          <strong style={{ color: "var(--vsn-text)" }}>NEVER access to the donor&apos;s LAN</strong> — no
+          router access, no files, no SSH, no administration. Enforced with firewall rules, routing policies,
+          and network namespaces.
         </p>
       </div>
     </div>
@@ -4067,8 +4750,22 @@ import { useTheme } from "@/components/theme-provider";
 import { useI18n } from "@/components/i18n-provider";
 import { LANGUAGES, type Language } from "@/lib/i18n/locales";
 import {
-  User, Moon, Sun, Earth, Bell, Shield, Zap, HardDrive, Clock, Users,
-  ChevronRight, ToggleLeft, ToggleRight, Info, Languages, Check,
+  User,
+  Moon,
+  Sun,
+  Earth,
+  Bell,
+  Shield,
+  Zap,
+  HardDrive,
+  Clock,
+  Users,
+  ChevronRight,
+  ToggleLeft,
+  ToggleRight,
+  Info,
+  Languages,
+  Check,
 } from "lucide-react";
 
 interface ToggleSettingProps {
@@ -4081,27 +4778,61 @@ interface ToggleSettingProps {
 
 function ToggleSetting({ icon, title, description, enabled, onToggle }: ToggleSettingProps) {
   return (
-    <div className="flex items-center justify-between p-3.5 rounded-xl" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+    <div
+      className="flex items-center justify-between p-3.5 rounded-xl"
+      style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+    >
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}>{icon}</div>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}
+        >
+          {icon}
+        </div>
         <div>
-          <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{title}</div>
-          <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{description}</div>
+          <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+            {title}
+          </div>
+          <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+            {description}
+          </div>
         </div>
       </div>
       <button onClick={onToggle} className="flex-shrink-0">
-        {enabled ? <ToggleRight size={24} style={{ color: "var(--vsn-accent)" }} /> : <ToggleLeft size={24} style={{ color: "var(--vsn-text-muted)" }} />}
+        {enabled ? (
+          <ToggleRight size={24} style={{ color: "var(--vsn-accent)" }} />
+        ) : (
+          <ToggleLeft size={24} style={{ color: "var(--vsn-text-muted)" }} />
+        )}
       </button>
     </div>
   );
 }
 
-function SettingRow({ icon, title, right }: { icon: React.ReactNode; title: string; right?: React.ReactNode }) {
+function SettingRow({
+  icon,
+  title,
+  right,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  right?: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center justify-between p-3.5 rounded-xl" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+    <div
+      className="flex items-center justify-between p-3.5 rounded-xl"
+      style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+    >
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}>{icon}</div>
-        <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{title}</span>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}
+        >
+          {icon}
+        </div>
+        <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+          {title}
+        </span>
       </div>
       {right ?? <ChevronRight size={16} style={{ color: "var(--vsn-text-muted)" }} />}
     </div>
@@ -4111,7 +4842,12 @@ function SettingRow({ icon, title, right }: { icon: React.ReactNode; title: stri
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="vsn-card p-4">
-      <h3 className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: "var(--vsn-text-muted)" }}>{title}</h3>
+      <h3
+        className="text-[11px] font-black uppercase tracking-widest mb-3"
+        style={{ color: "var(--vsn-text-muted)" }}
+      >
+        {title}
+      </h3>
       <div className="space-y-2">{children}</div>
     </div>
   );
@@ -4121,27 +4857,68 @@ export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useI18n();
   const [showLanguages, setShowLanguages] = useState(false);
-  const [settings, setSettings] = useState({ notifications: true, autoReconnect: true, hiddenDonor: false, encryptedDns: true, startOnBoot: false, killSwitch: true });
+  const [settings, setSettings] = useState({
+    notifications: true,
+    autoReconnect: true,
+    hiddenDonor: false,
+    encryptedDns: true,
+    startOnBoot: false,
+    killSwitch: true,
+  });
   const toggle = (key: keyof typeof settings) => setSettings((p) => ({ ...p, [key]: !p[key] }));
   const currentLang = LANGUAGES.find((l) => l.code === lang);
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>{t("settings")}</h1>
-        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Customize VSN</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+          {t("settings")}
+        </h1>
+        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+          Customize VSN
+        </p>
       </div>
 
       {/* Appearance */}
       <SectionCard title={t("appearance")}>
-        <div className="flex items-center justify-between p-3.5 rounded-xl" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+        <div
+          className="flex items-center justify-between p-3.5 rounded-xl"
+          style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}>{theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}</div>
-            <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{t("theme")}</span>
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}
+            >
+              {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
+            </div>
+            <span className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+              {t("theme")}
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => theme === "light" && toggleTheme()} className="px-3 py-1.5 rounded-l-lg text-xs font-medium" style={{ backgroundColor: theme === "dark" ? "var(--vsn-accent)" : "var(--vsn-bg-card)", color: theme === "dark" ? "white" : "var(--vsn-text-muted)", border: "1px solid var(--vsn-border)" }}>🌑 {t("dark")}</button>
-            <button onClick={() => theme === "dark" && toggleTheme()} className="px-3 py-1.5 rounded-r-lg text-xs font-medium" style={{ backgroundColor: theme === "light" ? "var(--vsn-accent)" : "var(--vsn-bg-card)", color: theme === "light" ? "white" : "var(--vsn-text-muted)", border: "1px solid var(--vsn-border)" }}>☀️ {t("light")}</button>
+            <button
+              onClick={() => theme === "light" && toggleTheme()}
+              className="px-3 py-1.5 rounded-l-lg text-xs font-medium"
+              style={{
+                backgroundColor: theme === "dark" ? "var(--vsn-accent)" : "var(--vsn-bg-card)",
+                color: theme === "dark" ? "white" : "var(--vsn-text-muted)",
+                border: "1px solid var(--vsn-border)",
+              }}
+            >
+              🌑 {t("dark")}
+            </button>
+            <button
+              onClick={() => theme === "dark" && toggleTheme()}
+              className="px-3 py-1.5 rounded-r-lg text-xs font-medium"
+              style={{
+                backgroundColor: theme === "light" ? "var(--vsn-accent)" : "var(--vsn-bg-card)",
+                color: theme === "light" ? "white" : "var(--vsn-text-muted)",
+                border: "1px solid var(--vsn-border)",
+              }}
+            >
+              ☀️ {t("light")}
+            </button>
           </div>
         </div>
       </SectionCard>
@@ -4149,14 +4926,37 @@ export default function SettingsPage() {
       {/* Language */}
       <SectionCard title={t("language")}>
         <button onClick={() => setShowLanguages(!showLanguages)} className="w-full">
-          <SettingRow icon={<Languages size={16} />} title={t("settingsLang")} right={<span className="text-xs font-medium" style={{ color: "var(--vsn-accent)" }}>{currentLang?.flag} {currentLang?.label}</span>} />
+          <SettingRow
+            icon={<Languages size={16} />}
+            title={t("settingsLang")}
+            right={
+              <span className="text-xs font-medium" style={{ color: "var(--vsn-accent)" }}>
+                {currentLang?.flag} {currentLang?.label}
+              </span>
+            }
+          />
         </button>
         {showLanguages && (
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--vsn-border)" }}>
-            <p className="px-3.5 pt-3 text-[11px] font-black uppercase tracking-widest" style={{ color: "var(--vsn-text-muted)" }}>{t("selectLanguage")}</p>
+            <p
+              className="px-3.5 pt-3 text-[11px] font-black uppercase tracking-widest"
+              style={{ color: "var(--vsn-text-muted)" }}
+            >
+              {t("selectLanguage")}
+            </p>
             {LANGUAGES.map((l) => (
-              <button key={l.code} onClick={() => { setLang(l.code); setShowLanguages(false); }} className="w-full flex items-center justify-between px-3.5 py-2.5 text-sm hover:bg-white/10" style={{ color: "var(--vsn-text)" }}>
-                <span>{l.flag} {l.label}</span>
+              <button
+                key={l.code}
+                onClick={() => {
+                  setLang(l.code);
+                  setShowLanguages(false);
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 text-sm hover:bg-white/10"
+                style={{ color: "var(--vsn-text)" }}
+              >
+                <span>
+                  {l.flag} {l.label}
+                </span>
                 {lang === l.code && <Check size={16} style={{ color: "var(--vsn-accent)" }} />}
               </button>
             ))}
@@ -4173,21 +4973,57 @@ export default function SettingsPage() {
 
       {/* Network */}
       <SectionCard title={t("network")}>
-        <ToggleSetting icon={<Zap size={16} />} title="Auto Reconnect" description="Reconnect if the tunnel drops" enabled={settings.autoReconnect} onToggle={() => toggle("autoReconnect")} />
-        <ToggleSetting icon={<Earth size={16} />} title="Encrypted DNS" description="DNS-over-HTTPS (no leakage)" enabled={settings.encryptedDns} onToggle={() => toggle("encryptedDns")} />
-        <ToggleSetting icon={<Shield size={16} />} title="Hidden Donor Mode" description="Relay masks donor IP" enabled={settings.hiddenDonor} onToggle={() => toggle("hiddenDonor")} />
+        <ToggleSetting
+          icon={<Zap size={16} />}
+          title="Auto Reconnect"
+          description="Reconnect if the tunnel drops"
+          enabled={settings.autoReconnect}
+          onToggle={() => toggle("autoReconnect")}
+        />
+        <ToggleSetting
+          icon={<Earth size={16} />}
+          title="Encrypted DNS"
+          description="DNS-over-HTTPS (no leakage)"
+          enabled={settings.encryptedDns}
+          onToggle={() => toggle("encryptedDns")}
+        />
+        <ToggleSetting
+          icon={<Shield size={16} />}
+          title="Hidden Donor Mode"
+          description="Relay masks donor IP"
+          enabled={settings.hiddenDonor}
+          onToggle={() => toggle("hiddenDonor")}
+        />
       </SectionCard>
 
       {/* Security */}
       <SectionCard title={t("security")}>
-        <ToggleSetting icon={<Shield size={16} />} title="Kill Switch" description="Block traffic if tunnel drops" enabled={settings.killSwitch} onToggle={() => toggle("killSwitch")} />
+        <ToggleSetting
+          icon={<Shield size={16} />}
+          title="Kill Switch"
+          description="Block traffic if tunnel drops"
+          enabled={settings.killSwitch}
+          onToggle={() => toggle("killSwitch")}
+        />
         <SettingRow icon={<User size={16} />} title="Device Identity" />
       </SectionCard>
 
       {/* Notifications */}
       <SectionCard title={t("notifications")}>
-        <ToggleSetting icon={<Bell size={16} />} title="Connection Alerts" description="Notify on connect/disconnect" enabled={settings.notifications} onToggle={() => toggle("notifications")} />
-        <ToggleSetting icon={<Shield size={16} />} title="Security Alerts" description="Suspicious activity" enabled={true} onToggle={() => {}} />
+        <ToggleSetting
+          icon={<Bell size={16} />}
+          title="Connection Alerts"
+          description="Notify on connect/disconnect"
+          enabled={settings.notifications}
+          onToggle={() => toggle("notifications")}
+        />
+        <ToggleSetting
+          icon={<Shield size={16} />}
+          title="Security Alerts"
+          description="Suspicious activity"
+          enabled={true}
+          onToggle={() => {}}
+        />
       </SectionCard>
 
       {/* Donor defaults */}
@@ -4199,9 +5035,18 @@ export default function SettingsPage() {
             { icon: <Clock size={14} />, label: "Max Session", value: "2h" },
             { icon: <HardDrive size={14} />, label: "Data Quota", value: "1 GB" },
           ].map((it) => (
-            <div key={it.label} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-              <div className="flex items-center gap-2" style={{ color: "var(--vsn-text-muted)" }}>{it.icon}<span className="text-xs">{it.label}</span></div>
-              <span className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>{it.value}</span>
+            <div
+              key={it.label}
+              className="flex items-center justify-between p-3 rounded-lg"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
+              <div className="flex items-center gap-2" style={{ color: "var(--vsn-text-muted)" }}>
+                {it.icon}
+                <span className="text-xs">{it.label}</span>
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "var(--vsn-text)" }}>
+                {it.value}
+              </span>
             </div>
           ))}
         </div>
@@ -4211,14 +5056,30 @@ export default function SettingsPage() {
       <SectionCard title={t("advanced")}>
         <SettingRow icon={<Zap size={16} />} title="Diagnostics" />
         <SettingRow icon={<Info size={16} />} title="Logs" />
-        <ToggleSetting icon={<Zap size={16} />} title="Start on Boot" description="Launch VSN automatically" enabled={settings.startOnBoot} onToggle={() => toggle("startOnBoot")} />
+        <ToggleSetting
+          icon={<Zap size={16} />}
+          title="Start on Boot"
+          description="Launch VSN automatically"
+          enabled={settings.startOnBoot}
+          onToggle={() => toggle("startOnBoot")}
+        />
       </SectionCard>
 
       {/* About */}
       <SectionCard title={t("about")}>
-        <SettingRow icon={<Info size={16} />} title={t("version")} right={<span className="text-xs font-mono" style={{ color: "var(--vsn-accent)" }}>v0.1.0</span>} />
+        <SettingRow
+          icon={<Info size={16} />}
+          title={t("version")}
+          right={
+            <span className="text-xs font-mono" style={{ color: "var(--vsn-accent)" }}>
+              v0.1.0
+            </span>
+          }
+        />
         <SettingRow icon={<Info size={16} />} title={t("terms")} />
-        <p className="text-center text-[10px] pt-2 tracking-widest" style={{ color: "var(--vsn-accent)" }}>{t("madeBy")}</p>
+        <p className="text-center text-[10px] pt-2 tracking-widest" style={{ color: "var(--vsn-accent)" }}>
+          {t("madeBy")}
+        </p>
       </SectionCard>
     </div>
   );
@@ -4286,47 +5147,111 @@ export default function StatisticsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>Statistics</h1>
-        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>Connection analytics, bandwidth usage, and performance metrics</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+          Statistics
+        </h1>
+        <p className="text-sm" style={{ color: "var(--vsn-text-muted)" }}>
+          Connection analytics, bandwidth usage, and performance metrics
+        </p>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { icon: <Wifi size={20} />, label: "Total Sessions", value: mockStats.totalSessions.toString(), sub: `${mockStats.activeSessions} active` },
-          { icon: <Clock size={20} />, label: "Total Duration", value: formatDuration(mockStats.totalDurationMinutes), sub: "All sessions" },
-          { icon: <ArrowDownRight size={20} />, label: "Total Download", value: formatBytes(mockStats.totalBytesDown), sub: "Inbound traffic" },
-          { icon: <ArrowUpRight size={20} />, label: "Total Upload", value: formatBytes(mockStats.totalBytesUp), sub: "Outbound traffic" },
+          {
+            icon: <Wifi size={20} />,
+            label: "Total Sessions",
+            value: mockStats.totalSessions.toString(),
+            sub: `${mockStats.activeSessions} active`,
+          },
+          {
+            icon: <Clock size={20} />,
+            label: "Total Duration",
+            value: formatDuration(mockStats.totalDurationMinutes),
+            sub: "All sessions",
+          },
+          {
+            icon: <ArrowDownRight size={20} />,
+            label: "Total Download",
+            value: formatBytes(mockStats.totalBytesDown),
+            sub: "Inbound traffic",
+          },
+          {
+            icon: <ArrowUpRight size={20} />,
+            label: "Total Upload",
+            value: formatBytes(mockStats.totalBytesUp),
+            sub: "Outbound traffic",
+          },
         ].map((card) => (
           <div key={card.label} className="vsn-card p-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>{card.label}</span>
+              <span className="text-xs" style={{ color: "var(--vsn-text-muted)" }}>
+                {card.label}
+              </span>
               <div style={{ color: "var(--vsn-accent)" }}>{card.icon}</div>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>{card.value}</div>
-            <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{card.sub}</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--vsn-text)" }}>
+              {card.value}
+            </div>
+            <div className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+              {card.sub}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Performance Metrics */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Performance Metrics</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>
+          Performance Metrics
+        </h3>
         <div className="grid grid-cols-3 gap-4">
           {[
-            { icon: <Activity size={16} />, label: "Avg Latency", value: `${mockStats.avgLatencyMs} ms`, bar: 70, color: "var(--vsn-green)" },
-            { icon: <Zap size={16} />, label: "Avg Packet Loss", value: `${mockStats.avgPacketLoss}%`, bar: 12, color: "var(--vsn-green)" },
-            { icon: <TrendingUp size={16} />, label: "Avg Jitter", value: `${mockStats.avgJitter} ms`, bar: 25, color: "var(--vsn-yellow)" },
+            {
+              icon: <Activity size={16} />,
+              label: "Avg Latency",
+              value: `${mockStats.avgLatencyMs} ms`,
+              bar: 70,
+              color: "var(--vsn-green)",
+            },
+            {
+              icon: <Zap size={16} />,
+              label: "Avg Packet Loss",
+              value: `${mockStats.avgPacketLoss}%`,
+              bar: 12,
+              color: "var(--vsn-green)",
+            },
+            {
+              icon: <TrendingUp size={16} />,
+              label: "Avg Jitter",
+              value: `${mockStats.avgJitter} ms`,
+              bar: 25,
+              color: "var(--vsn-yellow)",
+            },
           ].map((metric) => (
-            <div key={metric.label} className="p-4 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
+            <div
+              key={metric.label}
+              className="p-4 rounded-lg"
+              style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+            >
               <div className="flex items-center gap-1.5 mb-2" style={{ color: "var(--vsn-accent)" }}>
                 {metric.icon}
-                <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--vsn-text-muted)" }}>{metric.label}</span>
+                <span
+                  className="text-[10px] uppercase tracking-wider"
+                  style={{ color: "var(--vsn-text-muted)" }}
+                >
+                  {metric.label}
+                </span>
               </div>
-              <div className="text-xl font-bold mb-3" style={{ color: "var(--vsn-text)" }}>{metric.value}</div>
+              <div className="text-xl font-bold mb-3" style={{ color: "var(--vsn-text)" }}>
+                {metric.value}
+              </div>
               {/* Visual bar */}
               <div className="h-2 rounded-full" style={{ backgroundColor: "var(--vsn-border)" }}>
-                <div className="h-2 rounded-full" style={{ width: `${metric.bar}%`, backgroundColor: metric.color }} />
+                <div
+                  className="h-2 rounded-full"
+                  style={{ width: `${metric.bar}%`, backgroundColor: metric.color }}
+                />
               </div>
             </div>
           ))}
@@ -4335,7 +5260,9 @@ export default function StatisticsPage() {
 
       {/* Session Distribution */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Session State Distribution</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>
+          Session State Distribution
+        </h3>
         <div className="space-y-3">
           {Object.entries(mockStats.sessionsByState).map(([state, count]) => {
             const total = Object.values(mockStats.sessionsByState).reduce((a, b) => a + b, 0);
@@ -4353,11 +5280,21 @@ export default function StatisticsPage() {
             };
             return (
               <div key={state} className="flex items-center gap-3">
-                <span className="text-xs w-24 font-mono" style={{ color: "var(--vsn-text-muted)" }}>{state}</span>
+                <span className="text-xs w-24 font-mono" style={{ color: "var(--vsn-text-muted)" }}>
+                  {state}
+                </span>
                 <div className="flex-1 h-4 rounded-full" style={{ backgroundColor: "var(--vsn-border)" }}>
-                  <div className="h-4 rounded-full transition-all" style={{ width: `${Math.max(pct, count > 0 ? 3 : 0)}%`, backgroundColor: colorMap[state] ?? "var(--vsn-accent)" }} />
+                  <div
+                    className="h-4 rounded-full transition-all"
+                    style={{
+                      width: `${Math.max(pct, count > 0 ? 3 : 0)}%`,
+                      backgroundColor: colorMap[state] ?? "var(--vsn-accent)",
+                    }}
+                  />
                 </div>
-                <span className="text-xs w-8 text-right font-medium" style={{ color: "var(--vsn-text)" }}>{count}</span>
+                <span className="text-xs w-8 text-right font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {count}
+                </span>
               </div>
             );
           })}
@@ -4366,32 +5303,50 @@ export default function StatisticsPage() {
 
       {/* Bandwidth Over Time (placeholder chart) */}
       <div className="vsn-card p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>Bandwidth Usage (24h)</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--vsn-text)" }}>
+          Bandwidth Usage (24h)
+        </h3>
         <div className="h-40 flex items-end gap-1">
           {Array.from({ length: 24 }, (_, i) => {
             const down = placeholderBar(i, 1) * 80 + 10;
             const up = placeholderBar(i, 2) * 30 + 5;
             return (
               <div key={i} className="flex-1 flex flex-col gap-0.5">
-                <div className="rounded-t" style={{ height: `${up}%`, backgroundColor: "var(--vsn-accent)", opacity: 0.6 }} />
-                <div className="rounded-t" style={{ height: `${down}%`, backgroundColor: "var(--vsn-green)", opacity: 0.6 }} />
+                <div
+                  className="rounded-t"
+                  style={{ height: `${up}%`, backgroundColor: "var(--vsn-accent)", opacity: 0.6 }}
+                />
+                <div
+                  className="rounded-t"
+                  style={{ height: `${down}%`, backgroundColor: "var(--vsn-green)", opacity: 0.6 }}
+                />
               </div>
             );
           })}
         </div>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>00:00</span>
-          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>12:00</span>
-          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>23:00</span>
+          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+            00:00
+          </span>
+          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+            12:00
+          </span>
+          <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+            23:00
+          </span>
         </div>
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: "var(--vsn-green)", opacity: 0.6 }} />
-            <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>Download</span>
+            <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+              Download
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: "var(--vsn-accent)", opacity: 0.6 }} />
-            <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>Upload</span>
+            <span className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+              Upload
+            </span>
           </div>
         </div>
       </div>
@@ -4451,10 +5406,15 @@ export async function POST(req: NextRequest) {
     if (!body?.email || !body?.password) throw new ValidationError("Email and password required");
     const user = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
     if (!user.length) throw new ValidationError("Invalid credentials");
-    if (!verifyPassword(body.password, user[0].passwordHash)) throw new ValidationError("Invalid credentials");
+    if (!verifyPassword(body.password, user[0].passwordHash))
+      throw new ValidationError("Invalid credentials");
 
     const token = signJwt({ sub: user[0].id, role: "receptor" }, TOKEN_TTL_SECONDS);
-    return { token, expiresIn: TOKEN_TTL_SECONDS, user: { id: user[0].id, email: user[0].email, displayName: user[0].displayName } };
+    return {
+      token,
+      expiresIn: TOKEN_TTL_SECONDS,
+      user: { id: user[0].id, email: user[0].email, displayName: user[0].displayName },
+    };
   })();
 }
 
@@ -4522,14 +5482,23 @@ export async function POST(req: NextRequest) {
     await db.update(devices).set({ isRevoked: true }).where(eq(devices.id, body.deviceId));
 
     // Terminate any active session that involves the device (either side).
-    const active = await db.select().from(sessions).where(eq(sessions.receptorDeviceId, body.deviceId)).limit(100);
+    const active = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.receptorDeviceId, body.deviceId))
+      .limit(100);
     const activeStates = ACTIVE_SESSION_STATES as readonly string[];
     let terminatedCount = 0;
     for (const session of active) {
       if (activeStates.includes(session.state as SessionState)) {
         await db
           .update(sessions)
-          .set({ state: "terminated", terminationReason: "device_revoked", terminatedAt: new Date(), updatedAt: new Date() })
+          .set({
+            state: "terminated",
+            terminationReason: "device_revoked",
+            terminatedAt: new Date(),
+            updatedAt: new Date(),
+          })
           .where(eq(sessions.id, session.id));
         terminatedCount++;
       }
@@ -4568,10 +5537,7 @@ import { withErrors } from "@/lib/api/route-helpers";
 import { approveReceptor } from "@/services/donor.service";
 import { ValidationError } from "@/lib/validation";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
@@ -4595,10 +5561,7 @@ import { db } from "@/db";
 import { donorProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const row = await db.select().from(donorProfiles).where(eq(donorProfiles.id, id)).limit(1);
@@ -4714,7 +5677,10 @@ import { peerCount } from "@/services/signaling.service";
 
 export async function GET() {
   try {
-    await db.select({ count: sql`1` }).from(users).limit(1);
+    await db
+      .select({ count: sql`1` })
+      .from(users)
+      .limit(1);
     return NextResponse.json({
       status: "healthy",
       service: VSN_SERVICE,
@@ -4732,7 +5698,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         database: "error",
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }
@@ -4779,10 +5745,7 @@ import { NextRequest } from "next/server";
 import { withErrors } from "@/lib/api/route-helpers";
 import { acceptSession } from "@/services/session.service";
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     await acceptSession(id);
@@ -4798,10 +5761,7 @@ import { NextRequest } from "next/server";
 import { withErrors } from "@/lib/api/route-helpers";
 import { rejectSession } from "@/services/session.service";
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     await rejectSession(id);
@@ -4817,10 +5777,7 @@ import { NextRequest } from "next/server";
 import { withErrors } from "@/lib/api/route-helpers";
 import { getSessionStatus } from "@/services/session.service";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     return getSessionStatus(id);
@@ -4835,10 +5792,7 @@ import { NextRequest } from "next/server";
 import { withErrors } from "@/lib/api/route-helpers";
 import { terminateSession } from "@/services/session.service";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
@@ -4861,10 +5815,7 @@ import { withErrors } from "@/lib/api/route-helpers";
 import { getTunnelConfig } from "@/services/session.service";
 import { ValidationError } from "@/lib/validation";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const url = new URL(req.url);
@@ -5027,30 +5978,30 @@ export async function GET(req: NextRequest) {
 :root {
   /* Status Colors (VSN Identity) */
   --vsn-red: #ff2635;
-  --vsn-yellow: #D4AF37; /* Gold/Yellow */
+  --vsn-yellow: #d4af37; /* Gold/Yellow */
   --vsn-green: #25e64a;
 
   /* Connection circle colors — LIGHT theme (deeper, more readable) */
-  --conn-red: #D92D3A;
-  --conn-yellow: #D99A00;
+  --conn-red: #d92d3a;
+  --conn-yellow: #d99a00;
   --conn-green: #159957;
-  --circle-glow: rgba(89, 118, 155, 0.10);
-  
+  --circle-glow: rgba(89, 118, 155, 0.1);
+
   /* Light Theme (Dedicated Premium Design) */
-  --vsn-bg: #F5F7FA;
-  --vsn-surface: #FFFFFF;
-  --vsn-surface-secondary: #EEF1F5;
+  --vsn-bg: #f5f7fa;
+  --vsn-surface: #ffffff;
+  --vsn-surface-secondary: #eef1f5;
   --vsn-text-primary: #111827;
-  --vsn-text-secondary: #5B6472;
-  --vsn-border: #D8DEE7;
+  --vsn-text-secondary: #5b6472;
+  --vsn-border: #d8dee7;
   --vsn-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-  --vsn-accent: #D4AF37;
+  --vsn-accent: #d4af37;
   --vsn-glow: rgba(212, 175, 55, 0.15);
-  
+
   /* Globe Colors - Light */
-  --globe-ocean: #E0E7FF;
-  --globe-land: #FFFFFF;
-  --globe-border: #CBD5E1;
+  --globe-ocean: #e0e7ff;
+  --globe-land: #ffffff;
+  --globe-border: #cbd5e1;
 
   --vsn-bg-card: var(--vsn-surface);
   --vsn-text: var(--vsn-text-primary);
@@ -5060,24 +6011,24 @@ export async function GET(req: NextRequest) {
 .dark {
   /* Dark Theme (Primary Identity: Deep Charcoal/Black) */
   --vsn-bg: #020202;
-  --vsn-surface: #0A0A0A;
+  --vsn-surface: #0a0a0a;
   --vsn-surface-secondary: #121212;
-  --vsn-text-primary: #FFFFFF;
-  --vsn-text-secondary: #94A3B8;
-  --vsn-border: #1E293B;
+  --vsn-text-primary: #ffffff;
+  --vsn-text-secondary: #94a3b8;
+  --vsn-border: #1e293b;
   --vsn-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-  --vsn-accent: #D4AF37;
+  --vsn-accent: #d4af37;
   --vsn-glow: rgba(212, 175, 55, 0.3);
 
   /* Connection circle colors — DARK theme (luminous) */
-  --conn-red: #FF4D5A;
-  --conn-yellow: #FFC857;
-  --conn-green: #35D07F;
+  --conn-red: #ff4d5a;
+  --conn-yellow: #ffc857;
+  --conn-green: #35d07f;
   --circle-glow: rgba(53, 208, 127, 0.12);
 
   /* Globe Colors - Dark */
   --globe-ocean: #050505;
-  --globe-land: #1E293B;
+  --globe-land: #1e293b;
   --globe-border: #334155;
 
   --vsn-bg-card: var(--vsn-surface);
@@ -5088,7 +6039,9 @@ export async function GET(req: NextRequest) {
 /* ─── Base Styles ─────────────────────────────────────────────────── */
 
 body {
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 
 .vsn-glass-bubble {
@@ -5119,7 +6072,9 @@ body {
 
 .vsn-circle {
   pointer-events: none;
-  transition: background-color 0.6s ease, box-shadow 0.6s ease;
+  transition:
+    background-color 0.6s ease,
+    box-shadow 0.6s ease;
   border-radius: 9999px;
 }
 .vsn-circle::after {
@@ -5127,27 +6082,54 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.18), transparent 60%);
+  background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.18), transparent 60%);
 }
-.vsn-circle-red { background: radial-gradient(circle at 35% 35%, rgba(255,77,90,0.0), var(--conn-red)); box-shadow: 0 0 40px 6px var(--conn-red), inset 0 0 30px rgba(0,0,0,0.3); }
-.vsn-circle-yellow { background: radial-gradient(circle at 35% 35%, rgba(255,200,87,0.0), var(--conn-yellow)); box-shadow: 0 0 46px 8px var(--conn-yellow), inset 0 0 30px rgba(0,0,0,0.3); }
-.vsn-circle-green { background: radial-gradient(circle at 35% 35%, rgba(53,208,127,0.0), var(--conn-green)); box-shadow: 0 0 54px 10px var(--conn-green), inset 0 0 30px rgba(0,0,0,0.25); }
+.vsn-circle-red {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 77, 90, 0), var(--conn-red));
+  box-shadow:
+    0 0 40px 6px var(--conn-red),
+    inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+.vsn-circle-yellow {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 200, 87, 0), var(--conn-yellow));
+  box-shadow:
+    0 0 46px 8px var(--conn-yellow),
+    inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+.vsn-circle-green {
+  background: radial-gradient(circle at 35% 35%, rgba(53, 208, 127, 0), var(--conn-green));
+  box-shadow:
+    0 0 54px 10px var(--conn-green),
+    inset 0 0 30px rgba(0, 0, 0, 0.25);
+}
 
 @keyframes vsn-float {
-  0%, 100% { transform: translate3d(0,0,0) scale(1); }
-  50% { transform: translate3d(0,-18px,0) scale(1.04); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
 }
-.vsn-float { animation: vsn-float 14s ease-in-out infinite; }
+.vsn-float {
+  animation: vsn-float 14s ease-in-out infinite;
+}
 
 @keyframes vsn-orbit {
-  0% { transform: translate3d(0,0,0) rotate(0deg); }
-  100% { transform: translate3d(0,0,0) rotate(360deg); }
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(360deg);
+  }
 }
 
 /* ─── Reduced motion ──────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .vsn-circle, .vsn-float {
+  .vsn-circle,
+  .vsn-float {
     animation: none !important;
     transition: opacity 0.4s ease !important;
   }
@@ -5215,82 +6197,181 @@ html {
 body {
   background-color: var(--vsn-bg);
   color: var(--vsn-text);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.3s, color 0.3s;
+  font-family:
+    "Inter",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 /* ─── VSN Status Animations ───────────────────────────────────────── */
 
 @keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
 }
 
 @keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
 }
 
 @keyframes pulse-yellow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
 }
 
 @keyframes glow-green {
-  0%, 100% { text-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
-  50% { text-shadow: 0 0 20px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.3); }
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(34, 197, 94, 0.8),
+      0 0 40px rgba(34, 197, 94, 0.3);
+  }
 }
 
 @keyframes glow-yellow {
-  0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.6); }
-  50% { text-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.3); }
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(245, 158, 11, 0.8),
+      0 0 40px rgba(245, 158, 11, 0.3);
+  }
 }
 
-.vsn-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
-.vsn-pulse-red { animation: pulse-red 2s ease-in-out infinite; }
-.vsn-pulse-yellow { animation: pulse-yellow 1.5s ease-in-out infinite; }
-.vsn-glow-green { animation: glow-green 2s ease-in-out infinite; }
-.vsn-glow-yellow { animation: glow-yellow 1.5s ease-in-out infinite; }
+.vsn-pulse-green {
+  animation: pulse-green 2s ease-in-out infinite;
+}
+.vsn-pulse-red {
+  animation: pulse-red 2s ease-in-out infinite;
+}
+.vsn-pulse-yellow {
+  animation: pulse-yellow 1.5s ease-in-out infinite;
+}
+.vsn-glow-green {
+  animation: glow-green 2s ease-in-out infinite;
+}
+.vsn-glow-yellow {
+  animation: glow-yellow 1.5s ease-in-out infinite;
+}
 
 /* ─── Splash Screen Animations ────────────────────────────────────── */
 
 @keyframes letter-assemble {
-  0% { opacity: 0; transform: translateY(-40px) scale(0.3) rotateX(90deg); filter: blur(8px); }
-  60% { opacity: 1; transform: translateY(5px) scale(1.05) rotateX(-5deg); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.3) rotateX(90deg);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.05) rotateX(-5deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0);
+  }
 }
 
 @keyframes network-line {
-  0% { stroke-dashoffset: 200; opacity: 0; }
-  30% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.3; }
+  0% {
+    stroke-dashoffset: 200;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
 }
 
 @keyframes node-glow {
-  0%, 100% { r: 3; opacity: 0.5; }
-  50% { r: 5; opacity: 1; }
+  0%,
+  100% {
+    r: 3;
+    opacity: 0.5;
+  }
+  50% {
+    r: 5;
+    opacity: 1;
+  }
 }
 
 @keyframes signal-wave {
-  0% { transform: scale(0.8); opacity: 0.8; }
-  100% { transform: scale(2.5); opacity: 0; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
 }
 
 @keyframes particle-float {
-  0% { transform: translateY(0) translateX(0); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(30px);
+    opacity: 0;
+  }
 }
 
 @keyframes subtitle-reveal {
-  0% { opacity: 0; letter-spacing: 0.5em; }
-  100% { opacity: 1; letter-spacing: 0.25em; }
+  0% {
+    opacity: 0;
+    letter-spacing: 0.5em;
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.25em;
+  }
 }
 
 @keyframes fade-to-app {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .vsn-letter-assemble {
@@ -5322,7 +6403,9 @@ body {
 
 .vsn-card:hover {
   border-color: var(--vsn-accent);
-  box-shadow: 0 0 0 1px var(--vsn-accent), 0 4px 12px var(--vsn-glow);
+  box-shadow:
+    0 0 0 1px var(--vsn-accent),
+    0 4px 12px var(--vsn-glow);
 }
 
 .vsn-sidebar {
@@ -5378,10 +6461,19 @@ body {
 
 /* ─── Scrollbar ───────────────────────────────────────────────────── */
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--vsn-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--vsn-text-muted); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vsn-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vsn-text-muted);
+}
 
 /* ─── Network Topology SVG for Splash ─────────────────────────────── */
 
@@ -5401,17 +6493,19 @@ import { I18nProvider } from "@/components/i18n-provider";
 
 export const metadata: Metadata = {
   title: "VSN — Virtual Share Network",
-  description: "Connect. Share. Reach the Internet. Secure encrypted virtual network sharing platform. Made by Fodjo Fodjo Fred.",
+  description:
+    "Connect. Share. Reach the Internet. Secure encrypted virtual network sharing platform. Made by Fodjo Fodjo Fred.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="antialiased min-h-screen" style={{ backgroundColor: "var(--vsn-bg)", color: "var(--vsn-text)" }}>
+      <body
+        className="antialiased min-h-screen"
+        style={{ backgroundColor: "var(--vsn-bg)", color: "var(--vsn-text)" }}
+      >
         <ThemeProvider>
-          <I18nProvider>
-            {children}
-          </I18nProvider>
+          <I18nProvider>{children}</I18nProvider>
         </ThemeProvider>
       </body>
     </html>
@@ -5542,9 +6636,15 @@ export default function PermissionsPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-1 mb-4">
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>V</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>S</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>N</span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              V
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>
+              S
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              N
+            </span>
           </div>
           <h1 className="text-xl font-bold mb-2" style={{ color: "var(--vsn-text)" }}>
             VSN NETWORK PERMISSIONS
@@ -5557,10 +6657,16 @@ export default function PermissionsPage() {
         <div className="space-y-3 mb-8">
           {permissions.map((perm) => (
             <div key={perm.id} className="vsn-card p-4 flex items-start gap-4">
-              <span className="mt-0.5 flex-shrink-0 w-5 text-center font-bold" style={{ color: "var(--vsn-green)" }}>
+              <span
+                className="mt-0.5 flex-shrink-0 w-5 text-center font-bold"
+                style={{ color: "var(--vsn-green)" }}
+              >
                 ☑
               </span>
-              <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}>
+              <div
+                className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center"
+                style={{ backgroundColor: "var(--vsn-glow)", color: "var(--vsn-accent)" }}
+              >
                 {perm.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -5575,9 +6681,16 @@ export default function PermissionsPage() {
           ))}
         </div>
 
-        <div className="p-4 rounded-lg mb-6 text-xs leading-relaxed" style={{ backgroundColor: "rgba(212, 175, 55, 0.08)", border: "1px solid rgba(212, 175, 55, 0.25)", color: "var(--vsn-text-muted)" }}>
-          These permissions are required for VSN to establish secure virtual connections. VSN never inspects the
-          contents of your traffic — it only shares and routes encrypted network connectivity.
+        <div
+          className="p-4 rounded-lg mb-6 text-xs leading-relaxed"
+          style={{
+            backgroundColor: "rgba(212, 175, 55, 0.08)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            color: "var(--vsn-text-muted)",
+          }}
+        >
+          These permissions are required for VSN to establish secure virtual connections. VSN never inspects
+          the contents of your traffic — it only shares and routes encrypted network connectivity.
         </div>
 
         <div className="flex gap-3">
@@ -5640,9 +6753,15 @@ export default function TermsPage() {
       <div className="w-full max-w-3xl">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-1 mb-3">
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>V</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>S</span>
-            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>N</span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              V
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-accent)" }}>
+              S
+            </span>
+            <span className="text-3xl font-black" style={{ color: "var(--vsn-text)" }}>
+              N
+            </span>
           </div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
             VSN — Virtual Share Network
@@ -5652,41 +6771,79 @@ export default function TermsPage() {
           </p>
         </div>
 
-        <div className="vsn-card p-6 max-h-[55vh] overflow-y-auto text-xs leading-relaxed" style={{ color: "var(--vsn-text-muted)" }}>
+        <div
+          className="vsn-card p-6 max-h-[55vh] overflow-y-auto text-xs leading-relaxed"
+          style={{ color: "var(--vsn-text-muted)" }}
+        >
           <p className="mb-2" style={{ color: "var(--vsn-text)" }}>
-            <strong>Effective Date:</strong> 2026 &nbsp;·&nbsp; <strong>Software:</strong> VSN — Virtual Share Network
+            <strong>Effective Date:</strong> 2026 &nbsp;·&nbsp; <strong>Software:</strong> VSN — Virtual Share
+            Network
           </p>
           <p className="mb-3">
-            By installing, accessing, or using VSN, you acknowledge that you have read and accepted these Terms of
-            Service and authorize VSN to perform the operations required for its networking functionality.
+            By installing, accessing, or using VSN, you acknowledge that you have read and accepted these
+            Terms of Service and authorize VSN to perform the operations required for its networking
+            functionality.
           </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>1. Purpose of VSN</h2>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            1. Purpose of VSN
+          </h2>
           <p className="mb-2">
             VSN is a networking application designed to allow users to voluntarily share and access Internet
             connectivity through secure virtual network connections. VSN provides two primary operating roles:
           </p>
           <ul className="ml-5 list-disc mb-2">
-            <li><strong>Donor:</strong> provides an available Internet connection to an authorized Receptor.</li>
-            <li><strong>Receptor:</strong> connects to an authorized Donor to access shared network connectivity.</li>
+            <li>
+              <strong>Donor:</strong> provides an available Internet connection to an authorized Receptor.
+            </li>
+            <li>
+              <strong>Receptor:</strong> connects to an authorized Donor to access shared network
+              connectivity.
+            </li>
           </ul>
           <p className="mb-3">
-            VSN may communicate with its control services to authenticate users, discover available Donors, coordinate
-            connections, manage sessions, and provide security and connection information.
+            VSN may communicate with its control services to authenticate users, discover available Donors,
+            coordinate connections, manage sessions, and provide security and connection information.
           </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>2. Required Network Permissions</h2>
-          <p className="mb-2">To provide its networking functionality, VSN may require access to certain operating-system networking capabilities. Before using network-sharing or virtual-network features, the user may be required to authorize the following:</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            2. Required Network Permissions
+          </h2>
+          <p className="mb-2">
+            To provide its networking functionality, VSN may require access to certain operating-system
+            networking capabilities. Before using network-sharing or virtual-network features, the user may be
+            required to authorize the following:
+          </p>
           <ol className="ml-5 list-decimal space-y-1 mb-2">
-            <li><strong>Virtual Network Adapter Access</strong> — create, configure, enable, disable, and remove the VSN virtual network interface.</li>
-            <li><strong>Network Configuration &amp; Routing</strong> — read and modify network interfaces, routing, IP, and DNS configuration.</li>
-            <li><strong>Network Sharing, NAT &amp; Forwarding</strong> — when acting as a Donor, enable forwarding/NAT to share the connection.</li>
-            <li><strong>Firewall &amp; Network Security Configuration</strong> — create/modify/remove firewall rules where required.</li>
-            <li><strong>Elevated System Privileges</strong> — request admin/root/system privileges when required to install or operate VSN networking components.</li>
+            <li>
+              <strong>Virtual Network Adapter Access</strong> — create, configure, enable, disable, and remove
+              the VSN virtual network interface.
+            </li>
+            <li>
+              <strong>Network Configuration &amp; Routing</strong> — read and modify network interfaces,
+              routing, IP, and DNS configuration.
+            </li>
+            <li>
+              <strong>Network Sharing, NAT &amp; Forwarding</strong> — when acting as a Donor, enable
+              forwarding/NAT to share the connection.
+            </li>
+            <li>
+              <strong>Firewall &amp; Network Security Configuration</strong> — create/modify/remove firewall
+              rules where required.
+            </li>
+            <li>
+              <strong>Elevated System Privileges</strong> — request admin/root/system privileges when required
+              to install or operate VSN networking components.
+            </li>
           </ol>
-          <p className="mb-3">The exact permissions and prompts may differ between Windows, Linux, macOS, Android, and other supported platforms.</p>
+          <p className="mb-3">
+            The exact permissions and prompts may differ between Windows, Linux, macOS, Android, and other
+            supported platforms.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>3. Basic Application Permissions</h2>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            3. Basic Application Permissions
+          </h2>
           <p className="mb-2">Depending on the features enabled, VSN may also require permission to:</p>
           <ul className="ml-5 list-disc space-y-0.5 mb-3">
             <li>Communicate with VSN control services through secure network connections.</li>
@@ -5700,37 +6857,113 @@ export default function TermsPage() {
             <li>Run the VSN background agent when explicitly enabled by the user.</li>
             <li>Automatically reconnect when the user has enabled automatic reconnection.</li>
           </ul>
-          <p className="mb-3">VSN should request only permissions necessary for the selected functionality.</p>
+          <p className="mb-3">
+            VSN should request only permissions necessary for the selected functionality.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>4. Donor Responsibilities</h2>
-          <p className="mb-2">A user operating VSN as a Donor voluntarily authorizes VSN to share the selected Internet connection with authorized Receptors. The Donor is responsible for ensuring that they have permission to share the connection, their provider permits such sharing, they understand shared traffic may consume bandwidth, and they disconnect the Donor service when no longer willing to provide connectivity. VSN does not guarantee the availability, speed, or quality of a Donor connection.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            4. Donor Responsibilities
+          </h2>
+          <p className="mb-2">
+            A user operating VSN as a Donor voluntarily authorizes VSN to share the selected Internet
+            connection with authorized Receptors. The Donor is responsible for ensuring that they have
+            permission to share the connection, their provider permits such sharing, they understand shared
+            traffic may consume bandwidth, and they disconnect the Donor service when no longer willing to
+            provide connectivity. VSN does not guarantee the availability, speed, or quality of a Donor
+            connection.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>5. Receptor Responsibilities</h2>
-          <p className="mb-2">A Receptor is responsible for using the VSN connection lawfully and responsibly. The user must not use VSN to circumvent applicable laws, attack or compromise computer systems, distribute malicious software, attempt unauthorized access, abuse another user&apos;s connection, interfere with VSN services, or violate third-party rights.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            5. Receptor Responsibilities
+          </h2>
+          <p className="mb-2">
+            A Receptor is responsible for using the VSN connection lawfully and responsibly. The user must not
+            use VSN to circumvent applicable laws, attack or compromise computer systems, distribute malicious
+            software, attempt unauthorized access, abuse another user&apos;s connection, interfere with VSN
+            services, or violate third-party rights.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>6. Security and Credentials</h2>
-          <p className="mb-2">VSN may use authentication credentials, device identities, session tokens, cryptographic material, or other security mechanisms to protect connections. Users must protect their VSN credentials and must not intentionally provide unauthorized persons with access. VSN should use secure storage and encrypted communication for sensitive information wherever technically applicable.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            6. Security and Credentials
+          </h2>
+          <p className="mb-2">
+            VSN may use authentication credentials, device identities, session tokens, cryptographic material,
+            or other security mechanisms to protect connections. Users must protect their VSN credentials and
+            must not intentionally provide unauthorized persons with access. VSN should use secure storage and
+            encrypted communication for sensitive information wherever technically applicable.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>7. Network Configuration Changes</h2>
-          <p className="mb-2">When VSN establishes a virtual connection, it may temporarily modify network settings (virtual adapter, routing, DNS, firewall rules, NAT/forwarding). When a connection is terminated, VSN is intended to restore those settings. However, OS restrictions, third-party software, administrator policies, or unexpected failures may prevent complete automatic restoration.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            7. Network Configuration Changes
+          </h2>
+          <p className="mb-2">
+            When VSN establishes a virtual connection, it may temporarily modify network settings (virtual
+            adapter, routing, DNS, firewall rules, NAT/forwarding). When a connection is terminated, VSN is
+            intended to restore those settings. However, OS restrictions, third-party software, administrator
+            policies, or unexpected failures may prevent complete automatic restoration.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>8. Privacy</h2>
-          <p className="mb-2">VSN may process technical information necessary to operate and secure the service, including account identity, device identity, connection status, Donor/Receptor sessions, network performance, security events, and application diagnostics. VSN should collect only information necessary for operation, security, troubleshooting, and improvement. VSN does not authorize itself to inspect the private contents of a user&apos;s files or unrelated applications merely because network permissions have been granted.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            8. Privacy
+          </h2>
+          <p className="mb-2">
+            VSN may process technical information necessary to operate and secure the service, including
+            account identity, device identity, connection status, Donor/Receptor sessions, network
+            performance, security events, and application diagnostics. VSN should collect only information
+            necessary for operation, security, troubleshooting, and improvement. VSN does not authorize itself
+            to inspect the private contents of a user&apos;s files or unrelated applications merely because
+            network permissions have been granted.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>9. Voluntary Network Sharing</h2>
-          <p className="mb-2">Participation as a Donor is voluntary. A user may stop sharing at any time, subject to session-management mechanisms required to safely terminate an existing connection. VSN does not guarantee that a Donor will always be available or that a Receptor will always obtain a connection.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            9. Voluntary Network Sharing
+          </h2>
+          <p className="mb-2">
+            Participation as a Donor is voluntary. A user may stop sharing at any time, subject to
+            session-management mechanisms required to safely terminate an existing connection. VSN does not
+            guarantee that a Donor will always be available or that a Receptor will always obtain a
+            connection.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>10. Software Reliability</h2>
-          <p className="mb-2">VSN is provided subject to the limitations of the operating system, network infrastructure, ISP, hardware, firewall configuration, and other third-party services. Network connectivity may fail for reasons outside VSN&apos;s control. Users should not rely on VSN as their sole means of emergency communication or critical connectivity.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            10. Software Reliability
+          </h2>
+          <p className="mb-2">
+            VSN is provided subject to the limitations of the operating system, network infrastructure, ISP,
+            hardware, firewall configuration, and other third-party services. Network connectivity may fail
+            for reasons outside VSN&apos;s control. Users should not rely on VSN as their sole means of
+            emergency communication or critical connectivity.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>11. Updates and Changes</h2>
-          <p className="mb-2">VSN may receive software, security, networking, and compatibility updates. Updates may modify features, permissions, supported platforms, security mechanisms, or network behavior. Where practical, significant changes to permissions or functionality should be communicated to users.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            11. Updates and Changes
+          </h2>
+          <p className="mb-2">
+            VSN may receive software, security, networking, and compatibility updates. Updates may modify
+            features, permissions, supported platforms, security mechanisms, or network behavior. Where
+            practical, significant changes to permissions or functionality should be communicated to users.
+          </p>
 
-          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>12. Acceptance</h2>
-          <p className="mb-2">By selecting &quot;I Agree&quot;, &quot;Accept&quot;, or by installing and using VSN after being presented with these Terms, you confirm that you have reviewed these Terms, understand VSN may require system-level networking permissions, understand the five critical permissions described above, authorize VSN to perform the network operations necessary for features you explicitly enable, and agree to use VSN responsibly and lawfully. If you do not agree or do not wish to grant the required permissions, select &quot;Decline&quot; and discontinue the relevant VSN functionality.</p>
+          <h2 className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+            12. Acceptance
+          </h2>
+          <p className="mb-2">
+            By selecting &quot;I Agree&quot;, &quot;Accept&quot;, or by installing and using VSN after being
+            presented with these Terms, you confirm that you have reviewed these Terms, understand VSN may
+            require system-level networking permissions, understand the five critical permissions described
+            above, authorize VSN to perform the network operations necessary for features you explicitly
+            enable, and agree to use VSN responsibly and lawfully. If you do not agree or do not wish to grant
+            the required permissions, select &quot;Decline&quot; and discontinue the relevant VSN
+            functionality.
+          </p>
 
-          <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}>
-            <p className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>Permission Summary</p>
+          <div
+            className="mt-3 p-3 rounded-lg"
+            style={{ backgroundColor: "var(--vsn-bg)", border: "1px solid var(--vsn-border)" }}
+          >
+            <p className="font-bold mb-1" style={{ color: "var(--vsn-text)" }}>
+              Permission Summary
+            </p>
             <p className="mb-1">VSN may require permission to:</p>
             <ol className="ml-5 list-decimal space-y-0.5 mb-1">
               <li>Create and manage the VSN virtual network adapter.</li>
@@ -5742,7 +6975,10 @@ export default function TermsPage() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 mt-4 mb-3 text-sm cursor-pointer" style={{ color: "var(--vsn-text)" }}>
+        <label
+          className="flex items-center gap-2 mt-4 mb-3 text-sm cursor-pointer"
+          style={{ color: "var(--vsn-text)" }}
+        >
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
           <span>I have read and agree to the VSN Terms of Service and Network Permissions Agreement.</span>
         </label>
@@ -5778,7 +7014,12 @@ export default function TermsPage() {
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
-import { subscribeConnection, toneFor, type ConnectionTone, type ConnectionState } from "@/lib/connection-store";
+import {
+  subscribeConnection,
+  toneFor,
+  type ConnectionTone,
+  type ConnectionState,
+} from "@/lib/connection-store";
 
 interface Circle {
   id: number;
@@ -5826,7 +7067,12 @@ export default function ConnectionBackground() {
   }, []);
 
   const circles = buildCircles(tone);
-  const cls = tone === "connected" ? "vsn-circle-green" : tone === "connecting" ? "vsn-circle-yellow" : "vsn-circle-red";
+  const cls =
+    tone === "connected"
+      ? "vsn-circle-green"
+      : tone === "connecting"
+        ? "vsn-circle-yellow"
+        : "vsn-circle-red";
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
@@ -5878,7 +7124,8 @@ export function SessionStateMachine({ current }: { current: SessionState }) {
       {ORDER.map((state) => {
         const isActive = current === state;
         const sc = sessionStateToColor(state);
-        const hex = sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+        const hex =
+          sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
         return (
           <div
             key={state}
@@ -5903,7 +7150,17 @@ export function SessionStateMachine({ current }: { current: SessionState }) {
 // VSN — Dashboard stat card (shared)
 import type { ReactNode } from "react";
 
-export function StatCard({ label, value, sub, icon }: { label: string; value: string; sub?: string; icon?: ReactNode }) {
+export function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  icon?: ReactNode;
+}) {
   return (
     <div className="vsn-card p-4">
       <div className="flex items-center justify-between mb-2">
@@ -5959,7 +7216,10 @@ export function DonorCredentials() {
       <div className="flex flex-col gap-1">
         <span className="text-[10px] uppercase opacity-40 font-bold ml-1">Pair Code</span>
         <div className="flex items-center gap-3">
-          <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-lg tracking-wider" style={{ color: "var(--vsn-accent)" }}>
+          <div
+            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-lg tracking-wider"
+            style={{ color: "var(--vsn-accent)" }}
+          >
             {pairCode || "—"}
           </div>
           <button
@@ -5976,7 +7236,10 @@ export function DonorCredentials() {
           {publicKey || "—"}
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold" style={{ color: "var(--vsn-green)" }}>
+      <div
+        className="mt-4 flex items-center gap-2 text-[10px] font-bold"
+        style={{ color: "var(--vsn-green)" }}
+      >
         <Shield size={12} /> ROTATION ACTIVE · RSA-4096 / Ed25519
       </div>
     </div>
@@ -6022,7 +7285,11 @@ const networkNodes: NetworkNode[] = [
 function latLngToV3(lat: number, lng: number, r: number) {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
-  return new THREE.Vector3(-(r * Math.sin(phi) * Math.cos(theta)), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
+  return new THREE.Vector3(
+    -(r * Math.sin(phi) * Math.cos(theta)),
+    r * Math.cos(phi),
+    r * Math.sin(phi) * Math.sin(theta),
+  );
 }
 
 function Earth({ isDark }: { isDark: boolean }) {
@@ -6032,7 +7299,7 @@ function Earth({ isDark }: { isDark: boolean }) {
     return loader.load(
       isDark
         ? "https://unpkg.com/three-globe/example/img/earth-dark.jpg"
-        : "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+        : "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
     );
   }, [isDark]);
 
@@ -6062,7 +7329,7 @@ export default function InteractiveGlobe() {
           minute: "2-digit",
           second: "2-digit",
           hour12: false,
-        }).format(new Date())
+        }).format(new Date()),
       );
     }, 1000);
     return () => clearInterval(iv);
@@ -6076,11 +7343,7 @@ export default function InteractiveGlobe() {
         <Stars radius={100} depth={50} count={500} factor={4} saturation={0} fade speed={1} />
         <Earth isDark={theme === "dark"} />
         {networkNodes.map((node) => (
-          <mesh
-            key={node.id}
-            position={latLngToV3(node.lat, node.lng, 2)}
-            onClick={() => setSelected(node)}
-          >
+          <mesh key={node.id} position={latLngToV3(node.lat, node.lng, 2)} onClick={() => setSelected(node)}>
             <sphereGeometry args={[0.06, 16, 16]} />
             <meshBasicMaterial color={node.status === "active" ? "#25e64a" : "#D4AF37"} />
           </mesh>
@@ -6100,7 +7363,9 @@ export default function InteractiveGlobe() {
             <div className="bg-black/40 p-3 rounded-xl border border-white/5">
               <p className="text-[8px] opacity-40 uppercase font-black">Local Time</p>
               <p className="text-2xl font-mono font-black text-gold tracking-tight">{time}</p>
-              <p className="text-[8px] opacity-40 uppercase font-black mt-1">{selected.tz.replace(/_/g, " ")}</p>
+              <p className="text-[8px] opacity-40 uppercase font-black mt-1">
+                {selected.tz.replace(/_/g, " ")}
+              </p>
             </div>
             <div
               className={`flex items-center gap-2 text-[9px] font-black justify-center py-2 rounded-lg ${
@@ -6163,10 +7428,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY, l);
   }, []);
 
-  const t = useCallback(
-    (key: string) => DICTS[lang][key] ?? DICTS[DEFAULT_LANGUAGE][key] ?? key,
-    [lang]
-  );
+  const t = useCallback((key: string) => DICTS[lang][key] ?? DICTS[DEFAULT_LANGUAGE][key] ?? key, [lang]);
 
   const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
 
@@ -6221,8 +7483,16 @@ export function DonorList({
   loading?: boolean;
   error?: string | null;
 }) {
-  if (loading) return <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>;
-  if (error) return <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>{error}</div>;
+  if (loading)
+    return (
+      <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>
+    );
+  if (error)
+    return (
+      <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>
+        {error}
+      </div>
+    );
   if (!donors.length)
     return (
       <div className="text-center py-10 opacity-30">
@@ -6236,7 +7506,11 @@ export function DonorList({
       {donors.map((donor) => {
         const isOnline = donor.status !== "offline";
         const dotColor =
-          donor.status === "sharing" || donor.status === "online" ? "var(--vsn-green)" : donor.status === "available" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+          donor.status === "sharing" || donor.status === "online"
+            ? "var(--vsn-green)"
+            : donor.status === "available"
+              ? "var(--vsn-yellow)"
+              : "var(--vsn-red)";
         return (
           <div
             key={donor.id}
@@ -6249,11 +7523,19 @@ export function DonorList({
             <div className="flex items-center gap-3">
               <div className="relative">
                 <span className="text-xl">{donor.countryFlag}</span>
-                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }} />
+                <div
+                  className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
+                  style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }}
+                />
               </div>
               <div>
-                <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                <div className="flex items-center gap-2 text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {donor.donorId}
+                </div>
+                <div
+                  className="flex items-center gap-2 text-[10px]"
+                  style={{ color: "var(--vsn-text-muted)" }}
+                >
                   <span>{donor.visibility}</span>
                   <span>•</span>
                   <span>{formatBandwidth(donor.bandwidthPerReceptorKbps)}</span>
@@ -6266,7 +7548,9 @@ export function DonorList({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {donor.visibility === "public" && <AlertTriangle size={14} style={{ color: "var(--vsn-yellow)" }} />}
+              {donor.visibility === "public" && (
+                <AlertTriangle size={14} style={{ color: "var(--vsn-yellow)" }} />
+              )}
               <button
                 onClick={() => onSelect(donor)}
                 disabled={!isOnline}
@@ -6299,23 +7583,35 @@ const config: Record<SecurityEventSeverity, { icon: React.ReactNode; color: stri
 };
 
 export function SecurityEventsFeed({ events }: { events: SecurityEvent[] }) {
-  if (!events.length)
-    return <p className="text-xs opacity-40">No security events recorded.</p>;
+  if (!events.length) return <p className="text-xs opacity-40">No security events recorded.</p>;
   return (
     <div className="space-y-2">
       {events.map((event) => {
         const c = config[event.severity] ?? config.info;
         return (
-          <div key={event.id} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: c.bg, border: `1px solid ${c.color}20` }}>
-            <div className="mt-0.5 flex-shrink-0" style={{ color: c.color }}>{c.icon}</div>
+          <div
+            key={event.id}
+            className="flex items-start gap-3 p-3 rounded-lg"
+            style={{ backgroundColor: c.bg, border: `1px solid ${c.color}20` }}
+          >
+            <div className="mt-0.5 flex-shrink-0" style={{ color: c.color }}>
+              {c.icon}
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-medium" style={{ color: "var(--vsn-text)" }}>{event.eventType}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full uppercase font-medium text-white" style={{ backgroundColor: c.color }}>
+                <span className="text-xs font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {event.eventType}
+                </span>
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full uppercase font-medium text-white"
+                  style={{ backgroundColor: c.color }}
+                >
                   {event.severity}
                 </span>
               </div>
-              <p className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>{event.description}</p>
+              <p className="text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                {event.description}
+              </p>
             </div>
           </div>
         );
@@ -6336,9 +7632,19 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/theme-provider";
 import { subscribeConnection, type ConnectionState } from "@/lib/connection-store";
-import { 
-  Home, Globe, Share2, Download, Users, Shield, 
-  BarChart3, Settings, Moon, Sun, X, Zap 
+import {
+  Home,
+  Globe,
+  Share2,
+  Download,
+  Users,
+  Shield,
+  BarChart3,
+  Settings,
+  Moon,
+  Sun,
+  X,
+  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -6352,7 +7658,7 @@ const navItems = [
   { icon: <Settings size={20} />, label: "Settings", href: "/settings" },
 ];
 
-export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const [conn, setConn] = useState<ConnectionState | null>(null);
@@ -6364,7 +7670,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
   }, []);
 
   const toneColor =
-    conn?.tone === "connected" ? "var(--vsn-green)" : conn?.tone === "connecting" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+    conn?.tone === "connected"
+      ? "var(--vsn-green)"
+      : conn?.tone === "connecting"
+        ? "var(--vsn-yellow)"
+        : "var(--vsn-red)";
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -6381,7 +7691,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -6399,7 +7709,13 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
           >
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center gap-2">
-                <Image src="/assets/vsn-logo.svg" width={480} height={200} className="h-8 w-auto" alt="Logo" />
+                <Image
+                  src="/assets/vsn-logo.svg"
+                  width={480}
+                  height={200}
+                  className="h-8 w-auto"
+                  alt="Logo"
+                />
                 <span className="text-xl font-black text-white">VSN</span>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -6417,11 +7733,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     onClick={onClose}
                     className={`
                       relative group flex items-center gap-4 px-4 py-4 rounded-xl text-sm transition-all duration-300 overflow-hidden
-                      ${active ? 'bg-gold/10 text-gold border border-gold/20' : 'text-white/40 hover:text-white hover:bg-white/5'}
+                      ${active ? "bg-gold/10 text-gold border border-gold/20" : "text-white/40 hover:text-white hover:bg-white/5"}
                     `}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-transparent via-gold/5 to-transparent translate-y-full group-hover:translate-y-[-100%] transition-transform duration-700 pointer-events-none" />
-                    <span className={active ? 'text-gold' : 'text-inherit'}>{item.icon}</span>
+                    <span className={active ? "text-gold" : "text-inherit"}>{item.icon}</span>
                     <span className="font-bold tracking-tight">{item.label}</span>
                   </Link>
                 );
@@ -6429,23 +7745,33 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
             </nav>
 
             <div className="pt-6 border-t border-white/5 space-y-3">
-              <button onClick={toggleTheme} className="flex items-center justify-between w-full px-4 py-4 bg-white/5 rounded-xl text-white/60 hover:text-gold transition-all group">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-between w-full px-4 py-4 bg-white/5 rounded-xl text-white/60 hover:text-gold transition-all group"
+              >
                 <div className="flex items-center gap-4">
                   {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                   <span className="font-bold text-xs">Switch Appearance</span>
                 </div>
                 <div className="w-8 h-4 bg-black border border-white/10 rounded-full relative">
-                  <div className={`absolute top-0.5 bottom-0.5 w-2.5 bg-gold rounded-full transition-all ${theme === 'dark' ? 'left-[18px]' : 'left-0.5'}`} />
+                  <div
+                    className={`absolute top-0.5 bottom-0.5 w-2.5 bg-gold rounded-full transition-all ${theme === "dark" ? "left-[18px]" : "left-0.5"}`}
+                  />
                 </div>
               </button>
 
               <div className="p-4 bg-gold/5 rounded-xl border border-gold/10">
-                 <p className="text-[10px] font-black text-gold uppercase mb-1">VSN Engine Status</p>
-                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: toneColor }} />
-                    <span className="text-[10px] text-white opacity-60" style={{ color: toneColor }}>{conn?.label ?? "Not Connected"}</span>
-                 </div>
-                 <p className="text-[8px] text-white/30 mt-2 tracking-widest">Made by Fodjo Fodjo Fred</p>
+                <p className="text-[10px] font-black text-gold uppercase mb-1">VSN Engine Status</p>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: toneColor }}
+                  />
+                  <span className="text-[10px] text-white opacity-60" style={{ color: toneColor }}>
+                    {conn?.label ?? "Not Connected"}
+                  </span>
+                </div>
+                <p className="text-[8px] text-white/30 mt-2 tracking-widest">Made by Fodjo Fodjo Fred</p>
               </div>
             </div>
           </motion.aside>
@@ -6502,10 +7828,7 @@ export default function StatusIndicator({
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className={`${s.dot} rounded-full ${pulse ? c.pulse : ""}`}
-        style={{ backgroundColor: c.bg }}
-      />
+      <div className={`${s.dot} rounded-full ${pulse ? c.pulse : ""}`} style={{ backgroundColor: c.bg }} />
       {showLabel && (
         <span className={`${s.text} font-medium`} style={{ color: c.bg }}>
           {resolvedLabel}
@@ -6586,14 +7909,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!hasMounted) {
-    return <div className="dark" style={{ visibility: "hidden" }}>{children}</div>;
+    return (
+      <div className="dark" style={{ visibility: "hidden" }}>
+        {children}
+      </div>
+    );
   }
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
@@ -6672,7 +7995,13 @@ export function Card({
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
-export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?: () => void, showSplash?: boolean }) {
+export default function VSNLogo({
+  onFinished,
+  showSplash = true,
+}: {
+  onFinished?: () => void;
+  showSplash?: boolean;
+}) {
   const [visible, setVisible] = useState(showSplash);
 
   useEffect(() => {
@@ -6730,25 +8059,46 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
 
       <div className={`vsn-splash ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         <div className="vsn-splash-container">
-          
           {/* Wave Diffraction Ovals */}
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <React.Fragment key={i}>
-              <div className="vsn-wave vsn-wave-left vsn-wave-anim" style={{
-                width: 200 + i*60, height: 400 + i*40,
-                borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
-                left: '20%', animationDelay: `${i * 0.4}s`, '--dir': '-100px'
-              } as React.CSSProperties} />
-              <div className="vsn-wave vsn-wave-right vsn-wave-anim" style={{
-                width: 200 + i*60, height: 400 + i*40,
-                borderColor: i < 3 ? 'var(--vsn-red)' : i < 5 ? 'var(--vsn-yellow)' : 'var(--vsn-green)',
-                right: '20%', animationDelay: `${i * 0.4}s`, '--dir': '100px'
-              } as React.CSSProperties} />
+              <div
+                className="vsn-wave vsn-wave-left vsn-wave-anim"
+                style={
+                  {
+                    width: 200 + i * 60,
+                    height: 400 + i * 40,
+                    borderColor: i < 3 ? "var(--vsn-red)" : i < 5 ? "var(--vsn-yellow)" : "var(--vsn-green)",
+                    left: "20%",
+                    animationDelay: `${i * 0.4}s`,
+                    "--dir": "-100px",
+                  } as React.CSSProperties
+                }
+              />
+              <div
+                className="vsn-wave vsn-wave-right vsn-wave-anim"
+                style={
+                  {
+                    width: 200 + i * 60,
+                    height: 400 + i * 40,
+                    borderColor: i < 3 ? "var(--vsn-red)" : i < 5 ? "var(--vsn-yellow)" : "var(--vsn-green)",
+                    right: "20%",
+                    animationDelay: `${i * 0.4}s`,
+                    "--dir": "100px",
+                  } as React.CSSProperties
+                }
+              />
             </React.Fragment>
           ))}
 
           <div className="vsn-logo-box text-center">
-            <Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-40 w-auto mb-8 mx-auto" />
+            <Image
+              src="/assets/vsn-logo.svg"
+              alt="VSN"
+              width={480}
+              height={200}
+              className="h-40 w-auto mb-8 mx-auto"
+            />
             <h1 className="text-7xl font-black tracking-tighter text-white mb-2">
               <span className="text-[var(--vsn-red)]">V</span>
               <span className="text-[var(--vsn-yellow)]">S</span>
@@ -6762,12 +8112,17 @@ export default function VSNLogo({ onFinished, showSplash = true }: { onFinished?
             </p>
 
             <div className="mt-16 flex items-center justify-center gap-12">
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-red)] shadow-[0_0_10px_var(--vsn-red)] animate-pulse" />
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-yellow)] shadow-[0_0_10px_var(--vsn-yellow)] animate-pulse" style={{animationDelay:'0.5s'}} />
-               <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-green)] shadow-[0_0_10px_var(--vsn-green)] animate-pulse" style={{animationDelay:'1s'}} />
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-red)] shadow-[0_0_10px_var(--vsn-red)] animate-pulse" />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-yellow)] shadow-[0_0_10px_var(--vsn-yellow)] animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--vsn-green)] shadow-[0_0_10px_var(--vsn-green)] animate-pulse"
+                style={{ animationDelay: "1s" }}
+              />
             </div>
           </div>
-
         </div>
       </div>
     </>
@@ -6978,22 +8333,13 @@ for (const stmt of DDL) {
 const demoUserId = process.env.VSN_DEMO_USER_ID ?? "00000000-0000-0000-0000-000000000001";
 const demoEmail = process.env.VSN_DEMO_USER_EMAIL ?? "demo@vsn.local";
 const existingUser = sqlite.prepare("SELECT id FROM users WHERE email = ?").get(demoEmail) as
-  | { id: string }
-  | undefined;
+  { id: string } | undefined;
 if (!existingUser) {
   sqlite
     .prepare(
-      "INSERT INTO users (id, email, display_name, password_hash, country_code, created_at, updated_at, is_active) VALUES (?,?,?,?,?,?,?,1)"
+      "INSERT INTO users (id, email, display_name, password_hash, country_code, created_at, updated_at, is_active) VALUES (?,?,?,?,?,?,?,1)",
     )
-    .run(
-      demoUserId,
-      demoEmail,
-      "VSN Demo",
-      "$demo$" + "x".repeat(16),
-      "CM",
-      Date.now(),
-      Date.now()
-    );
+    .run(demoUserId, demoEmail, "VSN Demo", "$demo$" + "x".repeat(16), "CM", Date.now(), Date.now());
   console.log(`[init] seeded dev user: ${demoEmail} (id=${demoUserId})`);
 }
 
@@ -7012,16 +8358,20 @@ import { users } from "./users";
 export const auditLog = sqliteTable(
   "audit_log",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
     userId: text("user_id").references(() => users.id),
     action: text("action").notNull(),
     resource: text("resource"),
     resourceId: text("resource_id"),
     outcome: text("outcome").notNull(), // success, failure, denied
     metadata: text("metadata", { mode: "json" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("audit_log_user_idx").on(table.userId), index("audit_log_action_idx").on(table.action)]
+  (table) => [index("audit_log_user_idx").on(table.userId), index("audit_log_action_idx").on(table.action)],
 );
 
 ````
@@ -7035,8 +8385,12 @@ import { users } from "./users";
 export const devices = sqliteTable(
   "devices",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     deviceName: text("device_name").notNull(),
     deviceType: text("device_type").notNull(), // android, windows, linux, macos
     publicKey: text("public_key").notNull(),
@@ -7044,9 +8398,11 @@ export const devices = sqliteTable(
     isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
     isRevoked: integer("is_revoked", { mode: "boolean" }).notNull().default(false),
     lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("devices_user_idx").on(table.userId)]
+  (table) => [index("devices_user_idx").on(table.userId)],
 );
 
 ````
@@ -7061,15 +8417,25 @@ import { devices } from "./devices";
 export const donorProfiles = sqliteTable(
   "donor_profiles",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    deviceId: text("device_id").notNull().references(() => devices.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceId: text("device_id")
+      .notNull()
+      .references(() => devices.id, { onDelete: "cascade" }),
     donorId: text("donor_id").notNull().unique(), // e.g. VSN-FR-A72K9
     pairCode: text("pair_code").notNull(),
     pairCodeHash: text("pair_code_hash").notNull(),
     publicKey: text("public_key").notNull(),
-    visibility: text("visibility", { enum: ["private", "trusted", "public"] }).notNull().default("private"),
-    status: text("status", { enum: ["offline", "online", "available", "sharing"] }).notNull().default("offline"),
+    visibility: text("visibility", { enum: ["private", "trusted", "public"] })
+      .notNull()
+      .default("private"),
+    status: text("status", { enum: ["offline", "online", "available", "sharing"] })
+      .notNull()
+      .default("offline"),
     countryCode: text("country_code", { length: 3 }),
     maxReceptors: integer("max_receptors").notNull().default(3),
     bandwidthPerReceptorKbps: integer("bandwidth_per_receptor_kbps").notNull().default(10240),
@@ -7085,24 +8451,37 @@ export const donorProfiles = sqliteTable(
     endpointIp: text("endpoint_ip", { length: 45 }),
     endpointPort: integer("endpoint_port"),
     wireguardPublicKey: text("wireguard_public_key"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("donor_profiles_user_idx").on(table.userId), index("donor_profiles_status_idx").on(table.status)]
+  (table) => [
+    index("donor_profiles_user_idx").on(table.userId),
+    index("donor_profiles_status_idx").on(table.status),
+  ],
 );
 
 export const authorizedReceptors = sqliteTable(
   "authorized_receptors",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    donorProfileId: text("donor_profile_id").notNull().references(() => donorProfiles.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    donorProfileId: text("donor_profile_id")
+      .notNull()
+      .references(() => donorProfiles.id, { onDelete: "cascade" }),
     deviceFingerprint: text("device_fingerprint").notNull(),
     receptorUserId: text("receptor_user_id").references(() => users.id, { onDelete: "cascade" }),
     label: text("label"),
     isBlocked: integer("is_blocked", { mode: "boolean" }).notNull().default(false),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("auth_receptor_donor_idx").on(table.donorProfileId)]
+  (table) => [index("auth_receptor_donor_idx").on(table.donorProfileId)],
 );
 
 ````
@@ -7126,7 +8505,9 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { randomUUID } from "crypto";
 
 export const relayServers = sqliteTable("relay_servers", {
-  id: text("id").primaryKey().$defaultFn(() => randomUUID()),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
   name: text("name").notNull(),
   region: text("region").notNull(),
   endpoint: text("endpoint").notNull(),
@@ -7134,7 +8515,9 @@ export const relayServers = sqliteTable("relay_servers", {
   maxBandwidthKbps: integer("max_bandwidth_kbps"),
   currentLoadPercent: integer("current_load_percent").default(0),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 ````
@@ -7149,17 +8532,26 @@ import { sessions } from "./sessions";
 export const securityEvents = sqliteTable(
   "security_events",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
     userId: text("user_id").references(() => users.id),
     sessionId: text("session_id").references(() => sessions.id),
     eventType: text("event_type").notNull(),
-    severity: text("severity", { enum: ["info", "warning", "critical"] }).notNull().default("info"),
+    severity: text("severity", { enum: ["info", "warning", "critical"] })
+      .notNull()
+      .default("info"),
     description: text("description").notNull(),
     sourceIp: text("source_ip", { length: 45 }),
     metadata: text("metadata", { mode: "json" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("security_events_user_idx").on(table.userId), index("security_events_severity_idx").on(table.severity)]
+  (table) => [
+    index("security_events_user_idx").on(table.userId),
+    index("security_events_severity_idx").on(table.severity),
+  ],
 );
 
 ````
@@ -7175,13 +8567,33 @@ import { donorProfiles } from "./donors";
 export const sessions = sqliteTable(
   "sessions",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    donorProfileId: text("donor_profile_id").notNull().references(() => donorProfiles.id),
-    donorUserId: text("donor_user_id").notNull().references(() => users.id),
-    receptorDeviceId: text("receptor_device_id").notNull().references(() => devices.id),
-    receptorUserId: text("receptor_user_id").notNull().references(() => users.id),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    donorProfileId: text("donor_profile_id")
+      .notNull()
+      .references(() => donorProfiles.id),
+    donorUserId: text("donor_user_id")
+      .notNull()
+      .references(() => users.id),
+    receptorDeviceId: text("receptor_device_id")
+      .notNull()
+      .references(() => devices.id),
+    receptorUserId: text("receptor_user_id")
+      .notNull()
+      .references(() => users.id),
     state: text("state", {
-      enum: ["idle", "requested", "approved", "negotiating", "connecting", "connected", "reconnecting", "terminated", "error"],
+      enum: [
+        "idle",
+        "requested",
+        "approved",
+        "negotiating",
+        "connecting",
+        "connected",
+        "reconnecting",
+        "terminated",
+        "error",
+      ],
     })
       .notNull()
       .default("idle"),
@@ -7203,28 +8615,38 @@ export const sessions = sqliteTable(
     connectedAt: integer("connected_at", { mode: "timestamp_ms" }),
     terminatedAt: integer("terminated_at", { mode: "timestamp_ms" }),
     terminationReason: text("termination_reason", { length: 50 }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
   (table) => [
     index("sessions_donor_idx").on(table.donorProfileId),
     index("sessions_state_idx").on(table.state),
     index("sessions_receptor_idx").on(table.receptorUserId),
-  ]
+  ],
 );
 
 export const sessionEvents = sqliteTable(
   "session_events",
   {
-    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
-    sessionId: text("session_id").notNull().references(() => sessions.id, { onDelete: "cascade" }),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => sessions.id, { onDelete: "cascade" }),
     eventType: text("event_type").notNull(),
     fromState: text("from_state"),
     toState: text("to_state"),
     metadata: text("metadata", { mode: "json" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
-  (table) => [index("session_events_session_idx").on(table.sessionId)]
+  (table) => [index("session_events_session_idx").on(table.sessionId)],
 );
 
 ````
@@ -7235,13 +8657,19 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { randomUUID } from "crypto";
 
 export const users = sqliteTable("users", {
-  id: text("id").primaryKey().$defaultFn(() => randomUUID()),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
   email: text("email").notNull().unique(),
   displayName: text("display_name").notNull(),
   passwordHash: text("password_hash").notNull(),
   countryCode: text("country_code", { length: 3 }),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
 });
 
@@ -7313,9 +8741,7 @@ const getFalse = () => false;
 
 export function useApi<T>(fetcher: (() => Promise<T>) | null, deps: unknown[] = []) {
   // Stable per-component store instance, created once via lazy initializer.
-  const [store] = useState(
-    () => new ApiStore<T>({ data: null, loading: fetcher !== null, error: null })
-  );
+  const [store] = useState(() => new ApiStore<T>({ data: null, loading: fetcher !== null, error: null }));
 
   // Keep the latest fetcher without recreating the fetch effect.
   const fetcherRef = useRef(fetcher);
@@ -7359,7 +8785,7 @@ export function useApi<T>(fetcher: (() => Promise<T>) | null, deps: unknown[] = 
 
 export function useAuthToken(): string | undefined {
   const [token] = useState<string | undefined>(() =>
-    typeof window === "undefined" ? undefined : localStorage.getItem("vsn-token") ?? undefined
+    typeof window === "undefined" ? undefined : (localStorage.getItem("vsn-token") ?? undefined),
   );
   const hasMounted = useSyncExternalStore(subscribeNoop, getTrue, getFalse);
   return hasMounted ? token : undefined;
@@ -7409,17 +8835,34 @@ export function useTunnel() {
   const [error, setError] = useState<string | null>(null);
 
   // Update both local state and the global connection store.
-  const applyState = useCallback((s: SessionState, extra?: Partial<Parameters<typeof setConnectionState>[0]>) => {
-    setStateRaw(s);
-    setConnectionState({ state: s, tone: toneFor(s), label: labelFor(s), role: extra?.role ?? (s === "connected" ? "receptor" : null), ...extra });
-  }, []);
+  const applyState = useCallback(
+    (s: SessionState, extra?: Partial<Parameters<typeof setConnectionState>[0]>) => {
+      setStateRaw(s);
+      setConnectionState({
+        state: s,
+        tone: toneFor(s),
+        label: labelFor(s),
+        role: extra?.role ?? (s === "connected" ? "receptor" : null),
+        ...extra,
+      });
+    },
+    [],
+  );
 
   const log = useCallback((msg: string, type: ConnectionLog["type"] = "info") => {
-    setLogs((prev) => [...prev, { id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg, type }]);
+    setLogs((prev) => [
+      ...prev,
+      { id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg, type },
+    ]);
   }, []);
 
   const connect = useCallback(
-    async (input: { donorProfileId: string; receptorDeviceId: string; receptorUserId: string; role: "donor" | "receptor" }) => {
+    async (input: {
+      donorProfileId: string;
+      receptorDeviceId: string;
+      receptorUserId: string;
+      role: "donor" | "receptor";
+    }) => {
       setError(null);
       try {
         log("Requesting session…");
@@ -7464,7 +8907,12 @@ export function useTunnel() {
         setTunnelInfo({ config: cfg, relay: relayInfo });
         applyState("connected");
         log("Tunnel established — traffic flowing", "success");
-        pushNotification({ kind: "system", title: "Tunnel established", body: "Encrypted connection active.", route: "/connection" });
+        pushNotification({
+          kind: "system",
+          title: "Tunnel established",
+          body: "Encrypted connection active.",
+          route: "/connection",
+        });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Connection failed";
         setError(msg);
@@ -7472,7 +8920,7 @@ export function useTunnel() {
         applyState("error");
       }
     },
-    [log, applyState]
+    [log, applyState],
   );
 
   const disconnect = useCallback(async () => {
@@ -7515,7 +8963,7 @@ export async function registerDevice(
     publicKey: string;
     fingerprint: string;
   },
-  token?: string
+  token?: string,
 ): Promise<{ deviceId: string; message: string }> {
   return apiClient.post<{ deviceId: string; message: string }>("/api/auth/register-device", body, token);
 }
@@ -7604,7 +9052,10 @@ import type {
   ApproveReceptorResponse,
 } from "protocol/messages/donor";
 
-export async function registerDonor(req: RegisterDonorRequest, token?: string): Promise<RegisterDonorResponse> {
+export async function registerDonor(
+  req: RegisterDonorRequest,
+  token?: string,
+): Promise<RegisterDonorResponse> {
   return apiClient.post<RegisterDonorResponse>("/api/donors/register", req, token);
 }
 
@@ -7620,14 +9071,17 @@ export async function getMyDonors(userId: string): Promise<AvailableDonor[]> {
   return res.donors;
 }
 
-export async function donorHeartbeat(req: DonorHeartbeatRequest, token?: string): Promise<DonorHeartbeatResponse> {
+export async function donorHeartbeat(
+  req: DonorHeartbeatRequest,
+  token?: string,
+): Promise<DonorHeartbeatResponse> {
   return apiClient.post<DonorHeartbeatResponse>("/api/donors/heartbeat", req, token);
 }
 
 export async function approveReceptor(
   donorProfileId: string,
   req: ApproveReceptorRequest,
-  token?: string
+  token?: string,
 ): Promise<ApproveReceptorResponse> {
   return apiClient.post<ApproveReceptorResponse>(`/api/donors/${donorProfileId}/approve`, req, token);
 }
@@ -7662,9 +9116,15 @@ export interface AuthContext {
  * Middleware-style guard: applies rate limiting + optional JWT auth.
  * Call at the top of a handler. Throws AuthError / RateLimitError on failure.
  */
-export function guard(req: Request, opts: { auth?: boolean; limit?: number; windowMs?: number } = {}): AuthContext {
+export function guard(
+  req: Request,
+  opts: { auth?: boolean; limit?: number; windowMs?: number } = {},
+): AuthContext {
   const ip = clientIpFrom(req);
-  const rl = rateLimit(`api:${req.method}:${req.url.split("?")[0]}:${ip}`, { limit: opts.limit ?? 60, windowMs: opts.windowMs ?? 60_000 });
+  const rl = rateLimit(`api:${req.method}:${req.url.split("?")[0]}:${ip}`, {
+    limit: opts.limit ?? 60,
+    windowMs: opts.windowMs ?? 60_000,
+  });
   if (!rl.ok) throw new RateLimitError(rl.retryAfterMs, rl.limit);
 
   if (opts.auth) {
@@ -7696,7 +9156,7 @@ export class RateLimitError extends Error {
 /** Wrap a handler so service/auth/rate-limit errors map to clean HTTP responses. */
 export function withErrors<Args extends unknown[], T>(
   handler: (...args: Args) => Promise<T>,
-  okStatus = 200
+  okStatus = 200,
 ) {
   return async (...args: Args): Promise<NextResponse> => {
     try {
@@ -7705,12 +9165,17 @@ export function withErrors<Args extends unknown[], T>(
       return jsonOk(data, okStatus);
     } catch (err) {
       if (err instanceof RateLimitError) {
-        return NextResponse.json({ error: "Too many requests", code: "rate_limited", retryAfterMs: err.retryAfterMs }, { status: 429, headers: { "Retry-After": String(Math.ceil(err.retryAfterMs / 1000)) } });
+        return NextResponse.json(
+          { error: "Too many requests", code: "rate_limited", retryAfterMs: err.retryAfterMs },
+          { status: 429, headers: { "Retry-After": String(Math.ceil(err.retryAfterMs / 1000)) } },
+        );
       }
       if (err instanceof AuthError) return jsonError(err.message, 401, "unauthorized");
       if (err instanceof ValidationError) return jsonError(err.message, 400, "validation");
-      if ((err as Error).name === "SessionNotFoundError") return jsonError((err as Error).message, 404, "not_found");
-      if ((err as Error).name === "InvalidStateTransitionError") return jsonError((err as Error).message, 409, "invalid_state");
+      if ((err as Error).name === "SessionNotFoundError")
+        return jsonError((err as Error).message, 404, "not_found");
+      if ((err as Error).name === "InvalidStateTransitionError")
+        return jsonError((err as Error).message, 409, "invalid_state");
       console.error("[api] unexpected error", err);
       return jsonError("Internal error", 500, "internal");
     }
@@ -7740,7 +9205,10 @@ import type {
   SessionStatusResponse,
 } from "protocol/messages/session";
 
-export async function requestSession(req: RequestSessionRequest, token?: string): Promise<RequestSessionResponse> {
+export async function requestSession(
+  req: RequestSessionRequest,
+  token?: string,
+): Promise<RequestSessionResponse> {
   return apiClient.post<RequestSessionResponse>("/api/sessions/request", req, token);
 }
 
@@ -7752,7 +9220,11 @@ export async function rejectSession(sessionId: string, token?: string): Promise<
   return apiClient.post<SessionActionResponse>(`/api/sessions/${sessionId}/reject`, undefined, token);
 }
 
-export async function terminateSession(sessionId: string, reason?: string, token?: string): Promise<SessionActionResponse> {
+export async function terminateSession(
+  sessionId: string,
+  reason?: string,
+  token?: string,
+): Promise<SessionActionResponse> {
   return apiClient.post<SessionActionResponse>(`/api/sessions/${sessionId}/terminate`, { reason }, token);
 }
 
@@ -7778,7 +9250,7 @@ export async function getStatistics(userId: string): Promise<ConnectionStats> {
 
 export async function getSecurityEvents(userId: string, limit = 50): Promise<SecurityEvent[]> {
   const res = await apiClient.get<{ events: SecurityEvent[] }>(
-    `/api/security/events?userId=${userId}&limit=${limit}`
+    `/api/security/events?userId=${userId}&limit=${limit}`,
   );
   return res.events;
 }
@@ -7884,7 +9356,10 @@ export interface JwtPayload {
   [k: string]: unknown;
 }
 
-export function signJwt(payload: Omit<JwtPayload, "iat" | "exp"> & { sub: string }, ttlSeconds: number): string {
+export function signJwt(
+  payload: Omit<JwtPayload, "iat" | "exp"> & { sub: string },
+  ttlSeconds: number,
+): string {
   const header = base64urlJson({ alg: ALG, typ: "JWT" });
   const now = Math.floor(Date.now() / 1000);
   const body: JwtPayload = { ...payload, iat: now, exp: now + ttlSeconds };
@@ -9017,11 +10492,7 @@ export function optionalNumber(value: unknown): number | undefined {
   return value;
 }
 
-export function requireOneOf<T extends string>(
-  value: unknown,
-  allowed: readonly T[],
-  field: string
-): T {
+export function requireOneOf<T extends string>(value: unknown, allowed: readonly T[], field: string): T {
   if (typeof value !== "string" || !allowed.includes(value as T)) {
     throw new ValidationError(`Field "${field}" must be one of: ${allowed.join(", ")}`);
   }
@@ -9163,7 +10634,10 @@ export async function registerDonor(input: {
   return { donorId, pairCode, profileId };
 }
 
-export async function getAvailableDonors(userId: string, deviceFingerprint?: string): Promise<AvailableDonor[]> {
+export async function getAvailableDonors(
+  userId: string,
+  deviceFingerprint?: string,
+): Promise<AvailableDonor[]> {
   const onlineDonors = await db
     .select({
       id: donorProfiles.id,
@@ -9182,8 +10656,8 @@ export async function getAvailableDonors(userId: string, deviceFingerprint?: str
       or(
         eq(donorProfiles.status, "online"),
         eq(donorProfiles.status, "available"),
-        eq(donorProfiles.status, "sharing")
-      )
+        eq(donorProfiles.status, "sharing"),
+      ),
     );
 
   const visible: AvailableDonor[] = [];
@@ -9206,8 +10680,8 @@ export async function getAvailableDonors(userId: string, deviceFingerprint?: str
             and(
               eq(authorizedReceptors.donorProfileId, donor.id),
               eq(authorizedReceptors.deviceFingerprint, deviceFingerprint),
-              eq(authorizedReceptors.isBlocked, false)
-            )
+              eq(authorizedReceptors.isBlocked, false),
+            ),
           )
           .limit(1);
         if (auth.length) {
@@ -9259,8 +10733,16 @@ export async function getDonorProfile(userId: string): Promise<AvailableDonor | 
   };
 }
 
-export async function donorHeartbeat(input: { donorProfileId: string; status: string; currentReceptors: number }) {
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, input.donorProfileId)).limit(1);
+export async function donorHeartbeat(input: {
+  donorProfileId: string;
+  status: string;
+  currentReceptors: number;
+}) {
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, input.donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
   await db
     .update(donorProfiles)
@@ -9269,7 +10751,10 @@ export async function donorHeartbeat(input: { donorProfileId: string; status: st
   return { accepted: true, timestamp: new Date().toISOString() };
 }
 
-export async function approveReceptor(donorProfileId: string, input: { deviceFingerprint: string; receptorUserId?: string; label?: string }) {
+export async function approveReceptor(
+  donorProfileId: string,
+  input: { deviceFingerprint: string; receptorUserId?: string; label?: string },
+) {
   const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, donorProfileId)).limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
 
@@ -9434,7 +10919,11 @@ export async function requestSession(input: {
   receptorDeviceId: string;
   receptorUserId: string;
 }) {
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, input.donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, input.donorProfileId))
+    .limit(1);
   if (!donor.length) throw new SessionNotFoundError(input.donorProfileId);
   if (donor[0].status === "offline") throw new ValidationError("Donor is offline");
 
@@ -9498,7 +10987,11 @@ export async function acceptSession(sessionId: string) {
   // accepts, so both endpoints can build a matching tunnel config.
   const session = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!session.length) throw new SessionNotFoundError(sessionId);
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, session[0].donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, session[0].donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
   return transition(sessionId, "approved", {
     wireguardPresharedKey: generatePresharedKey(),
@@ -9516,7 +11009,11 @@ export async function acceptSession(sessionId: string) {
 export async function getTunnelConfig(sessionId: string, role: "donor" | "receptor") {
   const session = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!session.length) throw new SessionNotFoundError(sessionId);
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, session[0].donorProfileId)).limit(1);
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, session[0].donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
 
   // Peer public keys come from what each side registered with the control plane.
@@ -9549,7 +11046,10 @@ export async function getTunnelConfig(sessionId: string, role: "donor" | "recept
     peerPublicKey: donorWgKey,
     peerAllowedIPs: [TUNNEL_SUBNET],
     presharedKey: session[0].wireguardPresharedKey ?? null,
-    endpoint: donor[0].endpointIp && donor[0].endpointPort ? `${donor[0].endpointIp}:${donor[0].endpointPort}` : undefined,
+    endpoint:
+      donor[0].endpointIp && donor[0].endpointPort
+        ? `${donor[0].endpointIp}:${donor[0].endpointPort}`
+        : undefined,
     interfaceName: "vsn-receptor0",
   };
 }
@@ -9587,11 +11087,14 @@ export async function updateSessionStats(
     bandwidthUpMbps?: number;
     bytesTransferredDown?: number;
     bytesTransferredUp?: number;
-  }
+  },
 ) {
   const existing = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
   if (!existing.length) throw new SessionNotFoundError(sessionId);
-  await db.update(sessions).set({ ...stats, updatedAt: new Date() }).where(eq(sessions.id, sessionId));
+  await db
+    .update(sessions)
+    .set({ ...stats, updatedAt: new Date() })
+    .where(eq(sessions.id, sessionId));
 }
 
 ````
@@ -9680,7 +11183,10 @@ const STATE_KEYS: SessionState[] = [
 export async function getStatistics(userId: string): Promise<ConnectionStats> {
   const whereUser = eq(sessions.receptorUserId, userId);
   const int = (expr: unknown) => sql<number>`cast(${expr} as integer)`;
-  const totalSessions = await db.select({ count: int(sql`count(*)`) }).from(sessions).where(whereUser);
+  const totalSessions = await db
+    .select({ count: int(sql`count(*)`) })
+    .from(sessions)
+    .where(whereUser);
   const activeSessions = await db
     .select({ count: int(sql`count(*)`) })
     .from(sessions)
@@ -10545,18 +12051,22 @@ Real tunnel bringing-up is OS-specific and documented under `platforms/`.
 # VSN Agent — Android
 
 ## Tunnel engine
+
 - **`wireguard-go`** (userspace) — the Android kernel does not expose a tun/tap
   device directly.
 
 ## TUN adapter
+
 - **VpnService API**: the app supplies the tunnel via `VpnService.Builder`.
   Android routes allowed traffic into the virtual adapter; no root required.
 
 ## Routing
+
 - Declare the receptor's allowed routes in the VpnService builder so Android
   routes the default route into the tunnel.
 
 ## Notes
+
 - The VSN Agent on Android is delivered as a foreground service that holds the
   VpnService with `FOREGROUND_SERVICE` permission.
 - No root needed; uses `VpnService.PROTECTED_NETWORKS`.
@@ -10567,24 +12077,29 @@ Real tunnel bringing-up is OS-specific and documented under `platforms/`.
 # VSN Agent — iOS / iPadOS
 
 ## Tunnel engine
+
 - **`wireguard-go`** (userspace) — iOS does not expose a generic tun/tap device.
   WireGuard for iOS ships its own userspace engine.
 
 ## TUN adapter
+
 - **`NEPacketTunnelProvider`** — Apple's Network Extension for packet tunnels.
   The VSN iOS app creates a tunnel via a `PacketTunnelProvider` subclass and
   `NETunnelProviderProtocol`.
 
 ## Routing
+
 - Declare the receptor's routes in the `NETunnelProviderProtocol` so iOS routes
   traffic into the tunnel.
 
 ## Requirements
+
 - **Network Extension entitlement** (Apple Developer).
 - `wireguard-go` compiled for iOS (arm64 / simulator).
 - A VSN iOS app that hosts the extension.
 
 ## Notes
+
 - This is a **scaffold/integration guide**; the Swift/Objective-C extension is
   built in Xcode. The agent core (`agent/src`) is shared and drives the same
   WireGuard tunnel config that this platform applies via Network Extension.
@@ -10597,21 +12112,26 @@ Real tunnel bringing-up is OS-specific and documented under `platforms/`.
 # VSN Agent — Linux
 
 ## Tunnel engine
+
 - Prefer the in-kernel WireGuard module: `modprobe wireguard`.
 - Fallback userspace: `wireguard-go`.
 
 ## TUN adapter
+
 - `tun`/`tap` kernel device. Create with `ip tuntap add dev vsn0 mode tun`.
 
 ## Routing
+
 - Receptor: `ip route add default dev vsn0`.
 - Donor: `ip route` + masquerade + isolation firewall via `iptables`/`nftables`.
 
 ## Isolation firewall (donor)
+
 - Allow `vsn0` → `wlan0`/`eth0` → Internet (NAT/masquerade).
 - Block donor-LAN reachability from `vsn0` (no SSH/files/router admin/mDNS).
 
 ## Notes
+
 - Requires CAP_NET_ADMIN and CAP_NET_RAW (or run as root / with setcap).
 
 ````
@@ -10620,16 +12140,20 @@ Real tunnel bringing-up is OS-specific and documented under `platforms/`.
 # VSN Agent — macOS
 
 ## Tunnel engine
+
 - In-kernel WireGuard is available on recent macOS; fallback to `wireguard-go`.
 
 ## TUN adapter
+
 - **utun** interface (Apple). The Agent creates a `utunN` device and configures
   routing into it.
 
 ## Routing
+
 - Use `route add -net default` into the utun, or Network Extension.
 
 ## Notes
+
 - Requires a Network Extension (NEPacketTunnelProvider) or root privileges
   for TUN/routing operations.
 
@@ -10639,22 +12163,27 @@ Real tunnel bringing-up is OS-specific and documented under `platforms/`.
 # VSN Agent — Windows
 
 ## Tunnel engine
+
 - Userspace `wireguard-go` (the kernel module is not generally available on Windows).
 - Alternatively the WireGuard-for-Windows driver.
 
 ## TUN adapter
+
 - **Wintun** (Microsoft driver). The VSN Agent installs the Wintun adapter and
   attaches the tunnel to it.
 
 ## Routing
+
 - Use `route` / the routing APIs to send the receptor's default route into the
   tunnel.
 
 ## Isolation (donor)
+
 - Use Windows Firewall rules to allow tunnel → NAT → Internet and block
   donor-LAN access from the tunnel.
 
 ## Notes
+
 - Wintun requires an admin/installer step. The Agent requests elevation
   (UAC) for the privileged operations.
 
@@ -10785,7 +12314,13 @@ export class ControlClient {
       // STUN timed out → we'll relay.
     }
     const tc: TraversalCandidate = { ...candidate, sessionId, role };
-    this.send({ type: "traversal_candidate", sessionId, role, candidate: tc, timestamp: new Date().toISOString() });
+    this.send({
+      type: "traversal_candidate",
+      sessionId,
+      role,
+      candidate: tc,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   private async attemptTraversal(sessionId: string, peerRole: "donor" | "receptor"): Promise<ConnType> {
@@ -10794,14 +12329,25 @@ export class ControlClient {
     if (plan !== "relay" && peer) {
       const result = await this.nat.holePunch(peer);
       if (result.connType !== "relay") {
-        this.send({ type: "traversal_result", sessionId, connType: result.connType, timestamp: new Date().toISOString() });
+        this.send({
+          type: "traversal_result",
+          sessionId,
+          connType: result.connType,
+          timestamp: new Date().toISOString(),
+        });
         return result.connType;
       }
     }
     // Fall back to relay.
     const alloc = await this.relay.allocate(sessionId);
     await this.relay.forward(alloc.endpoint);
-    this.send({ type: "traversal_result", sessionId, connType: "relay", relayId: alloc.relayId, timestamp: new Date().toISOString() });
+    this.send({
+      type: "traversal_result",
+      sessionId,
+      connType: "relay",
+      relayId: alloc.relayId,
+      timestamp: new Date().toISOString(),
+    });
     return "relay";
   }
 
@@ -10837,7 +12383,10 @@ export class VsnAgent {
 
   constructor(opts: AgentOptions) {
     this.role = opts.role;
-    this.core = new AgentCore({ role: opts.role, controlUrl: opts.controlUrl ?? process.env.CONTROL_SERVER_URL });
+    this.core = new AgentCore({
+      role: opts.role,
+      controlUrl: opts.controlUrl ?? process.env.CONTROL_SERVER_URL,
+    });
   }
 
   /** Start the agent: open the IPC endpoint and begin the control-plane handshake. */
@@ -11109,7 +12658,10 @@ export class ReceptorManager {
 
   constructor(control: ControlClient) {
     this.control = control;
-    this.tunnel = new TunnelManager({ role: "receptor", interfaceName: this.adapter.interfaceName("receptor") });
+    this.tunnel = new TunnelManager({
+      role: "receptor",
+      interfaceName: this.adapter.interfaceName("receptor"),
+    });
     this.routing = new RoutingManager("receptor");
   }
 
@@ -11212,7 +12764,9 @@ export class DnsManager {
 
   async apply(tunnelInterface: string): Promise<void> {
     if (!isLinux || sandboxed()) {
-      console.log(`[dns] ${this.config.doh ? "DoH + " : ""}DNS configured for ${tunnelInterface} (${process.platform})`);
+      console.log(
+        `[dns] ${this.config.doh ? "DoH + " : ""}DNS configured for ${tunnelInterface} (${process.platform})`,
+      );
       return;
     }
     try {
@@ -11220,7 +12774,9 @@ export class DnsManager {
       for (const s of servers) {
         await execFileAsync("resolvconf", ["-a", tunnelInterface, "-m", "0", "-x"]).catch(() => null);
       }
-      console.log(`[dns] ${this.config.doh ? "DoH resolver " + (this.config.dohResolver ?? "1.1.1.1") + " " : ""}applied on ${tunnelInterface}`);
+      console.log(
+        `[dns] ${this.config.doh ? "DoH resolver " + (this.config.dohResolver ?? "1.1.1.1") + " " : ""}applied on ${tunnelInterface}`,
+      );
     } catch (e) {
       console.warn(`[dns] apply failed (need root?): ${(e as Error).message}`);
     }
@@ -11231,7 +12787,9 @@ export class DnsManager {
     if (!isLinux || sandboxed()) return;
     try {
       // Drop all forwarding by default; the tunnel's WG rules re-allow it.
-      await execFileAsync("iptables", ["-A", "OUTPUT", "-o", "eth0", "-j", "DROP"], { env: { ...process.env, WG_QUICK_KILL: "1" } }).catch(() => null);
+      await execFileAsync("iptables", ["-A", "OUTPUT", "-o", "eth0", "-j", "DROP"], {
+        env: { ...process.env, WG_QUICK_KILL: "1" },
+      }).catch(() => null);
       console.log("[dns] kill-switch armed (block non-tunnel traffic)");
     } catch {
       // ignore
@@ -11330,22 +12888,66 @@ export class NatManager {
       try {
         // Enable IP forwarding + MASQUERADE for the tunnel subnet.
         await execFileAsync("sysctl", ["-w", "net.ipv4.ip_forward=1"]);
-        await execFileAsync("iptables", ["-t", "nat", "-A", "POSTROUTING", "-s", "10.0.0.0/24", "-o", outInterface, "-j", "MASQUERADE"]);
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", outInterface, "-j", "ACCEPT"]);
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", outInterface, "-o", tunnelInterface, "-m", "state", "--state", "RELATED,ESTABLISHED", "-j", "ACCEPT"]);
+        await execFileAsync("iptables", [
+          "-t",
+          "nat",
+          "-A",
+          "POSTROUTING",
+          "-s",
+          "10.0.0.0/24",
+          "-o",
+          outInterface,
+          "-j",
+          "MASQUERADE",
+        ]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          outInterface,
+          "-j",
+          "ACCEPT",
+        ]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          outInterface,
+          "-o",
+          tunnelInterface,
+          "-m",
+          "state",
+          "--state",
+          "RELATED,ESTABLISHED",
+          "-j",
+          "ACCEPT",
+        ]);
         console.log(`[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (iptables)`);
       } catch (e) {
         console.warn(`[nat:donor] iptables failed (need root?): ${(e as Error).message}`);
       }
     } else {
-      console.log(`[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (${process.platform})`);
+      console.log(
+        `[nat:donor] enabled MASQUERADE ${tunnelInterface} → ${outInterface} (${process.platform})`,
+      );
     }
   }
 
   async disable(tunnelInterface: string): Promise<void> {
     if (isLinux && !sandboxed()) {
       try {
-        await execFileAsync("iptables", ["-t", "nat", "-D", "POSTROUTING", "-s", "10.0.0.0/24", "-j", "MASQUERADE"]);
+        await execFileAsync("iptables", [
+          "-t",
+          "nat",
+          "-D",
+          "POSTROUTING",
+          "-s",
+          "10.0.0.0/24",
+          "-j",
+          "MASQUERADE",
+        ]);
         await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "ACCEPT"]);
         console.log(`[nat] flushed NAT for ${tunnelInterface}`);
       } catch {
@@ -11435,11 +13037,44 @@ export class RoutingManager {
       try {
         // Drop any traffic from the tunnel that is addressed to the donor's LAN
         // on the LAN interface (prevents LAN scanning / access from the tunnel).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", lanInterface, "-j", "DROP"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          lanInterface,
+          "-j",
+          "DROP",
+        ]);
         // Accept established/related replies and tunnel→internet (added by NAT).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-o", lanInterface, "-m", "state", "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-o",
+          lanInterface,
+          "-m",
+          "state",
+          "--state",
+          "ESTABLISHED,RELATED",
+          "-j",
+          "ACCEPT",
+        ]);
         // Block mDNS/LLMNR from the tunnel (prevents service discovery).
-        await execFileAsync("iptables", ["-A", "FORWARD", "-i", tunnelInterface, "-p", "udp", "--dport", "5353", "-j", "DROP"]);
+        await execFileAsync("iptables", [
+          "-A",
+          "FORWARD",
+          "-i",
+          tunnelInterface,
+          "-p",
+          "udp",
+          "--dport",
+          "5353",
+          "-j",
+          "DROP",
+        ]);
         console.log(`[routing:donor] LAN isolation firewall active on ${lanInterface}`);
       } catch (e) {
         console.warn(`[routing:donor] isolation firewall failed (need root?): ${(e as Error).message}`);
@@ -11453,7 +13088,9 @@ export class RoutingManager {
     if (isLinux && !sandboxed()) {
       try {
         await execFileAsync("ip", ["route", "del", "default", "dev", tunnelInterface]).catch(() => null);
-        await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "DROP"]).catch(() => null);
+        await execFileAsync("iptables", ["-D", "FORWARD", "-i", tunnelInterface, "-j", "DROP"]).catch(
+          () => null,
+        );
       } catch {
         // ignore
       }
@@ -11494,7 +13131,12 @@ export class CredentialStore {
 //   • privateKey is stored in the OS keychain / encrypted store ONLY.
 //   • publicKey is what the control plane and peers see.
 //   • presharedKey is a session secret shared out-of-band for defense-in-depth.
-import { generateKeyPair, generatePresharedKey, derivePublicKey, type KeyPair } from "../tunnel/wireguard-keys";
+import {
+  generateKeyPair,
+  generatePresharedKey,
+  derivePublicKey,
+  type KeyPair,
+} from "../tunnel/wireguard-keys";
 import { createHash } from "crypto";
 
 export { generateKeyPair, generatePresharedKey, derivePublicKey, type KeyPair };
@@ -11620,7 +13262,7 @@ function parseStunMappedAddress(buf: Buffer): Candidate | null {
       const family = buf.readUInt8(valueStart + 1);
       const port = buf.readUInt16BE(valueStart + 2) ^ 0x2112;
       if (family === 0x01) {
-        const ip = `${(buf.readUInt8(valueStart + 4) ^ 0x21)}.${(buf.readUInt8(valueStart + 5) ^ 0xa4)}.${(buf.readUInt8(valueStart + 6) ^ 0x21)}.${(buf.readUInt8(valueStart + 7) ^ 0xa4)}`;
+        const ip = `${buf.readUInt8(valueStart + 4) ^ 0x21}.${buf.readUInt8(valueStart + 5) ^ 0xa4}.${buf.readUInt8(valueStart + 6) ^ 0x21}.${buf.readUInt8(valueStart + 7) ^ 0xa4}`;
         return { ip, port, type: "srflx" };
       }
     }
@@ -11931,8 +13573,7 @@ export class TunnelManager {
 
   constructor(opts: TunnelManagerOptions) {
     this.role = opts.role;
-    this.interfaceName =
-      opts.interfaceName ?? (this.role === "donor" ? "vsn-donor0" : "vsn-receptor0");
+    this.interfaceName = opts.interfaceName ?? (this.role === "donor" ? "vsn-donor0" : "vsn-receptor0");
     this.address = opts.address ?? ["10.0.0.2/32"];
     this.client = new TunnelClient({
       role: this.role,
@@ -12041,7 +13682,9 @@ export async function bringUp(cfg: AgentTunnelConfig): Promise<void> {
 
   try {
     if (hasWgQuick) {
-      await execFileAsync("wg-quick", ["up", cfg.interfaceName], { env: { ...process.env, WG_CONFIG_FILE: confPath } });
+      await execFileAsync("wg-quick", ["up", cfg.interfaceName], {
+        env: { ...process.env, WG_CONFIG_FILE: confPath },
+      });
     } else {
       // Manual `wg` bring-up: create interface, assign config, add route.
       await execFileAsync("ip", ["link", "add", "dev", cfg.interfaceName, "type", "wireguard"]);
@@ -12110,12 +13753,7 @@ export async function showStatus(interfaceName: string): Promise<WgStatus> {
 // single X25519 key generation and are guaranteed to match. derivePublicKey()
 // re-derives the public key from a WireGuard-format private key via the standard
 // PKCS#8 / SPKI encodings, so it is consistent with generateKeyPair().
-import {
-  generateKeyPairSync,
-  createPrivateKey,
-  createPublicKey,
-  randomBytes,
-} from "crypto";
+import { generateKeyPairSync, createPrivateKey, createPublicKey, randomBytes } from "crypto";
 
 export interface KeyPair {
   publicKey: string; // base64 (44 chars)
@@ -12178,7 +13816,7 @@ describe("NAT traversal planning", () => {
   it("plans hole-punching when the peer has a server-reflexive candidate", () => {
     const plan = NatTraversal.plan(
       { ip: "", port: 0, type: "host" },
-      { ip: "203.0.113.5", port: 50000, type: "srflx" }
+      { ip: "203.0.113.5", port: 50000, type: "srflx" },
     );
     expect(plan).toBe("hole_punched");
   });
@@ -12191,7 +13829,7 @@ describe("NAT traversal planning", () => {
   it("plans hole-punching for a host candidate too", () => {
     const plan = NatTraversal.plan(
       { ip: "", port: 0, type: "host" },
-      { ip: "192.168.1.20", port: 51820, type: "host" }
+      { ip: "192.168.1.20", port: 51820, type: "host" },
     );
     expect(plan).toBe("hole_punched");
   });
@@ -12247,7 +13885,11 @@ describe("WireGuard config rendering (wg-quick)", () => {
     const minimal: AgentTunnelConfig = {
       role: "donor",
       interfaceName: "vsn-donor0",
-      wg: { privateKey: "k", address: ["10.0.0.1/32"], peers: [{ publicKey: "p", allowedIPs: ["10.0.0.2/32"] }] },
+      wg: {
+        privateKey: "k",
+        address: ["10.0.0.1/32"],
+        peers: [{ publicKey: "p", allowedIPs: ["10.0.0.2/32"] }],
+      },
     };
     const rendered = renderWireGuardConfig(minimal);
     expect(rendered).not.toContain("ListenPort");
@@ -12323,7 +13965,9 @@ describe("session state machine", () => {
     const states = Object.keys(SESSION_STATE_TRANSITIONS);
     expect(states).toHaveLength(9);
     for (const from of states) {
-      expect(Array.isArray(SESSION_STATE_TRANSITIONS[from as keyof typeof SESSION_STATE_TRANSITIONS])).toBe(true);
+      expect(Array.isArray(SESSION_STATE_TRANSITIONS[from as keyof typeof SESSION_STATE_TRANSITIONS])).toBe(
+        true,
+      );
     }
   });
 });
@@ -12364,7 +14008,13 @@ describe("JWT (HS256)", () => {
 ### `VSN/tests/services/donor-utils.test.ts`
 ````typescript
 import { describe, it, expect } from "vitest";
-import { generateDonorId, generatePairCode, formatBandwidth, formatBytes, formatDuration } from "../../src/lib/utils";
+import {
+  generateDonorId,
+  generatePairCode,
+  formatBandwidth,
+  formatBytes,
+  formatDuration,
+} from "../../src/lib/utils";
 
 describe("donor id / pair code generation", () => {
   it("builds a donor id matching VSN-XX-XXXXX", () => {
@@ -12486,21 +14136,24 @@ desktop app). The control server coordinates discovery/signaling; the WireGuard
 tunnel carries traffic between them.
 
 ## Stack
-| Piece | Tool |
-|-------|------|
-| Language | Kotlin |
-| Build | Gradle (AGP 8.7, Kotlin 2.0) |
-| Tunnel | WireGuard via `wireguard-android` (VpnService) |
+
+| Piece      | Tool                                                                      |
+| ---------- | ------------------------------------------------------------------------- |
+| Language   | Kotlin                                                                    |
+| Build      | Gradle (AGP 8.7, Kotlin 2.0)                                              |
+| Tunnel     | WireGuard via `wireguard-android` (VpnService)                            |
 | Control UI | WebView loading the VSN control-plane app (`strings.xml` → `control_url`) |
-| Min SDK | 26 (Android 8.0) |
+| Min SDK    | 26 (Android 8.0)                                                          |
 
 ## Prerequisites
+
 - Android Studio (recommended) or Android SDK command-line tools.
 - JDK 17.
 - A reachable VSN control server (set `control_url` in
   `app/src/main/res/values/strings.xml`).
 
 ## Build
+
 ```bash
 cd apps/android
 ./gradlew assembleDebug        # → app/build/outputs/apk/debug/app-debug.apk
@@ -12508,23 +14161,27 @@ cd apps/android
 ```
 
 ## Run
+
 1. Open in Android Studio, or install the built APK.
 2. On first launch it shows the VSN onboarding (splash → terms → permissions).
 3. Grant the **VpnService** consent when VSN requests it.
 
 ## Pointing at your local control server (emulator)
+
 Set `control_url` to `http://10.0.2.2:3000` (host machine's localhost) and
 `signaling_url` to `ws://10.0.2.2:3002`.
 
 ## Key source files
-| File | Role |
-|------|------|
-| `MainActivity.kt` | WebView shell loading the control-plane app |
-| `VsnVpnService.kt` | Data plane — WireGuard `VpnService` (tunnel + virtual NIC) |
-| `VsnAgentService.kt` | Background agent — signaling/coordination with control server |
-| `AndroidManifest.xml` | Permissions + service declarations |
+
+| File                  | Role                                                          |
+| --------------------- | ------------------------------------------------------------- |
+| `MainActivity.kt`     | WebView shell loading the control-plane app                   |
+| `VsnVpnService.kt`    | Data plane — WireGuard `VpnService` (tunnel + virtual NIC)    |
+| `VsnAgentService.kt`  | Background agent — signaling/coordination with control server |
+| `AndroidManifest.xml` | Permissions + service declarations                            |
 
 ## Notes
+
 - The WireGuard config (peer public key, endpoint, allowed IPs) is delivered by
   the control plane / agent at connect time and passed to `VsnVpnService`.
 - Add proper launcher icons (`mipmap-*`) and your signing keystore for release.
@@ -12979,6 +14636,7 @@ include(":app")
 # VSN — Desktop Application (Windows · macOS · Linux)
 
 The official desktop shell for VSN. It bundles:
+
 - the **Next.js control-plane app** (UI + API + signaling client),
 - the **VSN Agent** (data plane — WireGuard, virtual NIC, routing, NAT).
 
@@ -12986,19 +14644,22 @@ It starts both as child processes and opens a native window. **Laptop ↔ laptop
 connections are established through the agent + control-plane signaling.
 
 ## Stack
-| Piece | Tool |
-|-------|------|
-| Shell | Electron (Chromium + Node) |
-| Bundle | electron-builder (NSIS / DMG / AppImage / deb) |
-| Web app | `../VSN` (Next.js) |
-| Data plane | `../VSN/agent` (spawned) |
+
+| Piece      | Tool                                           |
+| ---------- | ---------------------------------------------- |
+| Shell      | Electron (Chromium + Node)                     |
+| Bundle     | electron-builder (NSIS / DMG / AppImage / deb) |
+| Web app    | `../VSN` (Next.js)                             |
+| Data plane | `../VSN/agent` (spawned)                       |
 
 ## Prerequisites
+
 - Node.js 22+, npm 10+
 - For the data plane on a real device: `wireguard-go` (or `boringtun`) + per-OS
   tunnel tools (see `VSN/agent/platforms/*`).
 
 ## Install & run (development)
+
 ```bash
 cd ../VSN && npm install && npm run db:init && npm run build
 cd ../apps/desktop && npm install
@@ -13006,6 +14667,7 @@ npm run start        # launches Electron pointing at the built VSN app
 ```
 
 ## Build distributables
+
 ```bash
 cd ../VSN && npm run build
 cd ../apps/desktop
@@ -13013,11 +14675,13 @@ npm run dist          # produces installers in apps/desktop/release
 ```
 
 ## Dev with hot reload
+
 ```bash
 cd ../apps/desktop && npm run dev   # sets VSN_DEV=1 → runs `next dev`
 ```
 
 ## Architecture (device-to-device)
+
 ```
 [Laptop A: Donor]  agent (WireGuard)  ◄── encrypted tunnel ──►  agent (WireGuard)  [Laptop B: Receptor]
         │  control API                                                    │  control API
@@ -13025,12 +14689,14 @@ cd ../apps/desktop && npm run dev   # sets VSN_DEV=1 → runs `next dev`
 ```
 
 ## Agent control from the app
+
 The renderer (web app) calls `window.vsnDesktop.startAgent(role)` /
 `stopAgent()` / `agentStatus()` (exposed by `preload.ts`). The main process
 spawns the agent and bridges IPC. The renderer never touches privileged
 networking directly.
 
 ## Note
+
 Icon files (`assets/icon.ico`, `icon.icns`, `icon.png`) are placeholders —
 replace them with your VSN icon before `electron-builder`.
 
@@ -13106,16 +14772,23 @@ replace them with your VSN icon before `electron-builder`.
       "app/**"
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "assets/icon.ico"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "category": "public.app-category.utilities",
       "icon": "assets/icon.icns"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Network",
       "icon": "assets/icon.png"
     }
@@ -13304,31 +14977,36 @@ and runs the data-plane tunnel via a **Network Extension**
 > The shared agent core (`VSN/agent`) + protocol contracts are reused.
 
 ## Stack
-| Piece | Tool |
-|-------|------|
-| Language | Swift |
-| UI shell | `WKWebView` loading the VSN control-plane app |
+
+| Piece      | Tool                                                                |
+| ---------- | ------------------------------------------------------------------- |
+| Language   | Swift                                                               |
+| UI shell   | `WKWebView` loading the VSN control-plane app                       |
 | Data plane | `VsnPacketTunnelProvider` (NEPacketTunnelProvider) + `wireguard-go` |
-| Min iOS | 12 |
+| Min iOS    | 12                                                                  |
 
 ## Key files
-| File | Role |
-|------|------|
+
+| File                            | Role                                  |
+| ------------------------------- | ------------------------------------- |
 | `VsnPacketTunnelProvider.swift` | Network Extension tunnel (data plane) |
-| (add) `ViewController.swift` | WebView shell |
-| (add) `Info.plist` | Network Extension entitlement |
+| (add) `ViewController.swift`    | WebView shell                         |
+| (add) `Info.plist`              | Network Extension entitlement         |
 
 ## Build (in Xcode)
+
 1. Create an iOS App target + a **Packet Tunnel** extension target.
 2. Set the **Network Extension entitlement** (Apple Developer account).
 3. Add `wireguard-go` (iOS arm64 + simulator).
 4. Point the WebView at your VSN control URL.
 
 ## Notes
+
 - iOS is best used as a **Receptor** (the OS restricts donor-side NAT).
 - See `VSN/agent/platforms/ios/README.md`.
 
 ### Android / Samsung / Redmi / Tecno / Xiaomi / Google Pixel
+
 Both Android and iOS are supported; the Android build (see `apps/android`) runs on
 **Redmi, Tecno, Xiaomi, Google Pixel, Samsung** and all Android 8.0+ (API 26+)
 devices. Android uses `VpnService` (no root); iOS uses Network Extension.
@@ -13411,7 +15089,7 @@ The UI references it via `next/image`:
 ```tsx
 import Image from "next/image";
 
-<Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />
+<Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />;
 ```
 
 Used in:
@@ -13489,6 +15167,7 @@ referenced by the UI; keep it for reference or delete it.
 3. **Type cleanups:** `as any` casts removed (splash wave styles → `React.CSSProperties`, globe selection → typed `NetworkNode`).
 4. **Docs/code consistency:** `.env.example` rewritten to exactly match the variables the code reads (old one listed `DATABASE_URL`/`AGENT_IPC_URL`, which nothing reads); `SETUPME.md` env table, `docs/development/setup.md` (Postgres is *planned*, not an existing `VSN_DB_DRIVER` switch), `docs/development/troubleshooting.md` (agent IPC facts), `docs/architecture/evolution-plan.md` (status header + checkboxes), broken markdown table row in `VSN/README.md` (STUN/ICE), stale logo note in `public/assets/README.md`.
 5. **Deep audit (2026-08-23, second pass):** all internal markdown links resolve; every UI nav link maps to a real route; every npm script referenced in docs exists in the right `package.json`; no TODO/FIXME in source; all hook-using components carry `"use client"`; all local imports resolve; no hardcoded secrets or unexpected public binds.
+6. **VS Code pass (2026-08-23, third pass):** added `.prettierrc.json` + `.prettierignore`, `.vscode/settings.json` (format-on-save, ESLint fix-on-save, workspace TypeScript SDK, sensible excludes) and `.vscode/extensions.json` (recommended extensions), plus `prettier` devDependency + `npm run format` / `npm run format:check`. The whole repo was formatted with Prettier (printWidth 110) and re-verified: typecheck, lint, 32/32 tests and production build all still pass.
 
 ---
 

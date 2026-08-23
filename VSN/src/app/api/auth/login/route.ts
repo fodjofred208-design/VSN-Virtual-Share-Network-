@@ -16,9 +16,14 @@ export async function POST(req: NextRequest) {
     if (!body?.email || !body?.password) throw new ValidationError("Email and password required");
     const user = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
     if (!user.length) throw new ValidationError("Invalid credentials");
-    if (!verifyPassword(body.password, user[0].passwordHash)) throw new ValidationError("Invalid credentials");
+    if (!verifyPassword(body.password, user[0].passwordHash))
+      throw new ValidationError("Invalid credentials");
 
     const token = signJwt({ sub: user[0].id, role: "receptor" }, TOKEN_TTL_SECONDS);
-    return { token, expiresIn: TOKEN_TTL_SECONDS, user: { id: user[0].id, email: user[0].email, displayName: user[0].displayName } };
+    return {
+      token,
+      expiresIn: TOKEN_TTL_SECONDS,
+      user: { id: user[0].id, email: user[0].email, displayName: user[0].displayName },
+    };
   })();
 }

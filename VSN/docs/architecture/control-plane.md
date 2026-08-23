@@ -15,14 +15,14 @@ registries, signaling, and sessions — but **never** Internet traffic.
 
 ## Where it lives
 
-| Piece | Path |
-|-------|------|
-| API routes | `src/app/api/**` (thin handlers) |
-| Business logic | `src/services/*.service.ts` |
-| Database | `src/db/` (SQLite dev / Postgres prod via Drizzle) |
-| Signaling server | `server/websocket/signaling-server.ts` |
-| Signaling client | `src/lib/signaling/client.ts` |
-| Shared contracts | `protocol/` |
+| Piece            | Path                                               |
+| ---------------- | -------------------------------------------------- |
+| API routes       | `src/app/api/**` (thin handlers)                   |
+| Business logic   | `src/services/*.service.ts`                        |
+| Database         | `src/db/` (SQLite dev / Postgres prod via Drizzle) |
+| Signaling server | `server/websocket/signaling-server.ts`             |
+| Signaling client | `src/lib/signaling/client.ts`                      |
+| Shared contracts | `protocol/`                                        |
 
 ## Request flow
 

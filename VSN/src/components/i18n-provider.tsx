@@ -42,10 +42,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY, l);
   }, []);
 
-  const t = useCallback(
-    (key: string) => DICTS[lang][key] ?? DICTS[DEFAULT_LANGUAGE][key] ?? key,
-    [lang]
-  );
+  const t = useCallback((key: string) => DICTS[lang][key] ?? DICTS[DEFAULT_LANGUAGE][key] ?? key, [lang]);
 
   const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
 

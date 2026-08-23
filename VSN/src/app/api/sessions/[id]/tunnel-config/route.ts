@@ -8,10 +8,7 @@ import { withErrors } from "@/lib/api/route-helpers";
 import { getTunnelConfig } from "@/services/session.service";
 import { ValidationError } from "@/lib/validation";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withErrors(async () => {
     const { id } = await params;
     const url = new URL(req.url);

@@ -25,9 +25,15 @@ export interface AuthContext {
  * Middleware-style guard: applies rate limiting + optional JWT auth.
  * Call at the top of a handler. Throws AuthError / RateLimitError on failure.
  */
-export function guard(req: Request, opts: { auth?: boolean; limit?: number; windowMs?: number } = {}): AuthContext {
+export function guard(
+  req: Request,
+  opts: { auth?: boolean; limit?: number; windowMs?: number } = {},
+): AuthContext {
   const ip = clientIpFrom(req);
-  const rl = rateLimit(`api:${req.method}:${req.url.split("?")[0]}:${ip}`, { limit: opts.limit ?? 60, windowMs: opts.windowMs ?? 60_000 });
+  const rl = rateLimit(`api:${req.method}:${req.url.split("?")[0]}:${ip}`, {
+    limit: opts.limit ?? 60,
+    windowMs: opts.windowMs ?? 60_000,
+  });
   if (!rl.ok) throw new RateLimitError(rl.retryAfterMs, rl.limit);
 
   if (opts.auth) {
@@ -59,7 +65,7 @@ export class RateLimitError extends Error {
 /** Wrap a handler so service/auth/rate-limit errors map to clean HTTP responses. */
 export function withErrors<Args extends unknown[], T>(
   handler: (...args: Args) => Promise<T>,
-  okStatus = 200
+  okStatus = 200,
 ) {
   return async (...args: Args): Promise<NextResponse> => {
     try {
@@ -68,12 +74,17 @@ export function withErrors<Args extends unknown[], T>(
       return jsonOk(data, okStatus);
     } catch (err) {
       if (err instanceof RateLimitError) {
-        return NextResponse.json({ error: "Too many requests", code: "rate_limited", retryAfterMs: err.retryAfterMs }, { status: 429, headers: { "Retry-After": String(Math.ceil(err.retryAfterMs / 1000)) } });
+        return NextResponse.json(
+          { error: "Too many requests", code: "rate_limited", retryAfterMs: err.retryAfterMs },
+          { status: 429, headers: { "Retry-After": String(Math.ceil(err.retryAfterMs / 1000)) } },
+        );
       }
       if (err instanceof AuthError) return jsonError(err.message, 401, "unauthorized");
       if (err instanceof ValidationError) return jsonError(err.message, 400, "validation");
-      if ((err as Error).name === "SessionNotFoundError") return jsonError((err as Error).message, 404, "not_found");
-      if ((err as Error).name === "InvalidStateTransitionError") return jsonError((err as Error).message, 409, "invalid_state");
+      if ((err as Error).name === "SessionNotFoundError")
+        return jsonError((err as Error).message, 404, "not_found");
+      if ((err as Error).name === "InvalidStateTransitionError")
+        return jsonError((err as Error).message, 409, "invalid_state");
       console.error("[api] unexpected error", err);
       return jsonError("Internal error", 500, "internal");
     }

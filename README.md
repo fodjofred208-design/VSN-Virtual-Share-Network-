@@ -10,14 +10,14 @@ VSN (Virtual Share Network) is a **cross-platform networking application** that 
 
 ## Where each part lives
 
-| Part | Path |
-|------|------|
-| Core app (UI + control plane + API) | [`VSN/`](./VSN) |
-| Desktop app (Windows/macOS/Linux) | [`apps/desktop`](./apps/desktop) |
-| Android app (Android/Samsung) | [`apps/android`](./apps/android) |
-| Data-plane agent | [`VSN/agent`](./VSN/agent) |
-| Shared protocol contracts | [`VSN/protocol`](./VSN/protocol) |
-| Architecture docs | [`VSN/docs/architecture`](./VSN/docs/architecture) |
+| Part                                | Path                                               |
+| ----------------------------------- | -------------------------------------------------- |
+| Core app (UI + control plane + API) | [`VSN/`](./VSN)                                    |
+| Desktop app (Windows/macOS/Linux)   | [`apps/desktop`](./apps/desktop)                   |
+| Android app (Android/Samsung)       | [`apps/android`](./apps/android)                   |
+| Data-plane agent                    | [`VSN/agent`](./VSN/agent)                         |
+| Shared protocol contracts           | [`VSN/protocol`](./VSN/protocol)                   |
+| Architecture docs                   | [`VSN/docs/architecture`](./VSN/docs/architecture) |
 
 ## Quick start (dev)
 

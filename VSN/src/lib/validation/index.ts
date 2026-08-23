@@ -23,11 +23,7 @@ export function optionalNumber(value: unknown): number | undefined {
   return value;
 }
 
-export function requireOneOf<T extends string>(
-  value: unknown,
-  allowed: readonly T[],
-  field: string
-): T {
+export function requireOneOf<T extends string>(value: unknown, allowed: readonly T[], field: string): T {
   if (typeof value !== "string" || !allowed.includes(value as T)) {
     throw new ValidationError(`Field "${field}" must be one of: ${allowed.join(", ")}`);
   }

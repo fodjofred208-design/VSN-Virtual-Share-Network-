@@ -22,7 +22,8 @@ export function SessionStateMachine({ current }: { current: SessionState }) {
       {ORDER.map((state) => {
         const isActive = current === state;
         const sc = sessionStateToColor(state);
-        const hex = sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+        const hex =
+          sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
         return (
           <div
             key={state}

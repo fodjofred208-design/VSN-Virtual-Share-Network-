@@ -16,7 +16,10 @@ export class VsnAgent {
 
   constructor(opts: AgentOptions) {
     this.role = opts.role;
-    this.core = new AgentCore({ role: opts.role, controlUrl: opts.controlUrl ?? process.env.CONTROL_SERVER_URL });
+    this.core = new AgentCore({
+      role: opts.role,
+      controlUrl: opts.controlUrl ?? process.env.CONTROL_SERVER_URL,
+    });
   }
 
   /** Start the agent: open the IPC endpoint and begin the control-plane handshake. */

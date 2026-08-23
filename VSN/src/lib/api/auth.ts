@@ -19,7 +19,7 @@ export async function registerDevice(
     publicKey: string;
     fingerprint: string;
   },
-  token?: string
+  token?: string,
 ): Promise<{ deviceId: string; message: string }> {
   return apiClient.post<{ deviceId: string; message: string }>("/api/auth/register-device", body, token);
 }

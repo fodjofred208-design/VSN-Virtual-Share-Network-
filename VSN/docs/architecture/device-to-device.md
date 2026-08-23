@@ -7,13 +7,13 @@ differs.
 
 ## Supported platforms & shells
 
-| Platform | Shell | Data plane | Apps |
-|----------|-------|-----------|------|
-| Windows | Electron (`apps/desktop`) | `agent/` + Wintun + WireGuard | `VSN` desktop |
-| macOS | Electron (`apps/desktop`) | `agent/` + utun + WireGuard | `VSN` desktop |
-| Linux | Electron (`apps/desktop`) | `agent/` + tun + WireGuard | `VSN` desktop |
+| Platform          | Shell                       | Data plane                                  | Apps          |
+| ----------------- | --------------------------- | ------------------------------------------- | ------------- |
+| Windows           | Electron (`apps/desktop`)   | `agent/` + Wintun + WireGuard               | `VSN` desktop |
+| macOS             | Electron (`apps/desktop`)   | `agent/` + utun + WireGuard                 | `VSN` desktop |
+| Linux             | Electron (`apps/desktop`)   | `agent/` + tun + WireGuard                  | `VSN` desktop |
 | Android / Samsung | Native app (`apps/android`) | `VsnVpnService` (VpnService + wireguard-go) | `VSN` Android |
-| iOS | (future) | NEPacketTunnelProvider | (future) |
+| iOS               | (future)                    | NEPacketTunnelProvider                      | (future)      |
 
 ## Laptop ↔ Laptop
 

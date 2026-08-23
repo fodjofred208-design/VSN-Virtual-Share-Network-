@@ -6,6 +6,7 @@ links so the web UI / control plane can open the correct in-app screen.
 ## Android (VpnService consent + deep link)
 
 ### VPN consent (the OS prompt)
+
 Android requires the user to **grant VpnService consent** before a VPN can run.
 `apps/android/app/src/main/java/com/vsn/app/MainActivity.kt`:
 
@@ -18,6 +19,7 @@ Android requires the user to **grant VpnService consent** before a VPN can run.
 This is the mobile equivalent of the desktop's UAC/admin prompt for the tunnel.
 
 ### Deep link
+
 `AndroidManifest.xml` registers a `vsn://connect` scheme so the control plane can
 deep-link into the tunnel-consent flow:
 
@@ -47,11 +49,13 @@ Deep link scheme: register a URL type (e.g. `vsn://connect`) in the iOS
 `Info.plist`/`SCN` so the control plane can open the app.
 
 ## Consent vs the VSN onboarding permissions
+
 - The **VSN in-app permission page** documents the 5 permissions conceptually.
 - The **OS consent** (VpnService on Android, Network Extension on iOS) is the
-  *actual* system grant that enables the tunnel. VSN requests it on demand.
+  _actual_ system grant that enables the tunnel. VSN requests it on demand.
 
 ## Why both?
+
 The web control plane cannot itself create a TUN interface or elevate privileges.
 The native shell (Android/iOS/desktop) is the only component allowed to do so —
 and it does, behind the OS's official consent prompt.

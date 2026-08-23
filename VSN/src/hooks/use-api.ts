@@ -63,9 +63,7 @@ const getFalse = () => false;
 
 export function useApi<T>(fetcher: (() => Promise<T>) | null, deps: unknown[] = []) {
   // Stable per-component store instance, created once via lazy initializer.
-  const [store] = useState(
-    () => new ApiStore<T>({ data: null, loading: fetcher !== null, error: null })
-  );
+  const [store] = useState(() => new ApiStore<T>({ data: null, loading: fetcher !== null, error: null }));
 
   // Keep the latest fetcher without recreating the fetch effect.
   const fetcherRef = useRef(fetcher);
@@ -109,7 +107,7 @@ export function useApi<T>(fetcher: (() => Promise<T>) | null, deps: unknown[] = 
 
 export function useAuthToken(): string | undefined {
   const [token] = useState<string | undefined>(() =>
-    typeof window === "undefined" ? undefined : localStorage.getItem("vsn-token") ?? undefined
+    typeof window === "undefined" ? undefined : (localStorage.getItem("vsn-token") ?? undefined),
   );
   const hasMounted = useSyncExternalStore(subscribeNoop, getTrue, getFalse);
   return hasMounted ? token : undefined;

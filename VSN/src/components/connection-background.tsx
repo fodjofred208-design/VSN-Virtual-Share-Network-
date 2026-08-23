@@ -9,7 +9,12 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
-import { subscribeConnection, toneFor, type ConnectionTone, type ConnectionState } from "@/lib/connection-store";
+import {
+  subscribeConnection,
+  toneFor,
+  type ConnectionTone,
+  type ConnectionState,
+} from "@/lib/connection-store";
 
 interface Circle {
   id: number;
@@ -57,7 +62,12 @@ export default function ConnectionBackground() {
   }, []);
 
   const circles = buildCircles(tone);
-  const cls = tone === "connected" ? "vsn-circle-green" : tone === "connecting" ? "vsn-circle-yellow" : "vsn-circle-red";
+  const cls =
+    tone === "connected"
+      ? "vsn-circle-green"
+      : tone === "connecting"
+        ? "vsn-circle-yellow"
+        : "vsn-circle-red";
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">

@@ -13,12 +13,7 @@
 // single X25519 key generation and are guaranteed to match. derivePublicKey()
 // re-derives the public key from a WireGuard-format private key via the standard
 // PKCS#8 / SPKI encodings, so it is consistent with generateKeyPair().
-import {
-  generateKeyPairSync,
-  createPrivateKey,
-  createPublicKey,
-  randomBytes,
-} from "crypto";
+import { generateKeyPairSync, createPrivateKey, createPublicKey, randomBytes } from "crypto";
 
 export interface KeyPair {
   publicKey: string; // base64 (44 chars)

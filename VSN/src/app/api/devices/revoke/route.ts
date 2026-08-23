@@ -23,14 +23,23 @@ export async function POST(req: NextRequest) {
     await db.update(devices).set({ isRevoked: true }).where(eq(devices.id, body.deviceId));
 
     // Terminate any active session that involves the device (either side).
-    const active = await db.select().from(sessions).where(eq(sessions.receptorDeviceId, body.deviceId)).limit(100);
+    const active = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.receptorDeviceId, body.deviceId))
+      .limit(100);
     const activeStates = ACTIVE_SESSION_STATES as readonly string[];
     let terminatedCount = 0;
     for (const session of active) {
       if (activeStates.includes(session.state as SessionState)) {
         await db
           .update(sessions)
-          .set({ state: "terminated", terminationReason: "device_revoked", terminatedAt: new Date(), updatedAt: new Date() })
+          .set({
+            state: "terminated",
+            terminationReason: "device_revoked",
+            terminatedAt: new Date(),
+            updatedAt: new Date(),
+          })
           .where(eq(sessions.id, session.id));
         terminatedCount++;
       }

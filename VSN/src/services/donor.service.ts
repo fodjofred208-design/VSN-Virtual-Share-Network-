@@ -52,7 +52,10 @@ export async function registerDonor(input: {
   return { donorId, pairCode, profileId };
 }
 
-export async function getAvailableDonors(userId: string, deviceFingerprint?: string): Promise<AvailableDonor[]> {
+export async function getAvailableDonors(
+  userId: string,
+  deviceFingerprint?: string,
+): Promise<AvailableDonor[]> {
   const onlineDonors = await db
     .select({
       id: donorProfiles.id,
@@ -71,8 +74,8 @@ export async function getAvailableDonors(userId: string, deviceFingerprint?: str
       or(
         eq(donorProfiles.status, "online"),
         eq(donorProfiles.status, "available"),
-        eq(donorProfiles.status, "sharing")
-      )
+        eq(donorProfiles.status, "sharing"),
+      ),
     );
 
   const visible: AvailableDonor[] = [];
@@ -95,8 +98,8 @@ export async function getAvailableDonors(userId: string, deviceFingerprint?: str
             and(
               eq(authorizedReceptors.donorProfileId, donor.id),
               eq(authorizedReceptors.deviceFingerprint, deviceFingerprint),
-              eq(authorizedReceptors.isBlocked, false)
-            )
+              eq(authorizedReceptors.isBlocked, false),
+            ),
           )
           .limit(1);
         if (auth.length) {
@@ -148,8 +151,16 @@ export async function getDonorProfile(userId: string): Promise<AvailableDonor | 
   };
 }
 
-export async function donorHeartbeat(input: { donorProfileId: string; status: string; currentReceptors: number }) {
-  const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, input.donorProfileId)).limit(1);
+export async function donorHeartbeat(input: {
+  donorProfileId: string;
+  status: string;
+  currentReceptors: number;
+}) {
+  const donor = await db
+    .select()
+    .from(donorProfiles)
+    .where(eq(donorProfiles.id, input.donorProfileId))
+    .limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
   await db
     .update(donorProfiles)
@@ -158,7 +169,10 @@ export async function donorHeartbeat(input: { donorProfileId: string; status: st
   return { accepted: true, timestamp: new Date().toISOString() };
 }
 
-export async function approveReceptor(donorProfileId: string, input: { deviceFingerprint: string; receptorUserId?: string; label?: string }) {
+export async function approveReceptor(
+  donorProfileId: string,
+  input: { deviceFingerprint: string; receptorUserId?: string; label?: string },
+) {
   const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, donorProfileId)).limit(1);
   if (!donor.length) throw new ValidationError("Donor profile not found");
 

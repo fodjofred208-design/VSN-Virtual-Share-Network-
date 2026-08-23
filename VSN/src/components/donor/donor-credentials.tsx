@@ -30,7 +30,10 @@ export function DonorCredentials() {
       <div className="flex flex-col gap-1">
         <span className="text-[10px] uppercase opacity-40 font-bold ml-1">Pair Code</span>
         <div className="flex items-center gap-3">
-          <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-lg tracking-wider" style={{ color: "var(--vsn-accent)" }}>
+          <div
+            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-mono text-lg tracking-wider"
+            style={{ color: "var(--vsn-accent)" }}
+          >
             {pairCode || "—"}
           </div>
           <button
@@ -47,7 +50,10 @@ export function DonorCredentials() {
           {publicKey || "—"}
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold" style={{ color: "var(--vsn-green)" }}>
+      <div
+        className="mt-4 flex items-center gap-2 text-[10px] font-bold"
+        style={{ color: "var(--vsn-green)" }}
+      >
         <Shield size={12} /> ROTATION ACTIVE · RSA-4096 / Ed25519
       </div>
     </div>

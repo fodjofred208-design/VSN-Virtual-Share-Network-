@@ -45,7 +45,11 @@ describe("WireGuard config rendering (wg-quick)", () => {
     const minimal: AgentTunnelConfig = {
       role: "donor",
       interfaceName: "vsn-donor0",
-      wg: { privateKey: "k", address: ["10.0.0.1/32"], peers: [{ publicKey: "p", allowedIPs: ["10.0.0.2/32"] }] },
+      wg: {
+        privateKey: "k",
+        address: ["10.0.0.1/32"],
+        peers: [{ publicKey: "p", allowedIPs: ["10.0.0.2/32"] }],
+      },
     };
     const rendered = renderWireGuardConfig(minimal);
     expect(rendered).not.toContain("ListenPort");

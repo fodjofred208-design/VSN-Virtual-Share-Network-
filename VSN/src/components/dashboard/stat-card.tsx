@@ -1,7 +1,17 @@
 // VSN — Dashboard stat card (shared)
 import type { ReactNode } from "react";
 
-export function StatCard({ label, value, sub, icon }: { label: string; value: string; sub?: string; icon?: ReactNode }) {
+export function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  icon?: ReactNode;
+}) {
   return (
     <div className="vsn-card p-4">
       <div className="flex items-center justify-between mb-2">

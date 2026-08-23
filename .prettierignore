@@ -1,0 +1,26 @@
+# Dependencies / build output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Generated / local artifacts
+next-env.d.ts
+*.tsbuildinfo
+*.db
+*.db-*
+vsn.db*
+
+# Lockfiles (kept in canonical npm formatting)
+package-lock.json
+
+# The full-project document embeds every file in code fences —
+# reformatting it would desync it from the real files.
+VSN-FULL-DOCUMENT.md
+
+# Binary-ish / asset files we keep as authored
+*.svg
+
+# Android resource files (no Prettier XML parser in v3 — keep as authored)
+apps/android/**/*.xml

@@ -25,7 +25,10 @@ export interface JwtPayload {
   [k: string]: unknown;
 }
 
-export function signJwt(payload: Omit<JwtPayload, "iat" | "exp"> & { sub: string }, ttlSeconds: number): string {
+export function signJwt(
+  payload: Omit<JwtPayload, "iat" | "exp"> & { sub: string },
+  ttlSeconds: number,
+): string {
   const header = base64urlJson({ alg: ALG, typ: "JWT" });
   const now = Math.floor(Date.now() / 1000);
   const body: JwtPayload = { ...payload, iat: now, exp: now + ttlSeconds };

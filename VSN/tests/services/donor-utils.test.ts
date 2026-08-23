@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { generateDonorId, generatePairCode, formatBandwidth, formatBytes, formatDuration } from "../../src/lib/utils";
+import {
+  generateDonorId,
+  generatePairCode,
+  formatBandwidth,
+  formatBytes,
+  formatDuration,
+} from "../../src/lib/utils";
 
 describe("donor id / pair code generation", () => {
   it("builds a donor id matching VSN-XX-XXXXX", () => {

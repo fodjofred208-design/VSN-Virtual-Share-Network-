@@ -69,7 +69,7 @@ function parseStunMappedAddress(buf: Buffer): Candidate | null {
       const family = buf.readUInt8(valueStart + 1);
       const port = buf.readUInt16BE(valueStart + 2) ^ 0x2112;
       if (family === 0x01) {
-        const ip = `${(buf.readUInt8(valueStart + 4) ^ 0x21)}.${(buf.readUInt8(valueStart + 5) ^ 0xa4)}.${(buf.readUInt8(valueStart + 6) ^ 0x21)}.${(buf.readUInt8(valueStart + 7) ^ 0xa4)}`;
+        const ip = `${buf.readUInt8(valueStart + 4) ^ 0x21}.${buf.readUInt8(valueStart + 5) ^ 0xa4}.${buf.readUInt8(valueStart + 6) ^ 0x21}.${buf.readUInt8(valueStart + 7) ^ 0xa4}`;
         return { ip, port, type: "srflx" };
       }
     }

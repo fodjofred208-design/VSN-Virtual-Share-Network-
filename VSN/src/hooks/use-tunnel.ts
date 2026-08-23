@@ -26,17 +26,34 @@ export function useTunnel() {
   const [error, setError] = useState<string | null>(null);
 
   // Update both local state and the global connection store.
-  const applyState = useCallback((s: SessionState, extra?: Partial<Parameters<typeof setConnectionState>[0]>) => {
-    setStateRaw(s);
-    setConnectionState({ state: s, tone: toneFor(s), label: labelFor(s), role: extra?.role ?? (s === "connected" ? "receptor" : null), ...extra });
-  }, []);
+  const applyState = useCallback(
+    (s: SessionState, extra?: Partial<Parameters<typeof setConnectionState>[0]>) => {
+      setStateRaw(s);
+      setConnectionState({
+        state: s,
+        tone: toneFor(s),
+        label: labelFor(s),
+        role: extra?.role ?? (s === "connected" ? "receptor" : null),
+        ...extra,
+      });
+    },
+    [],
+  );
 
   const log = useCallback((msg: string, type: ConnectionLog["type"] = "info") => {
-    setLogs((prev) => [...prev, { id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg, type }]);
+    setLogs((prev) => [
+      ...prev,
+      { id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg, type },
+    ]);
   }, []);
 
   const connect = useCallback(
-    async (input: { donorProfileId: string; receptorDeviceId: string; receptorUserId: string; role: "donor" | "receptor" }) => {
+    async (input: {
+      donorProfileId: string;
+      receptorDeviceId: string;
+      receptorUserId: string;
+      role: "donor" | "receptor";
+    }) => {
       setError(null);
       try {
         log("Requesting session…");
@@ -81,7 +98,12 @@ export function useTunnel() {
         setTunnelInfo({ config: cfg, relay: relayInfo });
         applyState("connected");
         log("Tunnel established — traffic flowing", "success");
-        pushNotification({ kind: "system", title: "Tunnel established", body: "Encrypted connection active.", route: "/connection" });
+        pushNotification({
+          kind: "system",
+          title: "Tunnel established",
+          body: "Encrypted connection active.",
+          route: "/connection",
+        });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Connection failed";
         setError(msg);
@@ -89,7 +111,7 @@ export function useTunnel() {
         applyState("error");
       }
     },
-    [log, applyState]
+    [log, applyState],
   );
 
   const disconnect = useCallback(async () => {

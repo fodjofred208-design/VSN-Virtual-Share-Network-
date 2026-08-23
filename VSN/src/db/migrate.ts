@@ -163,22 +163,13 @@ for (const stmt of DDL) {
 const demoUserId = process.env.VSN_DEMO_USER_ID ?? "00000000-0000-0000-0000-000000000001";
 const demoEmail = process.env.VSN_DEMO_USER_EMAIL ?? "demo@vsn.local";
 const existingUser = sqlite.prepare("SELECT id FROM users WHERE email = ?").get(demoEmail) as
-  | { id: string }
-  | undefined;
+  { id: string } | undefined;
 if (!existingUser) {
   sqlite
     .prepare(
-      "INSERT INTO users (id, email, display_name, password_hash, country_code, created_at, updated_at, is_active) VALUES (?,?,?,?,?,?,?,1)"
+      "INSERT INTO users (id, email, display_name, password_hash, country_code, created_at, updated_at, is_active) VALUES (?,?,?,?,?,?,?,1)",
     )
-    .run(
-      demoUserId,
-      demoEmail,
-      "VSN Demo",
-      "$demo$" + "x".repeat(16),
-      "CM",
-      Date.now(),
-      Date.now()
-    );
+    .run(demoUserId, demoEmail, "VSN Demo", "$demo$" + "x".repeat(16), "CM", Date.now(), Date.now());
   console.log(`[init] seeded dev user: ${demoEmail} (id=${demoUserId})`);
 }
 

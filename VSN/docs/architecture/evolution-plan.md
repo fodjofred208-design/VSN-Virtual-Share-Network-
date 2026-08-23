@@ -6,7 +6,7 @@
 > This document is kept as the historical analysis + roadmap that drove the
 > work; the "current repo" descriptions below refer to the repo state on the
 > date written.
-> **Scope:** Evolve the existing Next.js project into the target Control Plane + Data Plane + VSN Agent architecture, *without* throwing away the current work.
+> **Scope:** Evolve the existing Next.js project into the target Control Plane + Data Plane + VSN Agent architecture, _without_ throwing away the current work.
 > **Date:** 2026-08-22
 
 ---
@@ -15,7 +15,7 @@
 
 The current repo is a **control-plane UI prototype** that is **disconnected from its own control-plane API**, and it has **no data-plane layer at all**. In other words: today it is essentially a mock dashboard, not a networking system.
 
-The spec's core intuition is correct and is *provably* confirmed by the code:
+The spec's core intuition is correct and is _provably_ confirmed by the code:
 
 1. **The UI never calls the API.** A grep for `fetch(`, `axios`, or `/api/` across every page under `src/app/(app)/`, `src/app/permissions/`, and `src/app/page.tsx` returns **zero** hits. Instead the pages import from `src/lib/mock-data.ts` (all empty arrays / zeroed stats) and render from that.
 2. **The API routes are real but orphaned.** `src/app/api/**` are genuine Postgres/Drizzle handlers (`auth`, `donors`, `sessions`, `stats`, `security`, `audit`, `health`), but nothing in the UI consumes them.
@@ -63,15 +63,15 @@ VSN/
 
 ### 2.2 The presentation ↔ control-plane disconnect (the critical issue)
 
-| Page | Data source today | Correct data source (target) |
-|------|-------------------|------------------------------|
-| `dashboard` / `connection` | local component state (simulated) | `GET /api/sessions` + signaling |
-| `donor` | local component state | `POST /api/donors/register` + agent |
-| `receptor` | `mockDonors`, `mockSessions` | `GET /api/donors/available`, session API |
-| `my-donors` | `mockDonors` | `GET /api/donors` (owned) |
-| `statistics` | `mockStats` | `GET /api/statistics` (aggregated) |
-| `security` | `mockSecurityEvents`, `mockAuditLog` | `GET /api/security/events`, `GET /api/audit` |
-| `permissions` | `mockPermissions` | local, then agent gate |
+| Page                       | Data source today                    | Correct data source (target)                 |
+| -------------------------- | ------------------------------------ | -------------------------------------------- |
+| `dashboard` / `connection` | local component state (simulated)    | `GET /api/sessions` + signaling              |
+| `donor`                    | local component state                | `POST /api/donors/register` + agent          |
+| `receptor`                 | `mockDonors`, `mockSessions`         | `GET /api/donors/available`, session API     |
+| `my-donors`                | `mockDonors`                         | `GET /api/donors` (owned)                    |
+| `statistics`               | `mockStats`                          | `GET /api/statistics` (aggregated)           |
+| `security`                 | `mockSecurityEvents`, `mockAuditLog` | `GET /api/security/events`, `GET /api/audit` |
+| `permissions`              | `mockPermissions`                    | local, then agent gate                       |
 
 **Consequence:** the UI shows static/empty state regardless of what the API would return, so the "app" never reflects a real session, donor, or security event.
 
@@ -92,16 +92,16 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 
 ### Current ⇒ Target mapping
 
-| Layer | Current | Target | Delta needed |
-|-------|---------|--------|--------------|
-| **UI** | `src/app/(app)/*` + `permissions/` | Same pages, but wired to a **services/API client** instead of `mock-data` | Add API client; replace mock imports |
-| **Control API** | `src/app/api/**` (thin handlers) | Handlers call a **`services/` layer** (business logic) | Extract services; keep handlers thin |
-| **DB** | `src/db/schema.ts` (flat) | `src/db/schema/{users,devices,donors,sessions,security-events,audit}.ts` + migrations | Split schema; add migrations dir |
-| **Real-time** | none | `server/websocket/signaling-server.ts` + `src/lib/signaling/` client | New signaling plane |
-| **Data plane** | none | `agent/` (native core + tunnel/network/routing/security) + `src/services/*` orchestration | New `agent/` subsystem |
-| **Contracts** | `src/lib/types.ts` (one file) | `protocol/` shared message + type contracts | New `protocol/` package |
-| **Docs/Tests** | none | `docs/architecture/*`, `docs/development/*`, `tests/*` | New |
-| **Secrets** | none | `.gitignore`, `.env.example` | Add now (immediate) |
+| Layer           | Current                            | Target                                                                                    | Delta needed                         |
+| --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------ |
+| **UI**          | `src/app/(app)/*` + `permissions/` | Same pages, but wired to a **services/API client** instead of `mock-data`                 | Add API client; replace mock imports |
+| **Control API** | `src/app/api/**` (thin handlers)   | Handlers call a **`services/` layer** (business logic)                                    | Extract services; keep handlers thin |
+| **DB**          | `src/db/schema.ts` (flat)          | `src/db/schema/{users,devices,donors,sessions,security-events,audit}.ts` + migrations     | Split schema; add migrations dir     |
+| **Real-time**   | none                               | `server/websocket/signaling-server.ts` + `src/lib/signaling/` client                      | New signaling plane                  |
+| **Data plane**  | none                               | `agent/` (native core + tunnel/network/routing/security) + `src/services/*` orchestration | New `agent/` subsystem               |
+| **Contracts**   | `src/lib/types.ts` (one file)      | `protocol/` shared message + type contracts                                               | New `protocol/` package              |
+| **Docs/Tests**  | none                               | `docs/architecture/*`, `docs/development/*`, `tests/*`                                    | New                                  |
+| **Secrets**     | none                               | `.gitignore`, `.env.example`                                                              | Add now (immediate)                  |
 
 ---
 
@@ -110,6 +110,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 > Phases are ordered so that every phase leaves the app runnable and each builds on the prior.
 
 ### Phase 0 — Foundations (immediate, low-risk, no code behavior change)
+
 - [x] Add `.gitignore` (node_modules, .next, .env*, out, coverage, etc.)
 - [x] Add `.env.example` (SQLite path, JWT secret, signaling URL, agent vars, etc.)
 - [x] Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`
@@ -117,6 +118,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - [ ] Decide whether to keep the app at `VSN/` root or reorganize to `frontend/` (spec §12 suggests `frontend/`; recommend keeping `VSN/` and adding sibling `agent/`, `server/`, `protocol/`, `tests/`, `docs/` to avoid churn).
 
 ### Phase 1 — Wire the UI to the real API (closes the biggest gap)
+
 - Add `src/lib/api/client.ts` (typed fetch wrapper for route handlers).
 - Add `src/lib/api/donors.ts`, `sessions.ts`, `statistics.ts`, `security.ts`, `audit.ts`, `auth.ts`.
 - Replace `mock-data` imports in `receptor`, `my-donors`, `statistics`, `security` with real API calls (with loading/error states).
@@ -124,12 +126,14 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Keep `mock-data.ts` only as fixtures; move to `tests/mocks/` ultimately.
 
 ### Phase 2 — Database schema split + migrations
+
 - Split `src/db/schema.ts` → `src/db/schema/{users,devices,donors,sessions,authorized-receptors,session-events,security-events,audit,relay-servers}.ts`.
 - Add `src/db/schema/index.ts` re-exports.
 - Set up `src/db/migrations/` (drizzle-kit) so schema pushes are versioned.
 - Keep `drizzle.config` pointing at the new schema path (it already points to `./src/db/schema.ts` → update to the folder).
 
 ### Phase 3 — Services layer (business logic out of route handlers)
+
 - `src/services/auth.service.ts` (challenge/verify/register-device).
 - `src/services/donor.service.ts` (register/available/approve/heartbeat).
 - `src/services/session.service.ts` (request/accept/reject/terminate/status + state machine).
@@ -138,6 +142,7 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Refactor each `src/app/api/**/route.ts` to call the corresponding service (thin handlers).
 
 ### Phase 4 — Signaling / real-time plane
+
 - Add `src/lib/signaling/client.ts` (WebSocket client: `donor_online`, `donor_offline`, `connection_request`, `connection_accepted`, `connection_rejected`, `tunnel_ready`, `tunnel_closed`, `heartbeat`).
 - Add `server/websocket/signaling-server.ts` (standalone Node WS server) + `server/index.ts`.
 - Add `src/app/api/signaling/route.ts` to broker WebSocket upgrades (or run `server/` as a separate process in dev).
@@ -145,17 +150,20 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 - Add a small dev script (`npm run signaling`) + `concurrently` option.
 
 ### Phase 5 — VSN Agent (the data plane) — **native / non-browser**
+
 - Add `agent/` scaffold: `core/{agent,connection-manager,donor-manager,receptor-manager}.ts`, `tunnel/{tunnel-manager,tunnel-client,tunnel-config}.ts`, `network/{interface-manager,routing-manager,nat-manager,network-info}.ts`, `security/{encryption,credentials,identity}.ts`, `api/control-client.ts`, `ipc/ipc-server.ts`.
 - Add `agent/platforms/{windows,linux,macos,android}/` + README per platform.
 - Wire the UI to the agent via **IPC / local API** (the agent exposes a local HTTP/WS endpoint the UI calls), so the browser never does privileged networking.
 - **Feasibility note:** the tunnel, TUN adapter, routing and NAT code cannot run or be tested inside a browser/Next.js sandbox. This layer is delivered as documented TypeScript scaffolding + platform integration guides, and must be built/run on each target OS by the user (or via an Electron/Tauri-style desktop shell).
 
 ### Phase 6 — Protocol contracts
+
 - Add `protocol/messages/{authentication,donor,receptor,session,signaling}.ts` + `protocol/types.ts` (shared, framework-agnostic).
 - Add `protocol/README.md`.
 - Have `src/lib`, `agent/`, and `server/` all import from `protocol/` (single source of truth).
 
 ### Phase 7 — Docs + tests + cleanup
+
 - Add `docs/architecture/{overview,control-plane,data-plane,tunnel,security}.md`.
 - Add `docs/development/{setup,contributing,troubleshooting}.md`.
 - Add `tests/{api,services,protocol,agent}/` with vitest.
@@ -165,15 +173,15 @@ The spec's target is three layers: **Presentation (Next.js UI)**, **Control Plan
 
 ## 5. Sandbox Feasibility Notes (what I can actually build & verify here)
 
-This is a browser-based agent sandbox. That bounds what is *verifiable*:
+This is a browser-based agent sandbox. That bounds what is _verifiable_:
 
-| Work item | Buildable & typecheckable here? | Runnable here? |
-|-----------|--------------------------------|----------------|
-| `.gitignore`, `.env.example`, `docs/**`, `protocol/**` (types) | Yes | Yes (static) |
-| `services/**`, `src/lib/api/**`, schema split, route refactor | Yes (TS) | Needs `npm install` + a Postgres/`DATABASE_URL` |
-| `src/lib/signaling` client + `server/websocket` server | Yes (TS) | Can run a WS server server-side |
-| `tests/**` (unit) | Yes | Yes (vitest, no DB) |
-| `agent/**` native tunnel / TUN / routing / NAT | Scaffold only | **No** — requires OS-level features |
+| Work item                                                      | Buildable & typecheckable here? | Runnable here?                                  |
+| -------------------------------------------------------------- | ------------------------------- | ----------------------------------------------- |
+| `.gitignore`, `.env.example`, `docs/**`, `protocol/**` (types) | Yes                             | Yes (static)                                    |
+| `services/**`, `src/lib/api/**`, schema split, route refactor  | Yes (TS)                        | Needs `npm install` + a Postgres/`DATABASE_URL` |
+| `src/lib/signaling` client + `server/websocket` server         | Yes (TS)                        | Can run a WS server server-side                 |
+| `tests/**` (unit)                                              | Yes                             | Yes (vitest, no DB)                             |
+| `agent/**` native tunnel / TUN / routing / NAT                 | Scaffold only                   | **No** — requires OS-level features             |
 
 > **Recommendation:** implement Phases 0–4 fully here (they are pure TS and belong to the control plane), and deliver Phase 5 (`agent/`) as well-structured scaffolding + per-platform integration documentation, since real tunnel/NAT work must run outside the browser.
 

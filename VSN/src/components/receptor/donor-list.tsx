@@ -18,8 +18,16 @@ export function DonorList({
   loading?: boolean;
   error?: string | null;
 }) {
-  if (loading) return <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>;
-  if (error) return <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>{error}</div>;
+  if (loading)
+    return (
+      <div className="text-center py-10 opacity-40 text-xs uppercase tracking-widest">Loading donors…</div>
+    );
+  if (error)
+    return (
+      <div className="text-center py-6 text-xs" style={{ color: "var(--vsn-red)" }}>
+        {error}
+      </div>
+    );
   if (!donors.length)
     return (
       <div className="text-center py-10 opacity-30">
@@ -33,7 +41,11 @@ export function DonorList({
       {donors.map((donor) => {
         const isOnline = donor.status !== "offline";
         const dotColor =
-          donor.status === "sharing" || donor.status === "online" ? "var(--vsn-green)" : donor.status === "available" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+          donor.status === "sharing" || donor.status === "online"
+            ? "var(--vsn-green)"
+            : donor.status === "available"
+              ? "var(--vsn-yellow)"
+              : "var(--vsn-red)";
         return (
           <div
             key={donor.id}
@@ -46,11 +58,19 @@ export function DonorList({
             <div className="flex items-center gap-3">
               <div className="relative">
                 <span className="text-xl">{donor.countryFlag}</span>
-                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }} />
+                <div
+                  className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
+                  style={{ backgroundColor: dotColor, border: "1px solid var(--vsn-bg)" }}
+                />
               </div>
               <div>
-                <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>{donor.donorId}</div>
-                <div className="flex items-center gap-2 text-[10px]" style={{ color: "var(--vsn-text-muted)" }}>
+                <div className="text-sm font-medium" style={{ color: "var(--vsn-text)" }}>
+                  {donor.donorId}
+                </div>
+                <div
+                  className="flex items-center gap-2 text-[10px]"
+                  style={{ color: "var(--vsn-text-muted)" }}
+                >
                   <span>{donor.visibility}</span>
                   <span>•</span>
                   <span>{formatBandwidth(donor.bandwidthPerReceptorKbps)}</span>
@@ -63,7 +83,9 @@ export function DonorList({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {donor.visibility === "public" && <AlertTriangle size={14} style={{ color: "var(--vsn-yellow)" }} />}
+              {donor.visibility === "public" && (
+                <AlertTriangle size={14} style={{ color: "var(--vsn-yellow)" }} />
+              )}
               <button
                 onClick={() => onSelect(donor)}
                 disabled={!isOnline}
