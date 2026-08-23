@@ -176,6 +176,13 @@ platform's WireGuard CLI to bring the tunnel up.
 See **`docs/development/install-wireguard.md`** for the exact per-OS install
 commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
+### Want to really understand the tunnel?
+
+Read **`docs/development/wireguard-deep-dive.md`** — the complete detailed
+explanation: how the keys work, the handshake step by step, how packets
+flow, NAT traversal, the Donor's isolation firewall, how to verify a live
+tunnel, and what the server can (and cannot) see.
+
 ### Tooling used (per OS)
 
 | Tool                                                                                                                    | Function                                                                       |
@@ -361,8 +368,9 @@ VSN/                                    # → apps/desktop & apps/android sit be
 │   └── development/
 │       ├── setup.md           # Environment setup
 │       ├── install-wireguard.md # OS-by-OS WireGuard install + decision guide
+│       ├── wireguard-deep-dive.md # Complete detailed WireGuard explanation
 │       ├── contributing.md    # Layering rules / PR guidance
-│       └── troubleshooting.md # Common issues
+│       └── troubleshooting.md # Common issues (+ npm install & old VS Code)
 │
 └── tests/
     ├── protocol/state-machine.test.ts   # Session state machine
@@ -494,6 +502,9 @@ plane / NAT traversal path.
 
 ## ⚡ Quick Start
 
+> **Prerequisite:** Node.js **22 LTS** (minimum 20.9) from https://nodejs.org —
+> `npm install` self-checks this and prints the exact fix if it's too old.
+
 ```bash
 cd VSN
 npm install
@@ -526,6 +537,7 @@ npm run build
 | `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer               |
 | `docs/development/setup.md`             | Environment setup                           |
 | `docs/development/install-wireguard.md` | OS-by-OS WireGuard install + what to choose |
+| `docs/development/wireguard-deep-dive.md` | Complete detailed WireGuard explanation (keys, handshake, data path, NAT, verification) |
 | `docs/development/contributing.md`      | Contribution rules                          |
 | `docs/development/troubleshooting.md`   | Fixes for common issues                     |
 

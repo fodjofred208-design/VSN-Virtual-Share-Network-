@@ -28,6 +28,12 @@ It is written so a fresh machine can go from zero to a running app.
 
 ### Required
 
+> **Minimum:** Node.js **20.9** (Next.js 16 requirement) · npm **9+** ·
+> VS Code **1.82+** (any basic install works — see
+> [`docs/development/troubleshooting.md`](docs/development/troubleshooting.md)).
+> `npm install` runs an automatic check (`scripts/check-node.js`) and prints
+> the exact fix if your Node is too old — you can't get stuck silently.
+
 | Tool            | Version               | Purpose                                           |
 | --------------- | --------------------- | ------------------------------------------------- |
 | **Node.js**     | 22.x (LTS preferred)  | Runtime for Next.js, API, signaling, agent, tests |

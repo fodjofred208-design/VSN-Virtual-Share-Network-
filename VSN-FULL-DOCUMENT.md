@@ -12,46 +12,41 @@
 |-------|----------------------|--------|
 | TypeScript (strict) | `npm run typecheck` | ✅ **0 errors** |
 | TypeScript (editor-level: no unused imports/vars) | `tsc --noEmit --noUnusedLocals --noUnusedParameters` | ✅ **0 errors** |
-| Invisible/hidden-character scan (all files) | zero-width, BOM, NBSP, form-feed… | ✅ **0 hidden characters** |
 | ESLint | `npm run lint` | ✅ **0 errors, 0 warnings** |
 | Unit tests (Vitest) | `npm test` | ✅ **32/32 passed** (8 files) |
-| Production build | `npm run build` | ✅ **success** (all routes) |
-| DB bootstrap | `npm run db:init` | ✅ 21 DDL statements + demo user seeded |
-| i18n key audit | all 10 languages × 32 keys | ✅ complete, no missing keys |
-| UI → API cross-check | every `apiClient` path | ✅ maps to a real route |
+| Production build | `npm run build` | ✅ **success** (34 static pages) |
+| Node version self-check | `scripts/check-node.js` (runs on every `npm install`) | ✅ blocks old Node with the exact fix |
+| Invisible/hidden-character scan (all files) | zero-width, BOM, NBSP, form-feed… | ✅ **0 hidden characters** |
 | Deep audit (links/scripts/imports/unused) | all docs + source | ✅ no broken links, no dead scripts, no TODOs |
 | Prettier format check | `npm run format:check` | ✅ all files use the project style |
-| VS Code workspace | `.vscode/settings.json` + `.vscode/extensions.json` | ✅ format-on-save, ESLint fix-on-save, recommended extensions |
-
-## 🚀 Quick start (after restoring files)
-
-```bash
-cd VSN
-npm install
-npm run db:init      # creates ./vsn.db + tables + demo user
-npm run dev          # UI + control-plane API on http://localhost:3000
-# terminal 2:
-npm run signaling    # WebSocket signaling server on ws://localhost:3002
-```
-
-Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm test && npm run build`.
 
 ## 🖥️ How to open the project in VS Code (with ALL folders)
 
 > ⚠️ **The one rule:** open the **ROOT folder** — the folder that contains
 > `VSN/` **and** `apps/` **together**. If you open `VSN/` alone, the
 > `apps/` folder (desktop/android/ios) will NOT appear in your Explorer.
+>
+> ⚠️ **Clone the right branch!** The default branch `main` still holds only
+> the original upload (49 files). The complete project (206+ files) is on
+> branch **`arena/01a02d3f-vsn-virtual-share-network`**:
+>
+> ```bash
+> git clone -b arena/01a02d3f-vsn-virtual-share-network \
+>   https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
+> ```
+>
+> (Or merge PR #1 to get everything on `main`.)
 
 ### Method 1 — from GitHub (recommended)
 
 ```bash
-git clone https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
+git clone -b arena/01a02d3f-vsn-virtual-share-network \
+  https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
 cd VSN-Virtual-Share-Network-
 code .            # opens the ROOT in VS Code
 ```
 
-(No git? Open the GitHub repo page → **Code** button → **Download ZIP** →
-extract → open the extracted folder with VS Code.)
+(Already cloned the old branch? Fix it in place: `git fetch origin && git checkout arena/01a02d3f-vsn-virtual-share-network`.)
 
 ### Method 2 — restore from THIS document
 
@@ -62,18 +57,22 @@ extract → open the extracted folder with VS Code.)
 
 ### After opening (all methods)
 
-1. VS Code asks **“Do you trust the authors of the files in this folder?”** → **Yes**.
-2. VS Code asks about **recommended extensions** → **Install Recommended**
-   (installs ESLint, Prettier, Tailwind CSS — the ones in `.vscode/extensions.json`).
-3. Compare your Explorer with the tree in the next section — it must match exactly.
-4. Open the terminal (`Ctrl+``) and run:
+1. **Node.js 22 LTS** installed (https://nodejs.org) — `npm install`
+   self-checks and prints the exact fix if it's too old.
+2. VS Code asks **“Do you trust the authors of the files in this folder?”** → **Yes**.
+3. VS Code asks about **recommended extensions** → **Install Recommended**
+   (ESLint, Prettier, Tailwind CSS). On basic/old VS Code: skip — the project
+   still works; terminal checks (`npm run typecheck && npm run lint && npm test`)
+   are authoritative.
+4. Compare your Explorer with the tree in the next section — it must match exactly.
+5. Open the terminal (`Ctrl+``) and run:
    ```bash
    cd VSN
    npm install
    npm run db:init
    npm run dev
    ```
-5. Open http://localhost:3000 — splash screen → terms → permissions → dashboard.
+6. Open http://localhost:3000 — splash → terms → permissions → dashboard.
 
 ## 🌳 The exact plan VS Code will display (Explorer preview)
 
@@ -423,10 +422,23 @@ find . -type d -not -path '*/node_modules*' -not -path './.git*' -not -path '*/.
 find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*/.next/*' | wc -l
 ```
 
+## 🚀 Quick start (after restoring files)
+
+```bash
+cd VSN
+npm install
+npm run db:init      # creates ./vsn.db + tables + demo user
+npm run dev          # UI + control-plane API on http://localhost:3000
+# terminal 2:
+npm run signaling    # WebSocket signaling server on ws://localhost:3002
+```
+
+Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm test && npm run build`.
+
 ## 📦 What's inside this document
 
-- **Part A** — Documentation (README, SETUPME, architecture + development docs)
-- **Part B** — Repository & project configuration (package.json, tsconfig, Next/Drizzle/ESLint/Vitest configs, gitignore, .env.example)
+- **Part A** — Documentation (README, SETUPME, architecture + development docs, incl. the WireGuard deep dive)
+- **Part B** — Repository & project configuration (package.json, tsconfig, Next/Drizzle/ESLint/Vitest configs, gitignore, .env.example, npm-install self-check, VS Code settings)
 - **Part C** — Web app: presentation + control plane (`VSN/src/**`)
 - **Part D** — Standalone signaling server (`VSN/server/**`)
 - **Part E** — Shared protocol contracts (`VSN/protocol/**`)
@@ -439,7 +451,7 @@ find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*
 > `vsn.db` (created by `npm run db:init`), `package-lock.json`
 > (recreated by `npm install`), `next-env.d.ts` (created by Next.js).
 
-## 📑 Table of contents (all 203 files)
+## 📑 Table of contents (all 205 files)
 
 - `.gitignore`
 - `.prettierignore`
@@ -493,6 +505,7 @@ find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*
 - `VSN/docs/development/native-integration.md`
 - `VSN/docs/development/setup.md`
 - `VSN/docs/development/troubleshooting.md`
+- `VSN/docs/development/wireguard-deep-dive.md`
 - `VSN/drizzle.config.ts`
 - `VSN/eslint.config.mjs`
 - `VSN/next.config.ts`
@@ -509,6 +522,7 @@ find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*
 - `VSN/public/assets/README.md`
 - `VSN/public/assets/vsn-logo-placeholder.svg`
 - `VSN/public/assets/vsn-logo.svg`
+- `VSN/scripts/check-node.js`
 - `VSN/server/index.ts`
 - `VSN/server/services/relay-manager.ts`
 - `VSN/server/services/session-manager.ts`
@@ -673,6 +687,10 @@ VSN (Virtual Share Network) is a **cross-platform networking application** that 
 | Architecture docs                   | [`VSN/docs/architecture`](./VSN/docs/architecture) |
 
 ## Quick start (dev)
+
+> **Prerequisite:** Node.js **22 LTS** (minimum 20.9) from https://nodejs.org.
+> `npm install` self-checks the version and prints the exact fix if it's too old.
+> Full setup + troubleshooting (incl. old/basic VS Code): [`VSN/SETUPME.md`](./VSN/SETUPME.md).
 
 ```bash
 cd VSN
@@ -865,6 +883,13 @@ platform's WireGuard CLI to bring the tunnel up.
 See **`docs/development/install-wireguard.md`** for the exact per-OS install
 commands (Linux/macOS/Windows/Android) and a decision guide on what to choose.
 
+### Want to really understand the tunnel?
+
+Read **`docs/development/wireguard-deep-dive.md`** — the complete detailed
+explanation: how the keys work, the handshake step by step, how packets
+flow, NAT traversal, the Donor's isolation firewall, how to verify a live
+tunnel, and what the server can (and cannot) see.
+
 ### Tooling used (per OS)
 
 | Tool                                                                                                                    | Function                                                                       |
@@ -1050,8 +1075,9 @@ VSN/                                    # → apps/desktop & apps/android sit be
 │   └── development/
 │       ├── setup.md           # Environment setup
 │       ├── install-wireguard.md # OS-by-OS WireGuard install + decision guide
+│       ├── wireguard-deep-dive.md # Complete detailed WireGuard explanation
 │       ├── contributing.md    # Layering rules / PR guidance
-│       └── troubleshooting.md # Common issues
+│       └── troubleshooting.md # Common issues (+ npm install & old VS Code)
 │
 └── tests/
     ├── protocol/state-machine.test.ts   # Session state machine
@@ -1183,6 +1209,9 @@ plane / NAT traversal path.
 
 ## ⚡ Quick Start
 
+> **Prerequisite:** Node.js **22 LTS** (minimum 20.9) from https://nodejs.org —
+> `npm install` self-checks this and prints the exact fix if it's too old.
+
 ```bash
 cd VSN
 npm install
@@ -1215,6 +1244,7 @@ npm run build
 | `docs/architecture/device-to-device.md` | Cross-platform / peer-to-peer               |
 | `docs/development/setup.md`             | Environment setup                           |
 | `docs/development/install-wireguard.md` | OS-by-OS WireGuard install + what to choose |
+| `docs/development/wireguard-deep-dive.md` | Complete detailed WireGuard explanation (keys, handshake, data path, NAT, verification) |
 | `docs/development/contributing.md`      | Contribution rules                          |
 | `docs/development/troubleshooting.md`   | Fixes for common issues                     |
 
@@ -1254,6 +1284,12 @@ It is written so a fresh machine can go from zero to a running app.
 ## 🛠️ What You Need
 
 ### Required
+
+> **Minimum:** Node.js **20.9** (Next.js 16 requirement) · npm **9+** ·
+> VS Code **1.82+** (any basic install works — see
+> [`docs/development/troubleshooting.md`](docs/development/troubleshooting.md)).
+> `npm install` runs an automatic check (`scripts/check-node.js`) and prints
+> the exact fix if your Node is too old — you can't get stuck silently.
 
 | Tool            | Version               | Purpose                                           |
 | --------------- | --------------------- | ------------------------------------------------- |
@@ -2647,6 +2683,131 @@ then `npm run db:generate && npm run db:push`.
 ````markdown
 # VSN — Troubleshooting
 
+## 🧰 System requirements (read this first)
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **Node.js** | 20.9 | **22 LTS** (https://nodejs.org) |
+| **npm** | 9 (comes with Node) | 10 (comes with Node 22) |
+| **VS Code** | 1.82 | latest (it updates itself) |
+| **Database** | none — SQLite is built-in | — |
+
+Check what you have: `node -v` and `npm -v` in a terminal.
+
+> `npm install` now runs an automatic version check
+> (`scripts/check-node.js`) — if your Node is too old it stops immediately
+> and prints the exact fix instead of failing deep inside a native build.
+
+---
+
+## 📦 `npm install` fails — the 5 usual suspects
+
+### 1. "VSN CANNOT INSTALL ON THIS NODE.JS VERSION" (or a node-gyp error)
+
+**Cause:** Node.js older than 20.9. This is the #1 cause of failed installs.
+**Fix:**
+
+1. Download **Node 22 LTS** from https://nodejs.org (one installer).
+2. Install with defaults.
+3. **Close ALL VS Code windows and terminals**, open a new terminal.
+4. `node -v` → must show `v22.x.x`.
+5. `npm install` again.
+
+### 2. `better-sqlite3` / `node-gyp rebuild` / `gyp ERR!` (build tools)
+
+**Cause:** the only native package in the project couldn't download a
+prebuilt binary, so it tried to compile and your machine lacks build tools.
+**Fix — install the compiler for your OS, then re-run `npm install`:**
+
+| OS | Command |
+|----|---------|
+| Ubuntu / Debian / Mint | `sudo apt update && sudo apt install build-essential python3` |
+| Fedora / RHEL | `sudo dnf groupinstall "Development Tools" && sudo dnf install python3` |
+| Arch | `sudo pacman -S base-devel python` |
+| macOS | `xcode-select --install` |
+| Windows | Visual Studio Build Tools → choose "Desktop development with C++" (https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
+
+Then: `cd VSN && npm install`.
+
+> Node 20/22 on Windows/macOS/Linux x64 normally get a **prebuilt**
+> better-sqlite3 (no compiling needed). Compiling only kicks in on unusual
+> platforms or blocked networks.
+
+### 3. `npm` errors like `EUNSUPPORTEDPROTOCOL`, `ENOENT`, weird syntax errors
+
+**Cause:** very old npm (older than 9). **Fix:**
+
+```bash
+npm install -g npm@10
+npm install   # retry
+```
+
+### 4. `EACCES` / `permission denied` (mostly Linux with old setups)
+
+**Cause:** npm cache owned by root (usually from an old `sudo npm` habit).
+**Fix — never use `sudo npm` for the project:**
+
+```bash
+sudo chown -R $USER:$USER ~/.npm
+npm install   # retry
+```
+
+### 5. `ETIMEDOUT` / `ECONNRESET` / `network` errors mid-install
+
+**Cause:** unstable network or a proxy/firewall. **Fix:**
+
+- Retry once (transient failures are common on the large `package-lock.json`).
+- Behind a corporate proxy: `npm config set proxy http://proxy:port` and
+  `npm config set https-proxy http://proxy:port` (then unset them later).
+- Slow connection: `npm install --loglevel=verbose` to see where it stalls.
+
+### Still stuck?
+
+Send the **first 20 red lines** of the error (screenshot or copy) — they name
+the exact cause. Don't worry about the hundreds of following lines.
+
+---
+
+## 🖥️ VS Code — basic install / old version
+
+VSN works with a **basic** VS Code (no extensions) — you just won't get lint
+squiggles or Tailwind tooltips. For the full experience:
+
+**1. Update VS Code (recommended once):**
+`Help → Check for Updates…` (or download from https://code.visualstudio.com).
+VS Code 1.82+ is the comfort zone for this project.
+
+**2. Install the 3 recommended extensions** (VS Code offers this automatically
+when you open the project — click **Install Recommended Extensions**):
+`dbaeumer.vscode-eslint` · `esbenp.prettier-vscode` · `bradlc.vscode-tailwindcss`.
+
+**3. Red squiggles that shouldn't be there on an OLD VS Code:**
+old versions bundle an old TypeScript. Force the project's own:
+`Ctrl+Shift+P` → **TypeScript: Select TypeScript Version** →
+**Use Workspace Version**. (Newer VS Code does this automatically from
+`.vscode/settings.json` → `typescript.tsdk`.)
+
+**4. No squiggles at all?**
+The ESLint extension needs a recent VS Code for flat config
+(`eslint.config.mjs`). Update VS Code (step 1) — or just rely on the
+terminal, which is authoritative:
+
+```bash
+cd VSN
+npm run typecheck   # must print nothing (0 errors)
+npm run lint        # must print nothing (0 problems)
+npm test            # 32/32 passed
+```
+
+**5. VS Code window shows an empty/old file list after a `git checkout` or
+`git pull`:** `Ctrl+Shift+P` → **File: Reload Window**.
+
+> Note: an `npm install` problem is never a VS Code problem — npm runs in
+> the terminal/OS, independent of the editor. Fix the Node version (section
+> above) and VS Code will show a clean project.
+
+---
+
 ## The app shows no donors / empty stats
 
 - Ensure the DB is initialized: `npm run db:init`.
@@ -2658,11 +2819,6 @@ then `npm run db:generate && npm run db:push`.
 
 - Web preview uses `NEXT_PUBLIC_API_URL`; the signaling server uses
   `SIGNALING_PORT` (3002). Change in `.env` if needed.
-
-## better-sqlite3 native build
-
-- If `npm install` fails on `better-sqlite3`, install build tools
-  (`build-essential`, or VS Build Tools on Windows) and reinstall.
 
 ## Signaling not connecting
 
@@ -2680,6 +2836,340 @@ then `npm run db:generate && npm run db:push`.
   over the signaling WebSocket (`CONTROL_SERVER_URL` / `SIGNALING_URL`).
 - If network ops are blocked (container/CI), set `VSN_SANDBOX=1` so the
   agent skips privileged interface/NAT work.
+
+````
+### `VSN/docs/development/wireguard-deep-dive.md`
+````markdown
+# VSN — WireGuard: The Complete, Detailed Explanation
+
+> A deep dive into what WireGuard actually is, how it works under the hood,
+> and exactly how VSN uses it. Read top to bottom — each section builds on
+> the previous one.
+
+---
+
+## 1. What WireGuard is (plain language)
+
+WireGuard is a **virtual private tunnel between two computers**. It creates
+an invisible, encrypted pipe through which the two machines can talk as if
+they were plugged into the same private switch — no matter which public
+networks (home Wi-Fi, mobile 4G/5G, café Wi-Fi) each machine sits on.
+
+**Analogy:** imagine two people living in different countries, each behind a
+gated compound (their router). WireGuard first **digs a private tunnel**
+through the earth connecting the two houses. Once the tunnel exists, any
+package (data) dropped in one house's mailbox arrives in the other's — and
+**nobody along the way can open the packages**, because they are sealed
+(encrypted) with a lock only the two house owners hold the keys to.
+
+In VSN:
+- The **Receptor** (the device that needs Internet) sits on one end.
+- The **Donor** (the device that shares its Internet) sits on the other.
+- Everything the Receptor sends goes through the tunnel to the Donor, and
+  the Donor forwards it to the real Internet. The return path works
+  identically.
+
+```
+ Receptor (phone/laptop)                    Donor (laptop with Internet)
+┌──────────────┐   encrypted tunnel    ┌──────────────┐         ┌──────────┐
+│  your apps   │◄─────────────────────►│  WireGuard   │────────►│  ISP /   │
+│   send data  │  (WireGuard, UDP)     │  endpoint    │  NAT + │ Internet │
+└──────────────┘                        └──────────────┘  route └──────────┘
+```
+
+**Key property:** the tunnel is **end-to-end encrypted**. Even the VSN
+control server — which coordinates the connection — only ever sees the two
+devices *shake hands*. It can **never read** what flows through the tunnel.
+That is a mathematical property of the crypto, not a promise.
+
+---
+
+## 2. Why WireGuard (and not OpenVPN/SSL-VPN)
+
+| Property | WireGuard | Typical VPNs |
+|---|---|---|
+| Code size | ~4,000 lines (fully auditable) | 100,000+ lines |
+| Crypto | Modern, only ChaCha20-Poly1305 + Curve25519 + Noise | Often legacy algorithms |
+| Latency | Very low (UDP, in-kernel fast path) | Higher (TCP, complex stack) |
+| Mobile roaming | Excellent (re-keys automatically when network changes) | Often drops |
+| Config size | A few lines per peer | Long, error-prone |
+| Attack surface | Tiny — audited line by line | Large — decades of history |
+
+VSN is a networking product where **trust and speed are the product** —
+that is exactly WireGuard's strength.
+
+---
+
+## 3. The five building blocks (what you need to actually understand it)
+
+### 3.1 UDP — the transport
+
+WireGuard speaks **UDP only** (no TCP). Each encrypted packet is a separate
+UDP datagram. Why:
+- UDP has no handshake overhead → lowest latency.
+- If one packet is lost, the others still flow (TCP would stall).
+- WireGuard has its **own** reliability on top (retransmits during
+  handshake) where it matters.
+
+**Consequence:** you connect to a peer as `ip:port` (e.g.
+`203.0.113.7:51820`) — there is no persistent "session" at the UDP level.
+That's why WireGuard is "stateless-friendly" and roams well.
+
+### 3.2 The TUN device — the virtual network card
+
+To make the **whole device** (not just one app) route through the tunnel,
+WireGuard creates a **virtual network interface** inside the operating
+system:
+
+| OS | Virtual interface name |
+|---|---|
+| Linux | `tun` (e.g. `vsn0`) |
+| macOS | `utun` (e.g. `utun5`) |
+| Windows | via **Wintun** (e.g. `vsn0`) |
+| Android | `VpnService` (e.g. `tun0`) |
+| iOS | `NEPacketTunnelProvider` |
+
+Think of it as a **fake Ethernet port inside the computer**. The OS's
+router can then say: *"for traffic to the Internet, use this fake port"* —
+and every app on the device (browser, WhatsApp, games) is sucked into the
+tunnel without any app knowing or caring. The VSN Agent creates/destroys
+this interface (`agent/src/network/interface-manager.ts`).
+
+### 3.3 Curve25519 — the identity (keys)
+
+Each device gets a **key pair**:
+
+- **Private key** — 32 random bytes. NEVER leaves the device. It is your
+  secret identity, like a fingerprint + a secret hand-shake pattern.
+- **Public key** — derived mathematically from the private key. Anyone can
+  have it; it cannot be used to recover the private key (this is the
+  one-way street of elliptic-curve math).
+
+The magic property: **two parties each holding their own private key and the
+other's public key can derive the SAME shared secret — without ever sending
+the secret over the network.** An eavesdropper who sees both public keys
+still cannot compute the shared secret (that is the Elliptic Curve
+Diffie-Hellman problem, believed hard).
+
+VSN generates real keys with Node's built-in `crypto` module
+(`agent/src/tunnel/wireguard-keys.ts`) — no fake/example keys:
+
+```
+private key  → 32 random bytes  → base64 (44 chars)   [never leaves device]
+public key   → Curve25519(private) → base64 (44 chars) [shared with control plane + peer]
+preshared key→ 32 random bytes  → base64 (44 chars)   [per-session, both peers only]
+fingerprint  → SHA-256(public) → 16 hex chars          [shown in UI for trust]
+```
+
+**Why also a preshared key per session?** Defense in depth: even if the
+identity public keys were somehow known to an attacker, the per-session
+preshared key (agreed during the session) adds a second secret that must
+also be known to fake the tunnel. VSN allocates a fresh one per session
+(`src/services/session.service.ts`) and it is delivered to the two peers
+through the control plane **only while the session is being negotiated**.
+
+### 3.4 Noise protocol — the handshake
+
+When the tunnel starts, the two ends perform a **Noise_IK handshake**:
+
+```
+  Receptor ──────────────────────────────► Donor
+   1. "Hello. Here's my ephemeral public key
+      + my identity public key, and a MAC
+      proving I know my private key"
+
+  Receptor ◄───────────────────────────── Donor
+   2. "Here's my ephemeral + identity keys
+      + MAC. From your ephemeral + my
+      ephemeral we now BOTH derived the
+      same traffic keys (ChaCha20 key +
+      nonce counter) — and your MAC proves
+      you're really the Donor."
+```
+
+What just happened, in one line: **mutual authentication + shared secret
+derivation in two messages, with forward secrecy** (the ephemeral keys are
+thrown away after the handshake, so capturing the handshake later is useless).
+
+**Forward secrecy:** every time the network changes (or every 24h/12h,
+handshake / rekey interval), fresh ephemeral keys are used → old captured
+traffic stays unreadable forever.
+
+### 3.5 ChaCha20-Poly1305 — the encryption
+
+All actual data is sealed with **ChaCha20-Poly1305**:
+- **ChaCha20** — the stream cipher (scrambles the bytes).
+- **Poly1305** — the authenticator (a 16-byte tag; any tampered or forged
+  packet is detected and dropped, not decrypted-and-trusted).
+
+Properties: very fast on phones (no CPU crypto-instruction dependency),
+constant-time (no timing leaks), and approved by modern standards (RFC 7539,
+used by Signal and HTTPS).
+
+---
+
+## 4. The full VSN lifecycle (what actually happens, step by step)
+
+```
+STEP 1 — DEVICE REGISTRATION (once per device)
+  Agent generates Curve25519 keypair → registers PUBLIC key + fingerprint
+  with the control plane:  POST /api/auth/register-device
+  (the private key stays on the device)
+
+STEP 2 — SESSION REQUEST
+  Receptor UI → POST /api/sessions/request { donorProfileId, ... }
+  Control plane records the session (state: requested) and notifies the
+  Donor over the signaling WebSocket (donor_online / connection_request).
+
+STEP 3 — DONOR ACCEPTS
+  Donor taps "Accept" in the notification hub → POST /api/sessions/:id/accept
+  Control plane (session.service):
+    • creates a FRESH per-session preshared key
+    • assigns tunnel endpoint addresses (e.g. 10.9.0.1 / 10.9.0.2)
+    • state: approved → negotiating
+
+STEP 4 — TUNNEL CONFIG EXCHANGE
+  Each side calls:  GET /api/sessions/:id/tunnel-config?role=donor|receptor
+  The response contains EVERYTHING needed for WireGuard EXCEPT private keys:
+    interface name, local address, peer PUBLIC key, AllowedIPs,
+    preshared key, listen port, peer endpoint (if known)
+  (route rule: the control plane NEVER returns private keys)
+
+STEP 5 — NAT TRAVERSAL (finding each other through routers)
+  Both devices are usually behind NAT (private IPs). VSN tries, in order:
+    a) DIRECT   — both have public/reachable endpoints → use them.
+    b) HOLE-PUNCH — STUN: each asks a STUN server "what public ip:port am I
+       actually reachable on?" → candidates exchanged over signaling
+       (protocol/messages/traversal.ts) → both fire UDP at each other's
+       public ip:port simultaneously → router "forgets" to block the
+       reply → a direct path opens. (agent/src/tunnel/nat-traversal.ts)
+    c) RELAY    — if hole-punching fails (CGNAT / symmetric NAT — common on
+       mobile), the control plane allocates an encrypted relay
+       (POST /api/relay/allocate). The relay forwards opaque UDP datagrams.
+       It CANNOT decrypt them (it never has the keys) — it is a speed
+       fallback, not a trust downgrade.
+
+STEP 6 — TUNNEL UP
+  Each agent writes the WireGuard config (agent/src/tunnel/tunnel-config.ts
+  renders the INI) and runs `wg-quick up vsn0` (agent/src/tunnel/wireguard-cli.ts).
+  The Noise handshake completes → the tunnel is LIVE.
+  Agent → onTunnelReady → session state: connected.
+
+STEP 7 — TRAFFIC FLOWS
+  Receptor apps → OS router → TUN interface → ChaCha20-Poly1305 encrypted →
+  UDP → (direct | hole-punched | relay) → Donor TUN → Donor's NAT
+  (MASQUERADE) → Donor's ISP → Internet.  Return path mirrors.
+
+STEP 8 — TEarDown (any side)
+  terminate (UI / timeout / limit) → `wg-quick down` → TUN removed →
+  routes/DNS/firewall restored → session: terminated.
+```
+
+---
+
+## 5. The Donor's side of the street: NAT + isolation
+
+When the Donor shares Internet, two things must be configured on the Donor
+host (done by the Agent, `agent/src/network/`):
+
+1. **NAT (MASQUERADE)** — packets arriving from the tunnel carry the
+   Receptor's tunnel address (10.9.0.1); the Donor rewrites the source to
+   its own real address before sending to the ISP (and rewrites replies
+   back). Implemented with `iptables`/`nftables`/`pf`/Windows Firewall
+   depending on OS (`nat-manager.ts`).
+
+2. **LAN ISOLATION firewall** — the Receptor must get **Internet only**.
+   Rules DROP any tunneled packet whose destination is the Donor's private
+   LAN (192.168.x.x, 10.x.x.x except the tunnel subnet, 172.16-31.x.x).
+   So a Receptor can never peek at the Donor's home network, printers, or
+   NAS — even though it technically "shares" the connection.
+   (`routing-manager.ts`)
+
+---
+
+## 6. Installing WireGuard on your machine (to run the real data plane)
+
+The web app + control plane run **without** WireGuard. To move real
+traffic you install the per-OS tools. Full guide:
+`docs/development/install-wireguard.md`. Short version:
+
+| OS | Install | Verify |
+|----|---------|--------|
+| Linux (Ubuntu/Debian) | `sudo apt install wireguard wireguard-tools` | `wg --help` |
+| Linux (Fedora) | `sudo dnf install wireguard-tools` | `wg --help` |
+| macOS | `brew install wireguard wireguard-tools` | `wg --help` |
+| Windows | WireGuard installer from wireguard.net (bundles Wintun + `wg`) | `wg --help` in PowerShell |
+| Android | "WireGuard" app on Play Store (boringtun engine) | app opens |
+| iOS | "WireGuard" app on App Store | app opens |
+
+> On systems where the kernel module is unavailable (most Android/iOS),
+> the **userspace engine** (`wireguard-go` / `boringtun`) is used instead —
+> same protocol, same security, slightly slower. The Agent's
+> `platform-adapter.ts` picks the right tool per OS.
+
+## 7. Verifying a live tunnel (what "it works" looks like)
+
+On the machine where the tunnel runs:
+
+```bash
+wg show vsn0            # interface + peer + handshake age ("handshake: 4s ago" = alive)
+wg show vsn0 transfer   # bytes received/transmitted — watch them move
+ip addr show vsn0       # (Linux) the tunnel address, e.g. 10.9.0.1
+```
+
+Then, as the Receptor:
+```bash
+ping 10.9.0.2           # reaches the Donor THROUGH the tunnel
+curl https://ifconfig.co  # should print the DONOR's public IP = traffic really flows
+```
+
+In the VSN UI: the Statistics page shows session bytes up/down and the
+dashboard state machine reaches **Connected** (green background, 5 circles).
+
+## 8. Common failures and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `wg-quick: command not found` | Tools not installed | Section 6 table |
+| `Device vsn0 not found` / no TUN | Missing TUN support / permissions | Linux: `sudo` or udev rule; Windows: reinstall (Wintun); Android: grant VpnService permission |
+| Tunnel up but no Internet | Donor NAT/isolation not applied | Check `nat-manager` log lines; on some distros `nftables` is required instead of `iptables` |
+| Handshake never completes | Endpoint unreachable (symmetric NAT) | VSN falls back to relay automatically — check `VSN_RELAY_ENDPOINT` and relay allocation log |
+| `tunnel established` in UI but nothing flows | Router sent traffic to a different interface | Receptor: check default route points to the TUN (`ip route`); kill-switch (settings) forces all traffic through the tunnel |
+| Works on laptop, fails on phone | CGNAT / battery-optimized background limits | Use relay (auto), disable battery optimization for VSN |
+| `VSN_SANDBOX=1` is set | Sandbox mode skips ALL privileged ops | Remove it on a real machine (keep it only in containers/CI) |
+
+## 9. Security model — what the VSN server CAN and CANNOT see
+
+| Data | Server sees it? |
+|---|---|
+| That a Donor is online | Yes (metadata) |
+| That R requested D, when, how long | Yes (metadata) |
+| The two devices' **public** keys + fingerprints | Yes |
+| The **preshared** key | Only during session setup (then held by the two devices) |
+| **Any packet content** (websites, messages, files) | **NO — impossible** (ChaCha20-Poly1305 between the two devices) |
+| The **private** keys | **NO — they never leave the devices** |
+| Receptor's LAN access via the Donor | **NO — blocked by the isolation firewall** |
+
+That asymmetry — *coordination without visibility* — is the core design
+goal of VSN and it comes directly from choosing WireGuard as the data plane.
+
+---
+
+## 10. One-paragraph summary (for when you need to explain it to someone)
+
+> VSN uses WireGuard — a modern, tiny, auditable tunnel protocol. Each
+> device owns a Curve25519 key pair whose private half never leaves the
+> machine; only public keys are registered with the control plane. When a
+> Receptor requests a Donor and the Donor accepts, the control plane
+> generates a fresh per-session preshared key and hands both sides a
+> WireGuard config (peer public key + preshared key + endpoint) — never a
+> private key. The two agents then find each other through their routers
+> (direct, STUN hole-punching, or an encrypted relay that cannot read the
+> traffic), run a Noise handshake, and a virtual network interface carries
+> all of the Receptor's traffic, ChaCha20-Poly1305-encrypted, to the
+> Donor, which NATs it out to the real Internet while a firewall blocks
+> any access to its own LAN. The control server coordinates all of this
+> but mathematically cannot read a single byte of it.
 
 ````
 
@@ -2802,20 +3292,25 @@ apps/android/**/*.xml
 ````json
 {
   // VSN — VS Code workspace settings (open the repo ROOT for these to apply)
+  //
+  // Designed to be safe on BASIC / OLDER VS Code:
+  //  - nothing here requires a specific extension to be installed
+  //    (missing extensions are simply skipped by VS Code)
+  //  - the workspace TypeScript (VSN/node_modules) is pinned so OLD VS Code
+  //    versions don't use their bundled (older) compiler
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.rulers": [110],
+  // Only acts when the ESLint extension is present (recommended, auto-suggested).
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+  // Use the project's own TypeScript (5.9.3) instead of VS Code's bundled one —
+  // this is what removes red lines on old/basic VS Code versions.
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "VSN/node_modules/typescript/lib",
-  "files.associations": {
-    "*.css": "tailwindcss"
-  },
   "files.exclude": {
     "**/*.tsbuildinfo": true
   },
@@ -3010,7 +3505,8 @@ export default nextConfig;
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
-    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\""
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
+    "preinstall": "node scripts/check-node.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -3049,6 +3545,9 @@ export default nextConfig;
     "tsx": "^4.19.2",
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
 
@@ -3062,6 +3561,66 @@ const postcssConfig = {
 };
 
 export default postcssConfig;
+
+````
+### `VSN/scripts/check-node.js`
+````javascript
+#!/usr/bin/env node
+// VSN — preinstall sanity check (zero dependencies, plain Node).
+//
+// Why this exists: on machines with an old Node.js, `npm install` dies deep
+// inside a native build (better-sqlite3 / node-gyp) with a long confusing
+// error. This check runs BEFORE anything is installed and fails fast with
+// the exact fix, so a basic machine never hits a wall.
+
+const REQUIRED = { major: 20, minor: 9 }; // Next.js 16 minimum; Node 22 LTS recommended
+const RECOMMENDED = 22;
+
+const [major, minor] = process.versions.node.split(".").map(Number);
+const nodeOk = major > REQUIRED.major || (major === REQUIRED.major && minor >= REQUIRED.minor);
+
+function fail(msg) {
+  console.error("");
+  console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.error("✖ VSN CANNOT INSTALL ON THIS NODE.JS VERSION");
+  console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  for (const line of msg) console.error(line);
+  console.error("");
+  console.error("  You currently have:  Node.js " + process.versions.node);
+  console.error("  VSN requires:        Node.js " + REQUIRED.major + "." + REQUIRED.minor + "+ (Node " + RECOMMENDED + " LTS recommended)");
+  console.error("");
+  console.error("  HOW TO FIX (2 minutes):");
+  console.error("   1. Open https://nodejs.org and download the " + RECOMMENDED + " LTS installer.");
+  console.error("   2. Install it (accept defaults).");
+  console.error("   3. CLOSE all VS Code / terminal windows, then open a new one.");
+  console.error("   4. Verify:  node -v        (must print v" + RECOMMENDED + ".x.x or higher)");
+  console.error("   5. Re-run:  npm install");
+  console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  process.exit(1);
+}
+
+if (!nodeOk) {
+  fail([
+    "Node.js is too old for VSN (Next.js 16).",
+    "This is the #1 cause of failed `npm install` on VSN.",
+  ]);
+}
+
+// Soft warning for old npm (npm ships inside Node — usually fixed by the Node update above).
+const ua = process.env.npm_config_user_agent || "";
+const npmMatch = ua.match(/npm\/(\d+)/);
+if (npmMatch && Number(npmMatch[1]) < 9) {
+  console.warn("");
+  console.warn("⚠ Old npm detected (v" + npmMatch[1] + "). If install fails, run:");
+  console.warn("    npm install -g npm@10");
+  console.warn("  (or simply update Node.js — npm comes with it)");
+  console.warn("");
+}
+
+if (nodeOk) {
+  // Green path: one line so users see the check actually happened.
+  console.log("[vsn] Node.js " + process.versions.node + " — OK, continuing npm install…");
+}
 
 ````
 ### `VSN/tsconfig.json`
@@ -15534,15 +16093,21 @@ referenced by the UI; keep it for reference or delete it.
 
 ---
 
-## Appendix — Repairs applied (2026-08-23)
+## Appendix — Repairs & adaptations applied (2026-08-23)
 
 1. **Lint errors (15) → 0** in: `src/hooks/use-api.ts` (rewritten: store-based fetch via `useSyncExternalStore`, no setState-in-effect, literal deps), `src/components/theme-provider.tsx` + `src/components/i18n-provider.tsx` (lazy localStorage init + mount detection without effects), `src/app/(app)/statistics/page.tsx` (impure `Math.random()` during render → deterministic pure `placeholderBar()`), `src/app/terms/page.tsx` (unescaped ```'```/``"``` → ``&apos;``/``&quot;``).
 2. **Hidden runtime bug:** all three logo references pointed to `/assets/vsn-logo.png` which **did not exist** → now use the shipped `/assets/vsn-logo.svg` via `next/image` (also clears the 4 `no-img-element` warnings).
 3. **Type cleanups:** `as any` casts removed (splash wave styles → `React.CSSProperties`, globe selection → typed `NetworkNode`).
-4. **Docs/code consistency:** `.env.example` rewritten to exactly match the variables the code reads (old one listed `DATABASE_URL`/`AGENT_IPC_URL`, which nothing reads); `SETUPME.md` env table, `docs/development/setup.md` (Postgres is *planned*, not an existing `VSN_DB_DRIVER` switch), `docs/development/troubleshooting.md` (agent IPC facts), `docs/architecture/evolution-plan.md` (status header + checkboxes), broken markdown table row in `VSN/README.md` (STUN/ICE), stale logo note in `public/assets/README.md`.
-5. **Deep audit (2026-08-23, second pass):** all internal markdown links resolve; every UI nav link maps to a real route; every npm script referenced in docs exists in the right `package.json`; no TODO/FIXME in source; all hook-using components carry `"use client"`; all local imports resolve; no hardcoded secrets or unexpected public binds.
-6. **VS Code pass (2026-08-23, third pass):** added `.prettierrc.json` + `.prettierignore`, `.vscode/settings.json` (format-on-save, ESLint fix-on-save, workspace TypeScript SDK, sensible excludes) and `.vscode/extensions.json` (recommended extensions), plus `prettier` devDependency + `npm run format` / `npm run format:check`. The whole repo was formatted with Prettier (printWidth 110) and re-verified: typecheck, lint, 32/32 tests and production build all still pass.
-7. **VS Code red-line pass (2026-08-23, fourth pass):** the red lines you saw in VS Code on `page.tsx` / `route.ts` were **unused imports / variables** — these only surface under TypeScript's `noUnusedLocals`/`noUnusedParameters` (what the editor flags), not under the default build config, which is why the CLI typecheck looked clean. Removed **34** unused imports/vars/params across 25 files (e.g. `Clock`, `Wifi`, `React`, `useEffect`, `setDevices`, `JwtPayload`, unused `theme`), and renamed intentionally-unused params to ``_name``. Verified with `tsc --noEmit --noUnusedLocals --noUnusedParameters` → **0 errors**, so no red squiggles remain in the editor. Also ran an invisible-character scan over every file: **0 hidden/zero-width/BOM characters**, so copy-paste is clean.
+4. **Docs/code consistency:** `.env.example` rewritten to exactly match the variables the code reads; `SETUPME.md` env table, `docs/development/setup.md` (Postgres is *planned*, not an existing `VSN_DB_DRIVER` switch), `docs/development/troubleshooting.md` (agent IPC facts), `docs/architecture/evolution-plan.md` (status header + checkboxes), broken markdown table row in `VSN/README.md` (STUN/ICE), stale logo note in `public/assets/README.md`.
+5. **Deep audit (second pass):** all internal markdown links resolve; every UI nav link maps to a real route; every npm script referenced in docs exists in the right `package.json`; no TODO/FIXME in source; all hook-using components carry `"use client"`; all local imports resolve; no hardcoded secrets or unexpected public binds.
+6. **VS Code pass (third pass):** added `.prettierrc.json` + `.prettierignore`, `.vscode/settings.json` + `.vscode/extensions.json`, `prettier` devDependency + `npm run format` / `npm run format:check`; whole repo formatted (printWidth 110) and re-verified.
+7. **VS Code red-line pass (fourth pass):** removed **34** unused imports/vars/params across 25 files (the lines VS Code redlined but the default build never flagged); verified with `tsc --noUnusedLocals --noUnusedParameters` → 0 errors; invisible-character scan over every file → 0 hidden characters.
+8. **Basic/old-environment pass (fifth pass):**
+   - `VSN/scripts/check-node.js` + `preinstall` hook + `engines`: every `npm install` now self-checks the Node version and, on old Node, stops immediately with the exact 5-step fix instead of dying inside a native build.
+   - `docs/development/troubleshooting.md`: new sections for the 5 usual `npm install` failures (old Node, better-sqlite3 build tools per OS, old npm, EACCES, network) and for **basic/old VS Code** (TS version selection, missing extensions, reload window).
+   - `.vscode/settings.json`: safe on basic VS Code (no hard dependency on any extension; workspace TypeScript pinned so old VS Code uses the project's compiler).
+   - `SETUPME.md` + both READMEs: explicit minimum requirements (Node 20.9+, 22 LTS recommended).
+   - New: `docs/development/wireguard-deep-dive.md` — the complete detailed WireGuard explanation (keys, Noise handshake, data path, NAT traversal, donor isolation, per-OS install, verification, security model).
 
 ---
 

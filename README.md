@@ -21,6 +21,10 @@ VSN (Virtual Share Network) is a **cross-platform networking application** that 
 
 ## Quick start (dev)
 
+> **Prerequisite:** Node.js **22 LTS** (minimum 20.9) from https://nodejs.org.
+> `npm install` self-checks the version and prints the exact fix if it's too old.
+> Full setup + troubleshooting (incl. old/basic VS Code): [`VSN/SETUPME.md`](./VSN/SETUPME.md).
+
 ```bash
 cd VSN
 npm install
