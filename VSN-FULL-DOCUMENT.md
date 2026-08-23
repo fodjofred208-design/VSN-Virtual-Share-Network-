@@ -13,10 +13,11 @@
 | TypeScript (strict) | `npm run typecheck` | ✅ **0 errors** |
 | ESLint | `npm run lint` | ✅ **0 errors, 0 warnings** |
 | Unit tests (Vitest) | `npm test` | ✅ **32/32 passed** (8 files) |
-| Production build | `npm run build` | ✅ **success** (30 routes) |
+| Production build | `npm run build` | ✅ **success** (all routes) |
 | DB bootstrap | `npm run db:init` | ✅ 21 DDL statements + demo user seeded |
 | i18n key audit | all 10 languages × 32 keys | ✅ complete, no missing keys |
 | UI → API cross-check | every `apiClient` path | ✅ maps to a real route |
+| Deep audit (links/scripts/imports/unused) | all docs + source | ✅ no broken links, no dead scripts, no TODOs |
 
 ## 🚀 Quick start (after restoring files)
 
@@ -13481,12 +13482,13 @@ referenced by the UI; keep it for reference or delete it.
 
 ---
 
-## Appendix — Repairs applied in this pass (2026-08-23)
+## Appendix — Repairs applied (2026-08-23)
 
 1. **Lint errors (15) → 0** in: `src/hooks/use-api.ts` (rewritten: store-based fetch via `useSyncExternalStore`, no setState-in-effect, literal deps), `src/components/theme-provider.tsx` + `src/components/i18n-provider.tsx` (lazy localStorage init + mount detection without effects), `src/app/(app)/statistics/page.tsx` (impure `Math.random()` during render → deterministic pure `placeholderBar()`), `src/app/terms/page.tsx` (unescaped ```'```/``"``` → ``&apos;``/``&quot;``).
 2. **Hidden runtime bug:** all three logo references pointed to `/assets/vsn-logo.png` which **did not exist** → now use the shipped `/assets/vsn-logo.svg` via `next/image` (also clears the 4 `no-img-element` warnings).
 3. **Type cleanups:** `as any` casts removed (splash wave styles → `React.CSSProperties`, globe selection → typed `NetworkNode`).
 4. **Docs/code consistency:** `.env.example` rewritten to exactly match the variables the code reads (old one listed `DATABASE_URL`/`AGENT_IPC_URL`, which nothing reads); `SETUPME.md` env table, `docs/development/setup.md` (Postgres is *planned*, not an existing `VSN_DB_DRIVER` switch), `docs/development/troubleshooting.md` (agent IPC facts), `docs/architecture/evolution-plan.md` (status header + checkboxes), broken markdown table row in `VSN/README.md` (STUN/ICE), stale logo note in `public/assets/README.md`.
+5. **Deep audit (2026-08-23, second pass):** all internal markdown links resolve; every UI nav link maps to a real route; every npm script referenced in docs exists in the right `package.json`; no TODO/FIXME in source; all hook-using components carry `"use client"`; all local imports resolve; no hardcoded secrets or unexpected public binds.
 
 ---
 
