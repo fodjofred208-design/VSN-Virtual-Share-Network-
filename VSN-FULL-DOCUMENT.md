@@ -6,7 +6,7 @@
 
 ---
 
-## ✅ Verification status (as of 2026-08-23)
+## ✅ Verification status (as of 2026-08-25)
 
 | Check | Command (in `VSN/`) | Result |
 |-------|----------------------|--------|
@@ -14,415 +14,145 @@
 | TypeScript (editor-level: no unused imports/vars) | `tsc --noEmit --noUnusedLocals --noUnusedParameters` | ✅ **0 errors** |
 | ESLint | `npm run lint` | ✅ **0 errors, 0 warnings** |
 | Unit tests (Vitest) | `npm test` | ✅ **32/32 passed** (8 files) |
-| Production build | `npm run build` | ✅ **success** (34 static pages) |
+| Production build | `npm run build` | ✅ **success** (34 static pages) — works even before the native module is installed |
 | Node version self-check | `scripts/check-node.js` (runs on every `npm install`) | ✅ blocks old Node with the exact fix |
+| Native module | `better-sqlite3` pinned to **12.11.1** | ✅ prebuilt binaries exist for Windows/macOS/Linux on Node 20/22/24 — **no Visual Studio / C++ compiler needed** |
 | Invisible/hidden-character scan (all files) | zero-width, BOM, NBSP, form-feed… | ✅ **0 hidden characters** |
-| Deep audit (links/scripts/imports/unused) | all docs + source | ✅ no broken links, no dead scripts, no TODOs |
-| Prettier format check | `npm run format:check` | ✅ all files use the project style |
 
 ## 🖥️ How to open the project in VS Code (with ALL folders)
 
 > ⚠️ **The one rule:** open the **ROOT folder** — the folder that contains
-> `VSN/` **and** `apps/` **together**. If you open `VSN/` alone, the
-> `apps/` folder (desktop/android/ios) will NOT appear in your Explorer.
+> `VSN/` **and** `apps/` **together**.
 >
 > ⚠️ **Clone the right branch!** The default branch `main` still holds only
-> the original upload (49 files). The complete project (206+ files) is on
-> branch **`arena/01a02d3f-vsn-virtual-share-network`**:
+> the original upload (49 files). The complete project is on branch
+> **`arena/01a02d3f-vsn-virtual-share-network`** (or merge PR #1 to put it on main):
 >
 > ```bash
 > git clone -b arena/01a02d3f-vsn-virtual-share-network \
 >   https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
 > ```
->
-> (Or merge PR #1 to get everything on `main`.)
 
-### Method 1 — from GitHub (recommended)
+### After cloning (Windows example)
 
-```bash
-git clone -b arena/01a02d3f-vsn-virtual-share-network \
-  https://github.com/fodjofred208-design/VSN-Virtual-Share-Network-.git
-cd VSN-Virtual-Share-Network-
-code .            # opens the ROOT in VS Code
+```bat
+cd C:\path\to\VSN-Virtual-Share-Network-
+code .
+cd VSN
+npm install        ← downloads the prebuilt SQLite binary — NO Visual Studio needed
+npm run db:init
+npm run dev        → http://localhost:3000
 ```
 
-(Already cloned the old branch? Fix it in place: `git fetch origin && git checkout arena/01a02d3f-vsn-virtual-share-network`.)
-
-### Method 2 — restore from THIS document
-
-1. Create an empty folder named `VSN-Virtual-Share-Network-`.
-2. For every `### `path`` block below: create that file at exactly that path
-   (creating the folders as needed) and paste the block's content.
-3. Open that ROOT folder in VS Code.
-
-### After opening (all methods)
-
-1. **Node.js 22 LTS** installed (https://nodejs.org) — `npm install`
-   self-checks and prints the exact fix if it's too old.
-2. VS Code asks **“Do you trust the authors of the files in this folder?”** → **Yes**.
-3. VS Code asks about **recommended extensions** → **Install Recommended**
-   (ESLint, Prettier, Tailwind CSS). On basic/old VS Code: skip — the project
-   still works; terminal checks (`npm run typecheck && npm run lint && npm test`)
-   are authoritative.
-4. Compare your Explorer with the tree in the next section — it must match exactly.
-5. Open the terminal (`Ctrl+``) and run:
-   ```bash
-   cd VSN
-   npm install
-   npm run db:init
-   npm run dev
-   ```
-6. Open http://localhost:3000 — splash → terms → permissions → dashboard.
+If a previous failed install left a broken `node_modules`:
+```bat
+rmdir /s /q node_modules
+npm install
+```
 
 ## 🌳 The exact plan VS Code will display (Explorer preview)
 
-Generated from the real repository (this is precisely what VS Code's Explorer
-shows: every tracked file/folder; gitignored build artifacts are hidden by
-VS Code — that is normal and intentional, not missing content).
+Generated from the real repository (exactly what VS Code's Explorer shows;
+gitignored build artifacts are hidden by VS Code — normal, not missing).
 
-**Root folder name: `VSN-Virtual-Share-Network-`** — total: **206 files**
+**Root folder name: `VSN-Virtual-Share-Network-`** — total: **49 files**
 
 ```text
 VSN-Virtual-Share-Network-/          ← open THIS folder in VS Code
-├── 📁 apps/  ── 24 files
-│   ├── 📁 android/  ── 14 files
-│   │   ├── 📁 app/  ── 10 files
-│   │   │   ├── 📄 build.gradle.kts
-│   │   │   ├── 📄 proguard-rules.pro
-│   │   │   └── 📁 src/  ── 8 files
-│   │   │       └── 📁 main/  ── 8 files
-│   │   │           ├── 📄 AndroidManifest.xml
-│   │   │           ├── 📁 java/  ── 3 files
-│   │   │           │   └── 📁 com/  ── 3 files
-│   │   │           │       └── 📁 vsn/  ── 3 files
-│   │   │           │           └── 📁 app/  ── 3 files
-│   │   │           │               ├── 📄 MainActivity.kt
-│   │   │           │               ├── 📄 VsnAgentService.kt
-│   │   │           │               └── 📄 VsnVpnService.kt
-│   │   │           └── 📁 res/  ── 4 files
-│   │   │               ├── 📁 drawable/  ── 1 file
-│   │   │               │   └── 📄 ic_launcher_foreground.xml
-│   │   │               ├── 📁 layout/  ── 1 file
-│   │   │               │   └── 📄 activity_main.xml
-│   │   │               └── 📁 values/  ── 2 files
-│   │   │                   ├── 📄 strings.xml
-│   │   │                   └── 📄 styles.xml
-│   │   ├── 📄 build.gradle.kts
-│   │   ├── 📄 gradle.properties
-│   │   ├── 📄 README.md
-│   │   └── 📄 settings.gradle.kts
-│   ├── 📁 desktop/  ── 8 files
-│   │   ├── 📁 assets/  ── 1 file
-│   │   │   └── 📄 icon.svg
-│   │   ├── 📄 package-lock.json
-│   │   ├── 📄 package.json
-│   │   ├── 📄 README.md
-│   │   ├── 📁 src/  ── 3 files
-│   │   │   ├── 📄 main.ts
-│   │   │   ├── 📄 preload.ts
-│   │   │   └── 📄 renderer.d.ts
-│   │   └── 📄 tsconfig.json
-│   └── 📁 ios/  ── 2 files
-│       ├── 📄 README.md
-│       └── 📄 VsnPacketTunnelProvider.swift
 ├── 📄 LICENSE
 ├── 📄 README.md
-├── 📁 VSN/  ── 174 files
-│   ├── 📁 agent/  ── 29 files
-│   │   ├── 📄 package.json
-│   │   ├── 📁 platforms/  ── 5 files
-│   │   │   ├── 📁 android/  ── 1 file
-│   │   │   │   └── 📄 README.md
-│   │   │   ├── 📁 ios/  ── 1 file
-│   │   │   │   └── 📄 README.md
-│   │   │   ├── 📁 linux/  ── 1 file
-│   │   │   │   └── 📄 README.md
-│   │   │   ├── 📁 macos/  ── 1 file
-│   │   │   │   └── 📄 README.md
-│   │   │   └── 📁 windows/  ── 1 file
-│   │   │       └── 📄 README.md
-│   │   ├── 📄 README.md
-│   │   └── 📁 src/  ── 22 files
-│   │       ├── 📁 api/  ── 1 file
-│   │       │   └── 📄 control-client.ts
-│   │       ├── 📁 core/  ── 5 files
-│   │       │   ├── 📄 agent.ts
-│   │       │   ├── 📄 connection-manager.ts
-│   │       │   ├── 📄 donor-manager.ts
-│   │       │   ├── 📄 platform-adapter.ts
-│   │       │   └── 📄 receptor-manager.ts
-│   │       ├── 📁 ipc/  ── 1 file
-│   │       │   └── 📄 ipc-server.ts
-│   │       ├── 📁 network/  ── 5 files
-│   │       │   ├── 📄 dns-manager.ts
-│   │       │   ├── 📄 interface-manager.ts
-│   │       │   ├── 📄 nat-manager.ts
-│   │       │   ├── 📄 network-info.ts
-│   │       │   └── 📄 routing-manager.ts
-│   │       ├── 📁 security/  ── 3 files
-│   │       │   ├── 📄 credentials.ts
-│   │       │   ├── 📄 encryption.ts
-│   │       │   └── 📄 identity.ts
-│   │       └── 📁 tunnel/  ── 7 files
-│   │           ├── 📄 nat-traversal.ts
-│   │           ├── 📄 relay-client.ts
-│   │           ├── 📄 tunnel-client.ts
-│   │           ├── 📄 tunnel-config.ts
-│   │           ├── 📄 tunnel-manager.ts
-│   │           ├── 📄 wireguard-cli.ts
-│   │           └── 📄 wireguard-keys.ts
-│   ├── 📁 docs/  ── 12 files
-│   │   ├── 📁 architecture/  ── 7 files
-│   │   │   ├── 📄 control-plane.md
-│   │   │   ├── 📄 data-plane.md
-│   │   │   ├── 📄 device-to-device.md
-│   │   │   ├── 📄 evolution-plan.md
-│   │   │   ├── 📄 overview.md
-│   │   │   ├── 📄 security.md
-│   │   │   └── 📄 tunnel.md
-│   │   └── 📁 development/  ── 5 files
-│   │       ├── 📄 contributing.md
-│   │       ├── 📄 install-wireguard.md
-│   │       ├── 📄 native-integration.md
-│   │       ├── 📄 setup.md
-│   │       └── 📄 troubleshooting.md
-│   ├── 📄 drizzle.config.ts
-│   ├── 📄 eslint.config.mjs
-│   ├── 📄 next.config.ts
-│   ├── 📄 package-lock.json
-│   ├── 📄 package.json
-│   ├── 📄 postcss.config.mjs
-│   ├── 📁 protocol/  ── 8 files
-│   │   ├── 📁 messages/  ── 6 files
-│   │   │   ├── 📄 authentication.ts
-│   │   │   ├── 📄 donor.ts
-│   │   │   ├── 📄 receptor.ts
-│   │   │   ├── 📄 session.ts
-│   │   │   ├── 📄 signaling.ts
-│   │   │   └── 📄 traversal.ts
-│   │   ├── 📄 README.md
-│   │   └── 📄 types.ts
-│   ├── 📁 public/  ── 3 files
-│   │   └── 📁 assets/  ── 3 files
-│   │       ├── 📄 README.md
-│   │       ├── 📄 vsn-logo-placeholder.svg
-│   │       └── 📄 vsn-logo.svg
-│   ├── 📄 README.md
-│   ├── 📁 server/  ── 4 files
-│   │   ├── 📄 index.ts
-│   │   ├── 📁 services/  ── 2 files
-│   │   │   ├── 📄 relay-manager.ts
-│   │   │   └── 📄 session-manager.ts
-│   │   └── 📁 websocket/  ── 1 file
-│   │       └── 📄 signaling-server.ts
-│   ├── 📄 SETUPME.md
-│   ├── 📁 src/  ── 98 files
-│   │   ├── 📁 app/  ── 42 files
-│   │   │   ├── 📁 (app)/  ── 10 files
-│   │   │   │   ├── 📁 connection/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 dashboard/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 donor/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 help/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📄 layout.tsx
-│   │   │   │   ├── 📁 my-donors/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 receptor/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 security/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 settings/  ── 1 file
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   └── 📁 statistics/  ── 1 file
-│   │   │   │       └── 📄 page.tsx
-│   │   │   ├── 📁 api/  ── 27 files
-│   │   │   │   ├── 📁 audit/  ── 1 file
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 auth/  ── 4 files
-│   │   │   │   │   ├── 📁 challenge/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   ├── 📁 login/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   ├── 📁 register-device/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   └── 📁 verify/  ── 1 file
-│   │   │   │   │       └── 📄 route.ts
-│   │   │   │   ├── 📁 devices/  ── 2 files
-│   │   │   │   │   ├── 📁 revoke/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 donors/  ── 6 files
-│   │   │   │   │   ├── 📁 [id]/  ── 2 files
-│   │   │   │   │   │   ├── 📁 approve/  ── 1 file
-│   │   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   │   └── 📁 status/  ── 1 file
-│   │   │   │   │   │       └── 📄 route.ts
-│   │   │   │   │   ├── 📁 available/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   ├── 📁 heartbeat/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   ├── 📁 register/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 health/  ── 1 file
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 relay/  ── 1 file
-│   │   │   │   │   └── 📁 allocate/  ── 1 file
-│   │   │   │   │       └── 📄 route.ts
-│   │   │   │   ├── 📁 security/  ── 1 file
-│   │   │   │   │   └── 📁 events/  ── 1 file
-│   │   │   │   │       └── 📄 route.ts
-│   │   │   │   ├── 📁 sessions/  ── 7 files
-│   │   │   │   │   ├── 📁 [id]/  ── 5 files
-│   │   │   │   │   │   ├── 📁 accept/  ── 1 file
-│   │   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   │   ├── 📁 reject/  ── 1 file
-│   │   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   │   ├── 📁 status/  ── 1 file
-│   │   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   │   ├── 📁 terminate/  ── 1 file
-│   │   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   │   └── 📁 tunnel-config/  ── 1 file
-│   │   │   │   │   │       └── 📄 route.ts
-│   │   │   │   │   ├── 📁 request/  ── 1 file
-│   │   │   │   │   │   └── 📄 route.ts
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 signaling/  ── 1 file
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   ├── 📁 statistics/  ── 1 file
-│   │   │   │   │   └── 📄 route.ts
-│   │   │   │   └── 📁 users/  ── 2 files
-│   │   │   │       ├── 📁 register/  ── 1 file
-│   │   │   │       │   └── 📄 route.ts
-│   │   │   │       └── 📄 route.ts
-│   │   │   ├── 📄 globals.css
-│   │   │   ├── 📄 layout.tsx
-│   │   │   ├── 📄 page.tsx
-│   │   │   ├── 📁 permissions/  ── 1 file
-│   │   │   │   └── 📄 page.tsx
-│   │   │   └── 📁 terms/  ── 1 file
-│   │   │       └── 📄 page.tsx
-│   │   ├── 📁 components/  ── 15 files
-│   │   │   ├── 📁 connection/  ── 1 file
-│   │   │   │   └── 📄 session-state-machine.tsx
-│   │   │   ├── 📄 connection-background.tsx
-│   │   │   ├── 📁 dashboard/  ── 1 file
-│   │   │   │   └── 📄 stat-card.tsx
-│   │   │   ├── 📁 donor/  ── 1 file
-│   │   │   │   └── 📄 donor-credentials.tsx
-│   │   │   ├── 📄 earth-globe.tsx
-│   │   │   ├── 📄 i18n-provider.tsx
-│   │   │   ├── 📁 layout/  ── 1 file
-│   │   │   │   └── 📄 page-header.tsx
-│   │   │   ├── 📁 receptor/  ── 1 file
-│   │   │   │   └── 📄 donor-list.tsx
-│   │   │   ├── 📁 security/  ── 1 file
-│   │   │   │   └── 📄 security-events-feed.tsx
-│   │   │   ├── 📄 sidebar.tsx
-│   │   │   ├── 📄 status-indicator.tsx
-│   │   │   ├── 📄 theme-provider.tsx
-│   │   │   ├── 📁 ui/  ── 2 files
-│   │   │   │   ├── 📄 button.tsx
-│   │   │   │   └── 📄 card.tsx
-│   │   │   └── 📄 vsn-splash.tsx
-│   │   ├── 📁 db/  ── 10 files
-│   │   │   ├── 📄 index.ts
-│   │   │   ├── 📄 migrate.ts
-│   │   │   └── 📁 schema/  ── 8 files
-│   │   │       ├── 📄 audit.ts
-│   │   │       ├── 📄 devices.ts
-│   │   │       ├── 📄 donors.ts
-│   │   │       ├── 📄 index.ts
-│   │   │       ├── 📄 relay-servers.ts
-│   │   │       ├── 📄 security-events.ts
-│   │   │       ├── 📄 sessions.ts
-│   │   │       └── 📄 users.ts
-│   │   ├── 📁 hooks/  ── 3 files
-│   │   │   ├── 📄 use-api.ts
-│   │   │   ├── 📄 use-identity.ts
-│   │   │   └── 📄 use-tunnel.ts
-│   │   ├── 📁 lib/  ── 21 files
-│   │   │   ├── 📁 api/  ── 7 files
-│   │   │   │   ├── 📄 auth.ts
-│   │   │   │   ├── 📄 client.ts
-│   │   │   │   ├── 📄 donors.ts
-│   │   │   │   ├── 📄 route-helpers.ts
-│   │   │   │   ├── 📄 sessions.ts
-│   │   │   │   ├── 📄 stats.ts
-│   │   │   │   └── 📄 tunnel.ts
-│   │   │   ├── 📁 auth/  ── 2 files
-│   │   │   │   ├── 📄 index.ts
-│   │   │   │   └── 📄 jwt.ts
-│   │   │   ├── 📄 connection-store.ts
-│   │   │   ├── 📁 constants/  ── 1 file
-│   │   │   │   └── 📄 index.ts
-│   │   │   ├── 📁 i18n/  ── 1 file
-│   │   │   │   └── 📄 locales.ts
-│   │   │   ├── 📄 mock-data.ts
-│   │   │   ├── 📄 notification-store.ts
-│   │   │   ├── 📄 onboarding.ts
-│   │   │   ├── 📁 security/  ── 2 files
-│   │   │   │   ├── 📄 index.ts
-│   │   │   │   └── 📄 rate-limit.ts
-│   │   │   ├── 📁 signaling/  ── 1 file
-│   │   │   │   └── 📄 client.ts
-│   │   │   ├── 📁 types/  ── 1 file
-│   │   │   │   └── 📄 index.ts
-│   │   │   ├── 📁 utils/  ── 1 file
-│   │   │   │   └── 📄 index.ts
-│   │   │   └── 📁 validation/  ── 1 file
-│   │   │       └── 📄 index.ts
-│   │   └── 📁 services/  ── 7 files
-│   │       ├── 📄 auth.service.ts
-│   │       ├── 📄 donor.service.ts
-│   │       ├── 📄 receptor.service.ts
-│   │       ├── 📄 security.service.ts
-│   │       ├── 📄 session.service.ts
-│   │       ├── 📄 signaling.service.ts
-│   │       └── 📄 statistics.service.ts
-│   ├── 📁 tests/  ── 8 files
-│   │   ├── 📁 agent/  ── 3 files
-│   │   │   ├── 📄 nat-traversal.test.ts
-│   │   │   ├── 📄 tunnel-config.test.ts
-│   │   │   └── 📄 wireguard-keys.test.ts
-│   │   ├── 📁 protocol/  ── 1 file
-│   │   │   └── 📄 state-machine.test.ts
-│   │   └── 📁 services/  ── 4 files
-│   │       ├── 📄 auth-jwt.test.ts
-│   │       ├── 📄 donor-utils.test.ts
-│   │       ├── 📄 rate-limit.test.ts
-│   │       └── 📄 relay-manager.test.ts
-│   ├── 📄 tsconfig.json
-│   ├── 📄 vitest.config.ts
-│   ├── 📄 .env.example
-│   └── 📄 .gitignore
-├── 📄 VSN-FULL-DOCUMENT.md
-├── 📄 .gitignore
-├── 📄 .prettierignore
-├── 📄 .prettierrc.json
-└── 📁 .vscode/  ── 2 files
-    ├── 📄 extensions.json
-    └── 📄 settings.json
+└── 📁 VSN/  ── 47 files
+    ├── 📄 drizzle.config.json
+    ├── 📄 eslint.config.mjs
+    ├── 📄 next.config.ts
+    ├── 📄 package.json
+    ├── 📄 postcss.config.mjs
+    ├── 📁 public/  ── 2 files
+    │   └── 📁 assets/  ── 2 files
+    │       ├── 📄 README.md
+    │       └── 📄 vsn-logo-placeholder.svg
+    ├── 📄 README.md
+    ├── 📁 src/  ── 38 files
+    │   ├── 📁 app/  ── 29 files
+    │   │   ├── 📁 (app)/  ── 10 files
+    │   │   │   ├── 📁 connection/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 dashboard/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 donor/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 help/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📄 layout.tsx
+    │   │   │   ├── 📁 my-donors/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 receptor/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 security/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   ├── 📁 settings/  ── 1 file
+    │   │   │   │   └── 📄 page.tsx
+    │   │   │   └── 📁 statistics/  ── 1 file
+    │   │   │       └── 📄 page.tsx
+    │   │   ├── 📁 api/  ── 15 files
+    │   │   │   ├── 📁 audit/  ── 1 file
+    │   │   │   │   └── 📄 route.ts
+    │   │   │   ├── 📁 auth/  ── 3 files
+    │   │   │   │   ├── 📁 challenge/  ── 1 file
+    │   │   │   │   │   └── 📄 route.ts
+    │   │   │   │   ├── 📁 register-device/  ── 1 file
+    │   │   │   │   │   └── 📄 route.ts
+    │   │   │   │   └── 📁 verify/  ── 1 file
+    │   │   │   │       └── 📄 route.ts
+    │   │   │   ├── 📁 devices/  ── 1 file
+    │   │   │   │   └── 📁 revoke/  ── 1 file
+    │   │   │   │       └── 📄 route.ts
+    │   │   │   ├── 📁 donors/  ── 3 files
+    │   │   │   │   ├── 📁 [id]/  ── 1 file
+    │   │   │   │   │   └── 📁 approve/  ── 1 file
+    │   │   │   │   │       └── 📄 route.ts
+    │   │   │   │   ├── 📁 available/  ── 1 file
+    │   │   │   │   │   └── 📄 route.ts
+    │   │   │   │   └── 📁 register/  ── 1 file
+    │   │   │   │       └── 📄 route.ts
+    │   │   │   ├── 📁 health/  ── 1 file
+    │   │   │   │   └── 📄 route.ts
+    │   │   │   ├── 📁 security/  ── 1 file
+    │   │   │   │   └── 📁 events/  ── 1 file
+    │   │   │   │       └── 📄 route.ts
+    │   │   │   ├── 📁 sessions/  ── 4 files
+    │   │   │   │   ├── 📁 [id]/  ── 3 files
+    │   │   │   │   │   ├── 📁 accept/  ── 1 file
+    │   │   │   │   │   │   └── 📄 route.ts
+    │   │   │   │   │   ├── 📁 reject/  ── 1 file
+    │   │   │   │   │   │   └── 📄 route.ts
+    │   │   │   │   │   └── 📁 terminate/  ── 1 file
+    │   │   │   │   │       └── 📄 route.ts
+    │   │   │   │   └── 📁 request/  ── 1 file
+    │   │   │   │       └── 📄 route.ts
+    │   │   │   └── 📁 stats/  ── 1 file
+    │   │   │       └── 📄 route.ts
+    │   │   ├── 📄 globals.css
+    │   │   ├── 📄 layout.tsx
+    │   │   ├── 📄 page.tsx
+    │   │   └── 📁 permissions/  ── 1 file
+    │   │       └── 📄 page.tsx
+    │   ├── 📁 components/  ── 5 files
+    │   │   ├── 📄 earth-globe.tsx
+    │   │   ├── 📄 sidebar.tsx
+    │   │   ├── 📄 status-indicator.tsx
+    │   │   ├── 📄 theme-provider.tsx
+    │   │   └── 📄 vsn-splash.tsx
+    │   ├── 📁 db/  ── 2 files
+    │   │   ├── 📄 index.ts
+    │   │   └── 📄 schema.ts
+    │   └── 📁 lib/  ── 2 files
+    │       ├── 📄 mock-data.ts
+    │       └── 📄 types.ts
+    └── 📄 tsconfig.json
 ```
 
-**Intentionally hidden by VS Code** (gitignored — they appear on disk after
-`npm install`/`npm run dev`, but the Explorer hides them by default):
-`.git/`, `VSN/node_modules/`, `apps/desktop/node_modules/`, `VSN/.next/`,
-`VSN/vsn.db*`, `VSN/next-env.d.ts`, `*.tsbuildinfo`.
-
-**Prove the structure yourself** — open a terminal in VS Code and run:
-
-```bash
-# every folder that should exist:
-find . -type d -not -path '*/node_modules*' -not -path './.git*' -not -path '*/.next*' | sort
-# total file count (should be ≥ 206):
-find . -type f -not -path '*/node_modules/*' -not -path './.git/*' -not -path '*/.next/*' | wc -l
-```
-
-## 🚀 Quick start (after restoring files)
+## 🚀 Quick start
 
 ```bash
 cd VSN
@@ -433,11 +163,11 @@ npm run dev          # UI + control-plane API on http://localhost:3000
 npm run signaling    # WebSocket signaling server on ws://localhost:3002
 ```
 
-Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm test && npm run build`.
+Verify with `npm run typecheck && npm test && npm run build`.
 
 ## 📦 What's inside this document
 
-- **Part A** — Documentation (README, SETUPME, architecture + development docs, incl. the WireGuard deep dive)
+- **Part A** — Documentation (README, SETUPME, architecture + development docs, WireGuard deep dive)
 - **Part B** — Repository & project configuration (package.json, tsconfig, Next/Drizzle/ESLint/Vitest configs, gitignore, .env.example, npm-install self-check, VS Code settings)
 - **Part C** — Web app: presentation + control plane (`VSN/src/**`)
 - **Part D** — Standalone signaling server (`VSN/server/**`)
@@ -658,7 +388,6 @@ Optional: `npm run dev:all` runs both. Verify with `npm run typecheck && npm tes
 - `apps/desktop/tsconfig.json`
 - `apps/ios/README.md`
 - `apps/ios/VsnPacketTunnelProvider.swift`
-
 
 ---
 
@@ -2713,25 +2442,48 @@ Check what you have: `node -v` and `npm -v` in a terminal.
 4. `node -v` → must show `v22.x.x`.
 5. `npm install` again.
 
-### 2. `better-sqlite3` / `node-gyp rebuild` / `gyp ERR!` (build tools)
+### 2. `better-sqlite3` / `node-gyp rebuild` / `gyp ERR!` / "Could not find any Visual Studio"
 
-**Cause:** the only native package in the project couldn't download a
-prebuilt binary, so it tried to compile and your machine lacks build tools.
-**Fix — install the compiler for your OS, then re-run `npm install`:**
+**Good news first:** this project **pins `better-sqlite3@12.11.1`**, which ships
+**prebuilt binaries** for Windows / macOS / Linux on Node 20, 22 and 24 —
+so on a normal internet connection **no Visual Studio / C++ build tools are
+needed at all**. `npm install` downloads the prebuilt binary automatically.
 
-| OS | Command |
-|----|---------|
+> **Why you might still have hit this:** the newer `better-sqlite3` 13.x
+> releases were published **without** prebuilt binaries, so npm fell back to
+> compiling from source, which requires Visual Studio "Desktop development
+> with C++" on Windows. Make sure you are on the updated repository:
+>
+> ```bash
+> git pull
+> ```
+>
+> then (if a previous install was half-finished):
+>
+> ```bat
+> rmdir /s /q node_modules
+> npm install
+> ```
+>
+> You should see no `node-gyp rebuild` output at all — that's the success
+> signal (prebuilt binary used).
+
+**If the prebuilt download itself fails** (corporate proxy / firewall blocking
+github.com releases):
+
+1. Retry once (transient network failures are common).
+2. Check your proxy settings: `npm config get proxy` / `https-proxy`.
+3. Last resort — install the compiler (one-time, ~1 GB):
+   Windows: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+   → workload **"Desktop development with C++"** → then `npm install`.
+
+| OS | Build tools (only if prebuild download is blocked) |
+|----|---------------------------------------------------|
 | Ubuntu / Debian / Mint | `sudo apt update && sudo apt install build-essential python3` |
 | Fedora / RHEL | `sudo dnf groupinstall "Development Tools" && sudo dnf install python3` |
 | Arch | `sudo pacman -S base-devel python` |
 | macOS | `xcode-select --install` |
-| Windows | Visual Studio Build Tools → choose "Desktop development with C++" (https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
-
-Then: `cd VSN && npm install`.
-
-> Node 20/22 on Windows/macOS/Linux x64 normally get a **prebuilt**
-> better-sqlite3 (no compiling needed). Compiling only kicks in on unusual
-> platforms or blocked networks.
+| Windows | VS Build Tools + "Desktop development with C++" |
 
 ### 3. `npm` errors like `EUNSUPPORTEDPROTOCOL`, `ENOENT`, weird syntax errors
 
@@ -3478,7 +3230,13 @@ export default defineConfig([
 ````typescript
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  // better-sqlite3 is a NATIVE module: it must never be bundled by
+  // Turbopack. Keeping it external means `next build` and page-data
+  // collection don't depend on the native binary, and the prebuilt
+  // binary installed by npm is used at runtime.
+  serverExternalPackages: ["better-sqlite3"],
+};
 
 export default nextConfig;
 
@@ -3513,7 +3271,7 @@ export default nextConfig;
     "@react-three/fiber": "^9.7.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/three": "^0.185.4",
-    "better-sqlite3": "^13.0.3",
+    "better-sqlite3": "12.11.1",
     "clsx": "^2.1.1",
     "dotenv": "17.3.1",
     "drizzle-orm": "^0.45.2",
@@ -9072,11 +8830,19 @@ export default function VSNLogo({
 // A PostgreSQL driver is planned but not yet implemented (see
 // docs/architecture/evolution-plan.md and docs/development/setup.md —
 // "Production database"). drizzle.config.ts currently targets SQLite.
-import Database from "better-sqlite3";
-import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
+//
+// IMPORTANT: the native SQLite binding is loaded LAZILY (on first use),
+// never at module import time. This keeps `next build`, page-data
+// collection and static generation working on any machine, and gives a
+// clear, actionable error if the native module is missing at runtime.
+import { createRequire } from "node:module";
 import * as schema from "./schema";
 
-type DB = ReturnType<typeof drizzleSqlite<typeof schema>>;
+// Type-only (qualified type imports — erased at compile time, no runtime
+// import, so the native binding is NOT pulled in at module load):
+type DB = import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof schema> & {
+  $client: import("better-sqlite3").Database;
+};
 
 const DEFAULT_DB_PATH = process.env.VSN_SQLITE_PATH ?? "./vsn.db";
 
@@ -9085,18 +8851,45 @@ const globalForDb = globalThis as typeof globalThis & {
   __vsnDb?: DB;
 };
 
+const requireModule = createRequire(import.meta.url);
+
 function createDb(): DB {
-  const sqlite = new Database(DEFAULT_DB_PATH);
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
-  return drizzleSqlite(sqlite, { schema });
+  try {
+    const Database = requireModule("better-sqlite3");
+    const sqlite = new Database(DEFAULT_DB_PATH);
+    sqlite.pragma("journal_mode = WAL");
+    sqlite.pragma("foreign_keys = ON");
+    const { drizzle } = requireModule("drizzle-orm/better-sqlite3");
+    return drizzle(sqlite, { schema });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message.split("\n")[0] : String(err);
+    throw new Error(
+      "VSN: could not open the SQLite database (native module not loadable).\n" +
+        "Fix: run `npm install` inside VSN/ — it downloads a prebuilt " +
+        "better-sqlite3 binary for your OS/Node version (no compiler needed),\n" +
+        "then restart the app. Details: docs/development/troubleshooting.md → 'better-sqlite3'.\n" +
+        `Underlying error: ${detail}`,
+    );
+  }
 }
 
-export const db: DB = globalForDb.__vsnDb ?? createDb();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__vsnDb = db;
+function getDb(): DB {
+  if (!globalForDb.__vsnDb) globalForDb.__vsnDb = createDb();
+  return globalForDb.__vsnDb;
 }
+
+// Public API: `db` behaves exactly like the Drizzle instance, but the
+// underlying SQLite connection is created on first use. Methods are
+// bound to the real instance so `this` semantics are preserved.
+export const db: DB = new Proxy({} as DB, {
+  get(_target, prop) {
+    const value = (getDb() as unknown as Record<PropertyKey, unknown>)[prop];
+    return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(getDb()) : value;
+  },
+  has(_target, prop) {
+    return prop in getDb();
+  },
+});
 
 export { schema };
 
@@ -16090,24 +15883,23 @@ referenced by the UI; keep it for reference or delete it.
 
 ````
 
-
 ---
 
-## Appendix — Repairs & adaptations applied (2026-08-23)
+## Appendix — Repairs & adaptations applied
 
-1. **Lint errors (15) → 0** in: `src/hooks/use-api.ts` (rewritten: store-based fetch via `useSyncExternalStore`, no setState-in-effect, literal deps), `src/components/theme-provider.tsx` + `src/components/i18n-provider.tsx` (lazy localStorage init + mount detection without effects), `src/app/(app)/statistics/page.tsx` (impure `Math.random()` during render → deterministic pure `placeholderBar()`), `src/app/terms/page.tsx` (unescaped ```'```/``"``` → ``&apos;``/``&quot;``).
-2. **Hidden runtime bug:** all three logo references pointed to `/assets/vsn-logo.png` which **did not exist** → now use the shipped `/assets/vsn-logo.svg` via `next/image` (also clears the 4 `no-img-element` warnings).
-3. **Type cleanups:** `as any` casts removed (splash wave styles → `React.CSSProperties`, globe selection → typed `NetworkNode`).
-4. **Docs/code consistency:** `.env.example` rewritten to exactly match the variables the code reads; `SETUPME.md` env table, `docs/development/setup.md` (Postgres is *planned*, not an existing `VSN_DB_DRIVER` switch), `docs/development/troubleshooting.md` (agent IPC facts), `docs/architecture/evolution-plan.md` (status header + checkboxes), broken markdown table row in `VSN/README.md` (STUN/ICE), stale logo note in `public/assets/README.md`.
-5. **Deep audit (second pass):** all internal markdown links resolve; every UI nav link maps to a real route; every npm script referenced in docs exists in the right `package.json`; no TODO/FIXME in source; all hook-using components carry `"use client"`; all local imports resolve; no hardcoded secrets or unexpected public binds.
-6. **VS Code pass (third pass):** added `.prettierrc.json` + `.prettierignore`, `.vscode/settings.json` + `.vscode/extensions.json`, `prettier` devDependency + `npm run format` / `npm run format:check`; whole repo formatted (printWidth 110) and re-verified.
-7. **VS Code red-line pass (fourth pass):** removed **34** unused imports/vars/params across 25 files (the lines VS Code redlined but the default build never flagged); verified with `tsc --noUnusedLocals --noUnusedParameters` → 0 errors; invisible-character scan over every file → 0 hidden characters.
-8. **Basic/old-environment pass (fifth pass):**
-   - `VSN/scripts/check-node.js` + `preinstall` hook + `engines`: every `npm install` now self-checks the Node version and, on old Node, stops immediately with the exact 5-step fix instead of dying inside a native build.
-   - `docs/development/troubleshooting.md`: new sections for the 5 usual `npm install` failures (old Node, better-sqlite3 build tools per OS, old npm, EACCES, network) and for **basic/old VS Code** (TS version selection, missing extensions, reload window).
-   - `.vscode/settings.json`: safe on basic VS Code (no hard dependency on any extension; workspace TypeScript pinned so old VS Code uses the project's compiler).
-   - `SETUPME.md` + both READMEs: explicit minimum requirements (Node 20.9+, 22 LTS recommended).
-   - New: `docs/development/wireguard-deep-dive.md` — the complete detailed WireGuard explanation (keys, Noise handshake, data path, NAT traversal, donor isolation, per-OS install, verification, security model).
+1. **Lint errors (15) → 0** (use-api store-based fetch, theme/i18n lazy init, deterministic chart data, escaped entities).
+2. **Hidden runtime bug:** broken `/assets/vsn-logo.png` references → real `/assets/vsn-logo.svg` via next/image.
+3. **Type cleanups:** `as any` casts removed.
+4. **Docs/code consistency:** `.env.example` rebuilt to match the code; env tables, Postgres=planned wording, evolution-plan status, README table fix, assets README.
+5. **Deep audit:** all md links, UI nav links, doc scripts, imports, directives, secrets — clean.
+6. **VS Code pass:** Prettier config + `.vscode/` workspace settings + whole-repo format.
+7. **VS Code red-line pass:** 34 unused imports/vars removed (25 files); invisible-character scan → 0 hidden characters.
+8. **Basic/old-environment pass:** `scripts/check-node.js` + preinstall hook + engines; troubleshooting sections for the 5 npm-install failures + basic/old VS Code; `.vscode/settings.json` safe on basic VS Code; minimum requirements in SETUPME/READMEs; new `docs/development/wireguard-deep-dive.md`.
+9. **Windows / Node 24 native-module fix (2026-08-25):** root cause — `better-sqlite3` 13.x releases are published **without prebuilt binaries**, forcing a source build that requires Visual Studio C++ on Windows. Fixes:
+   - **Pinned `better-sqlite3@12.11.1`** (exact) — that release ships **138 prebuilt binaries**, including `node-v137-win32-x64` (Node 24 on Windows x64), Node 20/22, macOS and Linux → **`npm install` no longer needs any compiler**.
+   - **Lazy database init** (`src/db/index.ts`): the native binding is loaded on first use, never at import time → `next build` and static generation work even before the native module is ready; a missing native module now produces a clear, actionable error message.
+   - **`serverExternalPackages: ["better-sqlite3"]`** in `next.config.ts` (standard for native modules — never bundled by Turbopack).
+   - Troubleshooting doc updated with the exact Windows scenario + fallback (VS Build Tools) if a proxy blocks the prebuilt download.
 
 ---
 

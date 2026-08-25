@@ -30,25 +30,48 @@ Check what you have: `node -v` and `npm -v` in a terminal.
 4. `node -v` → must show `v22.x.x`.
 5. `npm install` again.
 
-### 2. `better-sqlite3` / `node-gyp rebuild` / `gyp ERR!` (build tools)
+### 2. `better-sqlite3` / `node-gyp rebuild` / `gyp ERR!` / "Could not find any Visual Studio"
 
-**Cause:** the only native package in the project couldn't download a
-prebuilt binary, so it tried to compile and your machine lacks build tools.
-**Fix — install the compiler for your OS, then re-run `npm install`:**
+**Good news first:** this project **pins `better-sqlite3@12.11.1`**, which ships
+**prebuilt binaries** for Windows / macOS / Linux on Node 20, 22 and 24 —
+so on a normal internet connection **no Visual Studio / C++ build tools are
+needed at all**. `npm install` downloads the prebuilt binary automatically.
 
-| OS | Command |
-|----|---------|
+> **Why you might still have hit this:** the newer `better-sqlite3` 13.x
+> releases were published **without** prebuilt binaries, so npm fell back to
+> compiling from source, which requires Visual Studio "Desktop development
+> with C++" on Windows. Make sure you are on the updated repository:
+>
+> ```bash
+> git pull
+> ```
+>
+> then (if a previous install was half-finished):
+>
+> ```bat
+> rmdir /s /q node_modules
+> npm install
+> ```
+>
+> You should see no `node-gyp rebuild` output at all — that's the success
+> signal (prebuilt binary used).
+
+**If the prebuilt download itself fails** (corporate proxy / firewall blocking
+github.com releases):
+
+1. Retry once (transient network failures are common).
+2. Check your proxy settings: `npm config get proxy` / `https-proxy`.
+3. Last resort — install the compiler (one-time, ~1 GB):
+   Windows: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+   → workload **"Desktop development with C++"** → then `npm install`.
+
+| OS | Build tools (only if prebuild download is blocked) |
+|----|---------------------------------------------------|
 | Ubuntu / Debian / Mint | `sudo apt update && sudo apt install build-essential python3` |
 | Fedora / RHEL | `sudo dnf groupinstall "Development Tools" && sudo dnf install python3` |
 | Arch | `sudo pacman -S base-devel python` |
 | macOS | `xcode-select --install` |
-| Windows | Visual Studio Build Tools → choose "Desktop development with C++" (https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
-
-Then: `cd VSN && npm install`.
-
-> Node 20/22 on Windows/macOS/Linux x64 normally get a **prebuilt**
-> better-sqlite3 (no compiling needed). Compiling only kicks in on unusual
-> platforms or blocked networks.
+| Windows | VS Build Tools + "Desktop development with C++" |
 
 ### 3. `npm` errors like `EUNSUPPORTEDPROTOCOL`, `ENOENT`, weird syntax errors
 
