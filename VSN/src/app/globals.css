@@ -7,24 +7,30 @@
 :root {
   /* Status Colors (VSN Identity) */
   --vsn-red: #ff2635;
-  --vsn-yellow: #D4AF37; /* Gold/Yellow */
+  --vsn-yellow: #d4af37; /* Gold/Yellow */
   --vsn-green: #25e64a;
-  
+
+  /* Connection circle colors — LIGHT theme (deeper, more readable) */
+  --conn-red: #d92d3a;
+  --conn-yellow: #d99a00;
+  --conn-green: #159957;
+  --circle-glow: rgba(89, 118, 155, 0.1);
+
   /* Light Theme (Dedicated Premium Design) */
-  --vsn-bg: #F5F7FA;
-  --vsn-surface: #FFFFFF;
-  --vsn-surface-secondary: #EEF1F5;
+  --vsn-bg: #f5f7fa;
+  --vsn-surface: #ffffff;
+  --vsn-surface-secondary: #eef1f5;
   --vsn-text-primary: #111827;
-  --vsn-text-secondary: #5B6472;
-  --vsn-border: #D8DEE7;
+  --vsn-text-secondary: #5b6472;
+  --vsn-border: #d8dee7;
   --vsn-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-  --vsn-accent: #D4AF37;
+  --vsn-accent: #d4af37;
   --vsn-glow: rgba(212, 175, 55, 0.15);
-  
+
   /* Globe Colors - Light */
-  --globe-ocean: #E0E7FF;
-  --globe-land: #FFFFFF;
-  --globe-border: #CBD5E1;
+  --globe-ocean: #e0e7ff;
+  --globe-land: #ffffff;
+  --globe-border: #cbd5e1;
 
   --vsn-bg-card: var(--vsn-surface);
   --vsn-text: var(--vsn-text-primary);
@@ -34,18 +40,24 @@
 .dark {
   /* Dark Theme (Primary Identity: Deep Charcoal/Black) */
   --vsn-bg: #020202;
-  --vsn-surface: #0A0A0A;
+  --vsn-surface: #0a0a0a;
   --vsn-surface-secondary: #121212;
-  --vsn-text-primary: #FFFFFF;
-  --vsn-text-secondary: #94A3B8;
-  --vsn-border: #1E293B;
+  --vsn-text-primary: #ffffff;
+  --vsn-text-secondary: #94a3b8;
+  --vsn-border: #1e293b;
   --vsn-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-  --vsn-accent: #D4AF37;
+  --vsn-accent: #d4af37;
   --vsn-glow: rgba(212, 175, 55, 0.3);
+
+  /* Connection circle colors — DARK theme (luminous) */
+  --conn-red: #ff4d5a;
+  --conn-yellow: #ffc857;
+  --conn-green: #35d07f;
+  --circle-glow: rgba(53, 208, 127, 0.12);
 
   /* Globe Colors - Dark */
   --globe-ocean: #050505;
-  --globe-land: #1E293B;
+  --globe-land: #1e293b;
   --globe-border: #334155;
 
   --vsn-bg-card: var(--vsn-surface);
@@ -56,7 +68,9 @@
 /* ─── Base Styles ─────────────────────────────────────────────────── */
 
 body {
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 
 .vsn-glass-bubble {
@@ -81,6 +95,73 @@ body {
   backdrop-filter: blur(12px);
   background: rgba(var(--vsn-surface), 0.8);
   border-bottom: 1px solid var(--vsn-border);
+}
+
+/* ─── Connection-state background circles ─────────────────────────── */
+
+.vsn-circle {
+  pointer-events: none;
+  transition:
+    background-color 0.6s ease,
+    box-shadow 0.6s ease;
+  border-radius: 9999px;
+}
+.vsn-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.18), transparent 60%);
+}
+.vsn-circle-red {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 77, 90, 0), var(--conn-red));
+  box-shadow:
+    0 0 40px 6px var(--conn-red),
+    inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+.vsn-circle-yellow {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 200, 87, 0), var(--conn-yellow));
+  box-shadow:
+    0 0 46px 8px var(--conn-yellow),
+    inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+.vsn-circle-green {
+  background: radial-gradient(circle at 35% 35%, rgba(53, 208, 127, 0), var(--conn-green));
+  box-shadow:
+    0 0 54px 10px var(--conn-green),
+    inset 0 0 30px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes vsn-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
+}
+.vsn-float {
+  animation: vsn-float 14s ease-in-out infinite;
+}
+
+@keyframes vsn-orbit {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(360deg);
+  }
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsn-circle,
+  .vsn-float {
+    animation: none !important;
+    transition: opacity 0.4s ease !important;
+  }
 }
 
 /* ─── Soft UI & Animations ────────────────────────────────────────── */
@@ -145,82 +226,181 @@ html {
 body {
   background-color: var(--vsn-bg);
   color: var(--vsn-text);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.3s, color 0.3s;
+  font-family:
+    "Inter",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 /* ─── VSN Status Animations ───────────────────────────────────────── */
 
 @keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
 }
 
 @keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
 }
 
 @keyframes pulse-yellow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
 }
 
 @keyframes glow-green {
-  0%, 100% { text-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
-  50% { text-shadow: 0 0 20px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.3); }
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(34, 197, 94, 0.8),
+      0 0 40px rgba(34, 197, 94, 0.3);
+  }
 }
 
 @keyframes glow-yellow {
-  0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.6); }
-  50% { text-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.3); }
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(245, 158, 11, 0.8),
+      0 0 40px rgba(245, 158, 11, 0.3);
+  }
 }
 
-.vsn-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
-.vsn-pulse-red { animation: pulse-red 2s ease-in-out infinite; }
-.vsn-pulse-yellow { animation: pulse-yellow 1.5s ease-in-out infinite; }
-.vsn-glow-green { animation: glow-green 2s ease-in-out infinite; }
-.vsn-glow-yellow { animation: glow-yellow 1.5s ease-in-out infinite; }
+.vsn-pulse-green {
+  animation: pulse-green 2s ease-in-out infinite;
+}
+.vsn-pulse-red {
+  animation: pulse-red 2s ease-in-out infinite;
+}
+.vsn-pulse-yellow {
+  animation: pulse-yellow 1.5s ease-in-out infinite;
+}
+.vsn-glow-green {
+  animation: glow-green 2s ease-in-out infinite;
+}
+.vsn-glow-yellow {
+  animation: glow-yellow 1.5s ease-in-out infinite;
+}
 
 /* ─── Splash Screen Animations ────────────────────────────────────── */
 
 @keyframes letter-assemble {
-  0% { opacity: 0; transform: translateY(-40px) scale(0.3) rotateX(90deg); filter: blur(8px); }
-  60% { opacity: 1; transform: translateY(5px) scale(1.05) rotateX(-5deg); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.3) rotateX(90deg);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.05) rotateX(-5deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0);
+  }
 }
 
 @keyframes network-line {
-  0% { stroke-dashoffset: 200; opacity: 0; }
-  30% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.3; }
+  0% {
+    stroke-dashoffset: 200;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
 }
 
 @keyframes node-glow {
-  0%, 100% { r: 3; opacity: 0.5; }
-  50% { r: 5; opacity: 1; }
+  0%,
+  100% {
+    r: 3;
+    opacity: 0.5;
+  }
+  50% {
+    r: 5;
+    opacity: 1;
+  }
 }
 
 @keyframes signal-wave {
-  0% { transform: scale(0.8); opacity: 0.8; }
-  100% { transform: scale(2.5); opacity: 0; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
 }
 
 @keyframes particle-float {
-  0% { transform: translateY(0) translateX(0); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(30px);
+    opacity: 0;
+  }
 }
 
 @keyframes subtitle-reveal {
-  0% { opacity: 0; letter-spacing: 0.5em; }
-  100% { opacity: 1; letter-spacing: 0.25em; }
+  0% {
+    opacity: 0;
+    letter-spacing: 0.5em;
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.25em;
+  }
 }
 
 @keyframes fade-to-app {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .vsn-letter-assemble {
@@ -252,7 +432,9 @@ body {
 
 .vsn-card:hover {
   border-color: var(--vsn-accent);
-  box-shadow: 0 0 0 1px var(--vsn-accent), 0 4px 12px var(--vsn-glow);
+  box-shadow:
+    0 0 0 1px var(--vsn-accent),
+    0 4px 12px var(--vsn-glow);
 }
 
 .vsn-sidebar {
@@ -308,10 +490,19 @@ body {
 
 /* ─── Scrollbar ───────────────────────────────────────────────────── */
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--vsn-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--vsn-text-muted); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vsn-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vsn-text-muted);
+}
 
 /* ─── Network Topology SVG for Splash ─────────────────────────────── */
 

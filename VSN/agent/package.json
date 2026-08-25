@@ -1,0 +1,12 @@
+{
+  "name": "vsn-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "VSN Agent — native data-plane core (tunnel, virtual NIC, routing, NAT, security)",
+  "main": "src/core/agent.ts",
+  "scripts": {
+    "start": "tsx src/core/agent.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}

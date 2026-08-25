@@ -1,15 +1,31 @@
 # VSN Assets
 
-Place your `vsn-logo.png` file in this directory.
+## Logo
 
-The splash screen references `/assets/vsn-logo.png`.
+The app ships with a vector logo: **`vsn-logo.svg`** (480×200, gradient V-S-N wordmark).
 
-## Requirements
-- Format: PNG with transparency
-- Recommended size: 480px wide, ~200px tall
-- The logo should contain the VSN branding text
-- Dark background compatible (the splash screen background is very dark)
+The UI references it via `next/image`:
 
-## Placeholder
-A placeholder SVG is provided as `vsn-logo-placeholder.svg`.
-Replace it with your actual logo image named `vsn-logo.png`.
+```tsx
+import Image from "next/image";
+
+<Image src="/assets/vsn-logo.svg" alt="VSN" width={480} height={200} className="h-8 w-auto" />;
+```
+
+Used in:
+
+- `src/app/(app)/layout.tsx` (header)
+- `src/components/sidebar.tsx`
+- `src/components/vsn-splash.tsx` (splash screen)
+
+## Replacing the logo
+
+If you have a custom logo, drop a PNG or SVG into this folder and update the
+`src` path in the three components above. Recommended:
+
+- Width ≥ 480px (the SVG is 480×200, ratio 2.4:1)
+- Dark-background friendly (the header and splash backgrounds are very dark)
+- For PNG: transparency recommended
+
+`vsn-logo-placeholder.svg` is the original placeholder and is no longer
+referenced by the UI; keep it for reference or delete it.

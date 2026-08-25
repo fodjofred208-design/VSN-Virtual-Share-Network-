@@ -1,58 +1,24 @@
-// VSN API: POST /sessions/request — Request a new session
-import { db } from "@/db";
-import { sessions, donorProfiles, sessionEvents } from "@/db/schema";
-import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { randomUUID } from "crypto";
+// VSN API: POST /api/sessions/request — Request a new session
+import { NextRequest } from "next/server";
+import { withErrors, guard } from "@/lib/api/route-helpers";
+import { requestSession } from "@/services/session.service";
+import { ValidationError } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { donorProfileId, receptorDeviceId, receptorUserId } = body;
-
-    if (!donorProfileId || !receptorDeviceId || !receptorUserId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  return withErrors(async () => {
+    guard(req, { auth: true, limit: 30 });
+    const body = await req.json().catch(() => ({}));
+    if (!body?.donorProfileId || !body?.receptorDeviceId || !body?.receptorUserId) {
+      throw new ValidationError("Missing required fields");
     }
-
-    // Verify donor is available
-    const donor = await db.select().from(donorProfiles).where(eq(donorProfiles.id, donorProfileId)).limit(1);
-    if (!donor.length) {
-      return NextResponse.json({ error: "Donor not found" }, { status: 404 });
-    }
-    if (donor[0].status === "offline") {
-      return NextResponse.json({ error: "Donor is offline" }, { status: 409 });
-    }
-
-    const sessionId = randomUUID();
-    const now = new Date();
-
-    await db.insert(sessions).values({
-      id: sessionId,
-      donorProfileId,
-      donorUserId: donor[0].userId,
-      receptorDeviceId,
-      receptorUserId,
-      state: "requested",
-      bytesTransferredDown: 0,
-      bytesTransferredUp: 0,
-      startedAt: now,
+    const result = await requestSession({
+      donorProfileId: body.donorProfileId,
+      receptorDeviceId: body.receptorDeviceId,
+      receptorUserId: body.receptorUserId,
     });
-
-    await db.insert(sessionEvents).values({
-      id: randomUUID(),
-      sessionId,
-      eventType: "session_requested",
-      fromState: "idle",
-      toState: "requested",
-    });
-
-    return NextResponse.json({
-      sessionId,
-      state: "requested",
-      donorId: donor[0].donorId,
+    return {
+      ...result,
       message: "Session requested. Awaiting donor approval.",
-    }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+    };
+  }, 201)();
 }

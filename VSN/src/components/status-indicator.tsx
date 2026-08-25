@@ -42,10 +42,7 @@ export default function StatusIndicator({
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className={`${s.dot} rounded-full ${pulse ? c.pulse : ""}`}
-        style={{ backgroundColor: c.bg }}
-      />
+      <div className={`${s.dot} rounded-full ${pulse ? c.pulse : ""}`} style={{ backgroundColor: c.bg }} />
       {showLabel && (
         <span className={`${s.text} font-medium`} style={{ color: c.bg }}>
           {resolvedLabel}

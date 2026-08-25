@@ -1,32 +1,12 @@
-// VSN API: POST /sessions/{id}/reject — Donor rejects session
-import { db } from "@/db";
-import { sessions, sessionEvents } from "@/db/schema";
-import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { randomUUID } from "crypto";
+// VSN API: POST /api/sessions/{id}/reject — Donor rejects session
+import { NextRequest } from "next/server";
+import { withErrors } from "@/lib/api/route-helpers";
+import { rejectSession } from "@/services/session.service";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id: sessionId } = await params;
-
-    const session = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
-    if (!session.length) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
-    }
-    if (session[0].state !== "requested") {
-      return NextResponse.json({ error: `Cannot reject session in state: ${session[0].state}` }, { status: 409 });
-    }
-
-    await db.update(sessions).set({ state: "terminated", terminationReason: "rejected", terminatedAt: new Date(), updatedAt: new Date() }).where(eq(sessions.id, sessionId));
-    await db.insert(sessionEvents).values({
-      id: randomUUID(), sessionId, eventType: "session_rejected", fromState: "requested", toState: "terminated",
-    });
-
-    return NextResponse.json({ sessionId, state: "terminated", message: "Session rejected." });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  return withErrors(async () => {
+    const { id } = await params;
+    await rejectSession(id);
+    return { sessionId: id, state: "terminated", message: "Session rejected." };
+  })();
 }

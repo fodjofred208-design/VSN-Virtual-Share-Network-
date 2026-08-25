@@ -1,60 +1,50 @@
-// VSN API: POST /devices/revoke — Revoke a device
+// VSN API: POST /api/devices/revoke — Revoke a device + terminate its sessions
+import { NextRequest } from "next/server";
+import { withErrors } from "@/lib/api/route-helpers";
 import { db } from "@/db";
 import { devices, sessions } from "@/db/schema";
-import { NextRequest, NextResponse } from "next/server";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { ACTIVE_SESSION_STATES } from "@/lib/constants";
+import { ValidationError } from "@/lib/validation";
+import type { SessionState } from "protocol/types";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { deviceId, userId } = body;
+  return withErrors(async () => {
+    const body = await req.json().catch(() => ({}));
+    if (!body?.deviceId || !body?.userId) throw new ValidationError("Device ID and User ID required");
 
-    if (!deviceId || !userId) {
-      return NextResponse.json({ error: "Device ID and User ID required" }, { status: 400 });
-    }
+    const device = await db
+      .select()
+      .from(devices)
+      .where(and(eq(devices.id, body.deviceId), eq(devices.userId, body.userId)))
+      .limit(1);
+    if (!device.length) throw new ValidationError("Device not found or unauthorized");
 
-    // Verify device belongs to user
-    const device = await db.select().from(devices).where(
-      and(eq(devices.id, deviceId), eq(devices.userId, userId))
-    ).limit(1);
+    await db.update(devices).set({ isRevoked: true }).where(eq(devices.id, body.deviceId));
 
-    if (!device.length) {
-      return NextResponse.json({ error: "Device not found or unauthorized" }, { status: 404 });
-    }
-
-    // Revoke device
-    await db.update(devices).set({ isRevoked: true }).where(eq(devices.id, deviceId));
-
-    // Terminate any active sessions involving this device
-    const activeStates = ["requested", "approved", "negotiating", "connecting", "connected", "reconnecting"];
-    const activeSessions = await db.select().from(sessions).where(
-      and(
-        or(
-          eq(sessions.receptorDeviceId, deviceId),
-          // Also check donor-side sessions
-        ),
-        // In production: use inArray for state filtering
-      )
-    ).limit(100);
-
+    // Terminate any active session that involves the device (either side).
+    const active = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.receptorDeviceId, body.deviceId))
+      .limit(100);
+    const activeStates = ACTIVE_SESSION_STATES as readonly string[];
     let terminatedCount = 0;
-    for (const session of activeSessions) {
-      if (activeStates.includes(session.state)) {
-        await db.update(sessions).set({
-          state: "terminated",
-          terminationReason: "device_revoked",
-          terminatedAt: new Date(),
-          updatedAt: new Date(),
-        }).where(eq(sessions.id, session.id));
+    for (const session of active) {
+      if (activeStates.includes(session.state as SessionState)) {
+        await db
+          .update(sessions)
+          .set({
+            state: "terminated",
+            terminationReason: "device_revoked",
+            terminatedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(sessions.id, session.id));
         terminatedCount++;
       }
     }
 
-    return NextResponse.json({
-      message: "Device revoked successfully",
-      terminatedSessions: terminatedCount,
-    });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+    return { message: "Device revoked successfully", terminatedSessions: terminatedCount };
+  })();
 }

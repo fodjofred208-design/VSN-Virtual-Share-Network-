@@ -1,20 +1,35 @@
 {
-  "name": "nextjs-postgresql-template",
+  "name": "vsn-virtual-share-network",
+  "version": "0.1.0",
   "private": true,
+  "description": "VSN — Virtual Share Network Professional Suite (control plane + data plane agent)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:init": "tsx src/db/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "signaling": "tsx server/index.ts",
+    "agent": "tsx agent/src/core/agent.ts",
+    "dev:all": "concurrently -k -n web,sig \"npm run dev\" \"npm run signaling\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{ts,tsx,mjs,css,json,md,xml}\"",
+    "preinstall": "node scripts/check-node.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/three": "^0.185.4",
+    "better-sqlite3": "12.11.1",
     "clsx": "^2.1.1",
     "dotenv": "17.3.1",
-    "drizzle-orm": "0.45.2",
+    "drizzle-orm": "^0.45.2",
     "framer-motion": "^13.1.0",
     "lucide-react": "^1.31.0",
     "next": "16.2.6",
@@ -23,7 +38,8 @@
     "react-dom": "19.2.6",
     "react-globe.gl": "^2.38.0",
     "three": "^0.185.1",
-    "three-glow-mesh": "^0.1.2"
+    "three-glow-mesh": "^0.1.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.17",
@@ -31,11 +47,19 @@
     "@types/pg": "8.18.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "@types/ws": "^8.5.13",
+    "concurrently": "^9.1.0",
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "postcss": "8.5.8",
+    "prettier": "^3.9.6",
     "tailwindcss": "4.1.17",
-    "typescript": "5.9.3"
+    "tsx": "^4.19.2",
+    "typescript": "5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

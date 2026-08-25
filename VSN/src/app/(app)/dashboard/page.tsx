@@ -29,7 +29,12 @@ export default function ConnectionPage() {
   }, []);
 
   const statusColor = sessionStateToColor(sessionState);
-  const colorHex = statusColor === "green" ? "var(--vsn-green)" : statusColor === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+  const colorHex =
+    statusColor === "green"
+      ? "var(--vsn-green)"
+      : statusColor === "yellow"
+        ? "var(--vsn-yellow)"
+        : "var(--vsn-red)";
 
   const startDonor = () => {
     setMode("donor");
@@ -70,12 +75,19 @@ export default function ConnectionPage() {
       {/* Dynamic Sub-Header */}
       <div className="flex items-center justify-between border-b border-[var(--vsn-border)] pb-6 mb-8">
         <div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--vsn-text)" }}>CONNECTION HUB</h1>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--vsn-text)" }}>
+            CONNECTION HUB
+          </h1>
           <p className="text-xs uppercase tracking-widest opacity-40 font-bold">Network Bridge Management</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--vsn-bg-card)", border: "1px solid var(--vsn-border)" }}>
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+          style={{ backgroundColor: "var(--vsn-bg-card)", border: "1px solid var(--vsn-border)" }}
+        >
           <Zap size={14} style={{ color: "var(--vsn-accent)" }} />
-          <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>Fresh Node</span>
+          <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>
+            Fresh Node
+          </span>
         </div>
       </div>
 
@@ -83,9 +95,15 @@ export default function ConnectionPage() {
       <div className="vsn-card p-8 text-center">
         {/* VSN Title */}
         <div className="flex items-center justify-center gap-1 mb-1">
-          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>V</span>
-          <span className="text-xl font-black" style={{ color: "var(--vsn-accent)" }}>S</span>
-          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>N</span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>
+            V
+          </span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-accent)" }}>
+            S
+          </span>
+          <span className="text-xl font-black" style={{ color: "var(--vsn-text)" }}>
+            N
+          </span>
         </div>
         <p className="text-xs uppercase tracking-[0.25em] mb-6" style={{ color: "var(--vsn-text-muted)" }}>
           Virtual Share Network
@@ -95,7 +113,11 @@ export default function ConnectionPage() {
         <div className="relative flex items-center justify-center mb-6">
           <div
             className={`w-32 h-32 rounded-full flex items-center justify-center ${
-              statusColor === "green" ? "vsn-pulse-green" : statusColor === "yellow" ? "vsn-pulse-yellow" : "vsn-pulse-red"
+              statusColor === "green"
+                ? "vsn-pulse-green"
+                : statusColor === "yellow"
+                  ? "vsn-pulse-yellow"
+                  : "vsn-pulse-red"
             }`}
             style={{ backgroundColor: `${colorHex}15`, border: `3px solid ${colorHex}` }}
           >
@@ -124,11 +146,18 @@ export default function ConnectionPage() {
               { icon: <Shield size={16} />, label: "Tunnel", value: "WireGuard" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="flex items-center justify-center gap-1 mb-1" style={{ color: "var(--vsn-accent)" }}>
+                <div
+                  className="flex items-center justify-center gap-1 mb-1"
+                  style={{ color: "var(--vsn-accent)" }}
+                >
                   {stat.icon}
                 </div>
-                <div className="text-lg font-bold" style={{ color: "var(--vsn-text)" }}>{stat.value}</div>
-                <div className="text-[10px] uppercase" style={{ color: "var(--vsn-text-muted)" }}>{stat.label}</div>
+                <div className="text-lg font-bold" style={{ color: "var(--vsn-text)" }}>
+                  {stat.value}
+                </div>
+                <div className="text-[10px] uppercase" style={{ color: "var(--vsn-text-muted)" }}>
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -160,13 +189,26 @@ export default function ConnectionPage() {
               Connect to Donor
             </button>
           )}
-          {(sessionState === "connected" || sessionState === "connecting" || sessionState === "negotiating" || sessionState === "approved") && (
-            <button onClick={disconnect} className="px-6 py-3 rounded-lg font-semibold text-sm text-white" style={{ backgroundColor: "var(--vsn-red)" }}>
+          {(sessionState === "connected" ||
+            sessionState === "connecting" ||
+            sessionState === "negotiating" ||
+            sessionState === "approved") && (
+            <button
+              onClick={disconnect}
+              className="px-6 py-3 rounded-lg font-semibold text-sm text-white"
+              style={{ backgroundColor: "var(--vsn-red)" }}
+            >
               Disconnect
             </button>
           )}
           {sessionState === "terminated" && (
-            <button onClick={() => { setSessionState("idle"); setMode("none"); }} className="vsn-btn-outline px-6 py-3">
+            <button
+              onClick={() => {
+                setSessionState("idle");
+                setMode("none");
+              }}
+              className="vsn-btn-outline px-6 py-3"
+            >
               Reset
             </button>
           )}
@@ -182,22 +224,41 @@ export default function ConnectionPage() {
         ].map((stat) => (
           <div key={stat.label} className="vsn-card p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>{stat.label}</span>
+              <span className="text-xs font-medium" style={{ color: "var(--vsn-text-muted)" }}>
+                {stat.label}
+              </span>
               <div style={{ color: "var(--vsn-accent)" }}>{stat.icon}</div>
             </div>
-            <div className="text-xl font-bold" style={{ color: "var(--vsn-text)" }}>{stat.value}</div>
+            <div className="text-xl font-bold" style={{ color: "var(--vsn-text)" }}>
+              {stat.value}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Session State Machine Visual */}
       <div className="vsn-card p-4">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>Session State Machine</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--vsn-text)" }}>
+          Session State Machine
+        </h3>
         <div className="flex flex-wrap gap-2">
-          {(["idle", "requested", "approved", "negotiating", "connecting", "connected", "reconnecting", "terminated", "error"] as SessionState[]).map((state) => {
+          {(
+            [
+              "idle",
+              "requested",
+              "approved",
+              "negotiating",
+              "connecting",
+              "connected",
+              "reconnecting",
+              "terminated",
+              "error",
+            ] as SessionState[]
+          ).map((state) => {
             const isActive = sessionState === state;
             const sc = sessionStateToColor(state);
-            const hex = sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
+            const hex =
+              sc === "green" ? "var(--vsn-green)" : sc === "yellow" ? "var(--vsn-yellow)" : "var(--vsn-red)";
             return (
               <div
                 key={state}

@@ -1,0 +1,59 @@
+# ── Dependencies ────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ── Next.js build output ────────────────────────
+.next/
+out/
+build/
+
+# ── TypeScript ──────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Environment / secrets (NEVER commit) ───────
+.env
+.env.*
+!.env.example
+
+# ── Database / drizzle ──────────────────────────
+*.sqlite
+*.db
+drizzle/meta/
+drizzle/*.sql
+
+# ── Tests / coverage ────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Logs ────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS / editor ─────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── Agent native artifacts ──────────────────────
+agent/build/
+agent/dist/
+agent/target/
+
+# ── Cross-platform app build outputs ───────────
+apps/desktop/dist/
+apps/desktop/release/
+apps/desktop/node_modules/
+apps/android/.gradle/
+apps/android/build/
+apps/android/app/build/
+apps/android/local.properties
+apps/android/.idea/

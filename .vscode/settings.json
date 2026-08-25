@@ -1,0 +1,37 @@
+{
+  // VSN — VS Code workspace settings (open the repo ROOT for these to apply)
+  //
+  // Designed to be safe on BASIC / OLDER VS Code:
+  //  - nothing here requires a specific extension to be installed
+  //    (missing extensions are simply skipped by VS Code)
+  //  - the workspace TypeScript (VSN/node_modules) is pinned so OLD VS Code
+  //    versions don't use their bundled (older) compiler
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.rulers": [110],
+  // Only acts when the ESLint extension is present (recommended, auto-suggested).
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+  // Use the project's own TypeScript (5.9.3) instead of VS Code's bundled one —
+  // this is what removes red lines on old/basic VS Code versions.
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "VSN/node_modules/typescript/lib",
+  "files.exclude": {
+    "**/*.tsbuildinfo": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/*.db": true,
+    "**/*.db-*": true,
+    "VSN-FULL-DOCUMENT.md": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/vsn.db*": true
+  }
+}

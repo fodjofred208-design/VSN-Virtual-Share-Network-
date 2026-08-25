@@ -2,7 +2,7 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore } from "react";
 import type { Theme } from "@/lib/types";
 
 interface ThemeContextType {
@@ -17,41 +17,48 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
+const STORAGE_KEY = "vsn-theme";
+
+const subscribeNoop = () => () => {};
+const getTrue = () => true;
+const getFalse = () => false;
+
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "light" || stored === "dark" ? stored : "dark";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+  // Read once, lazily (no effect needed to persist the stored value).
+  const [storedTheme, setStoredTheme] = useState<Theme>(readStoredTheme);
+  // False during SSR + hydration, true on the client — no setState in an effect.
+  const hasMounted = useSyncExternalStore(subscribeNoop, getTrue, getFalse);
+  const theme = hasMounted ? storedTheme : "dark";
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("vsn-theme") as Theme | null;
-    if (stored) {
-      setThemeState(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!hasMounted) return;
     document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("vsn-theme", theme);
-  }, [theme, mounted]);
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme, hasMounted]);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === "dark" ? "light" : "dark"));
+    setStoredTheme((prev) => (prev === "dark" ? "light" : "dark"));
   }, []);
 
   const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
+    setStoredTheme(t);
   }, []);
 
-  if (!mounted) {
-    return <div className="dark" style={{ visibility: "hidden" }}>{children}</div>;
+  if (!hasMounted) {
+    return (
+      <div className="dark" style={{ visibility: "hidden" }}>
+        {children}
+      </div>
+    );
   }
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
