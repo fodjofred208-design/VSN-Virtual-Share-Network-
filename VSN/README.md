@@ -220,6 +220,9 @@ VSN/                                    # → apps/desktop & apps/android sit be
 ├── postcss.config.mjs         # Tailwind via PostCSS
 ├── vitest.config.ts           # Vitest test runner config
 │
+├── scripts/
+│   └── check-node.js          # preinstall Node-version self-check (runs on npm install)
+│
 ├── public/
 │   └── assets/
 │       ├── vsn-logo.svg              # VSN logo (SVG)
